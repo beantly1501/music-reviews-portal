@@ -5,9 +5,27 @@ import { Column } from "primereact/column";
 import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
 import { useNavigate } from "react-router";
+import { useEffect } from "react";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchHealth = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/health");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log(data, "response data");
+      } catch (err) {
+        console.error("Error fetching health check:", err);
+      }
+    };
+
+    fetchHealth();
+  }, []);
 
   return (
     <div>
