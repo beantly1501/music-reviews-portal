@@ -1,13 +1,14 @@
-import ReviewCard from "../../shared/components/ReviewCard.tsx";
-import { ReviewType } from "../../shared/utils/types.tsx";
-import { CAT_IMAGE } from "../../shared/utils/constants.tsx";
-import { SongOrAlbumEnum } from "../../shared/utils/enums.tsx";
+import { ReviewCard } from "@shared/components";
+import { ReviewType } from "@shared/utils";
+import { CAT_IMAGE } from "@shared/utils";
+import { SongOrAlbumEnum } from "@shared/utils";
 
 export default function SongsPage() {
   const review: ReviewType = {
     id: 5,
     name: "Wish you were here",
     date: "9-8-2025",
+    description: "test2",
     image: CAT_IMAGE,
     rating: 5,
     songOrAlbum: SongOrAlbumEnum.SONG,

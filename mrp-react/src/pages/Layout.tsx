@@ -1,7 +1,8 @@
 import { Outlet, useNavigate } from "react-router";
 import { useState } from "react";
 import { TabMenu, TabMenuTabChangeEvent } from "primereact/tabmenu";
-import { TABS_MENU } from "../shared/utils/constants.tsx";
+import { MOBILE_TABS_MENU, TABS_MENU } from "@shared/utils";
+import { useMatchMedia } from "primereact/hooks";
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -41,11 +42,25 @@ export default function Layout() {
     }
   };
 
+  const isMobile = useMatchMedia("(max-width: 760px)");
+
   return (
     <div className="flex flex-column">
       <TabMenu
-        model={TABS_MENU}
-        className="mx-auto"
+        pt={{
+          menu: {
+            style: {
+              justifyContent: isMobile ? "space-between" : "",
+            },
+          },
+          icon: {
+            style: {
+              fontSize: isMobile ? "1.5rem" : "",
+            },
+          },
+        }}
+        model={isMobile ? MOBILE_TABS_MENU : TABS_MENU}
+        className="mx-auto text-center w-full md:w-auto"
         onTabChange={changeTab}
         activeIndex={selectedTabIndex}
       />

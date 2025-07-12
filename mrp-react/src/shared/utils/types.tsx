@@ -5,6 +5,7 @@ export type ReviewType = {
   name: string;
   image: string; // base64 string
   date: string;
+  description: string;
   songOrAlbum: SongOrAlbumEnum;
   rating: number;
   username: string;

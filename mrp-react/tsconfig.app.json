@@ -23,7 +23,8 @@
     "noUncheckedSideEffectImports": true,
 
     "paths": {
-      "@shared/utils": ["./src/shared/utils"]
+      "@shared/utils": ["./src/shared/utils"],
+      "@shared/components": ["./src/shared/components"]
     }
   },
   "include": ["src"]

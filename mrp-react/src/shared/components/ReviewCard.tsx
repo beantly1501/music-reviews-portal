@@ -1,15 +1,14 @@
 import { Card } from "primereact/card";
 import { Tag } from "primereact/tag";
 
-import { SongOrAlbumEnum } from "@shared/utils";
-import { ReviewType } from "@shared/utils";
-import { formatDate } from "@shared/utils";
+import { formatDate, ReviewType, SongOrAlbumEnum } from "@shared/utils";
+import { Rating } from "primereact/rating";
 
 interface Props {
   review: ReviewType;
 }
 
-export default function ReviewCard({ review }: Props) {
+export function ReviewCard({ review }: Props) {
   const header = (
     <img
       className="overflow-y-hidden"
@@ -20,11 +19,11 @@ export default function ReviewCard({ review }: Props) {
   );
 
   return (
-    <div className="card flex justify-content-center">
+    <div className="card flex justify-content-center full-size-body">
       <Card
         title={review.name}
         subTitle={
-          <div className="flex gap-3">
+          <div className="flex flex-1 gap-3">
             <Tag value={formatDate(review.date)} severity="info" />
             <Tag
               value={
@@ -34,17 +33,16 @@ export default function ReviewCard({ review }: Props) {
                 review.songOrAlbum === SongOrAlbumEnum.SONG ? "success" : "info"
               }
             />
+            <Rating value={review.rating} cancel={false} readOnly />
           </div>
         }
         header={header}
-        className="md:w-25rem cursor-pointer card-hover"
+        footer={<Tag value={review.username} severity="warning" />}
+        className="md:w-25rem max-w-30rem cursor-pointer card-hover"
       >
-        <p className="m-0">
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Inventore
-          sed consequuntur error repudiandae numquam deserunt quisquam repellat
-          libero asperiores earum nam nobis, culpa ratione quam perferendis
-          esse, cupiditate neque quas!
-        </p>
+        <div className="m-0 h-6rem card-description overflow-hidden">
+          {review.description}
+        </div>
       </Card>
     </div>
   );

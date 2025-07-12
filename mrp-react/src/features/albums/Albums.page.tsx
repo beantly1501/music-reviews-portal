@@ -1,13 +1,14 @@
-import ReviewCard from "../../shared/components/ReviewCard.tsx";
-import { ReviewType } from "../../shared/utils/types.tsx";
-import { CAT_IMAGE } from "../../shared/utils/constants.tsx";
-import { SongOrAlbumEnum } from "../../shared/utils/enums.tsx";
+import { ReviewCard } from "@shared/components";
+import { ReviewType } from "@shared/utils";
+import { CAT_IMAGE } from "@shared/utils";
+import { SongOrAlbumEnum } from "@shared/utils";
 
 export default function AlbumsPage() {
   const review: ReviewType = {
     id: 5,
     name: "The doors",
-    date: '15-01-2025',
+    date: "15-01-2025",
+    description: "test",
     image: CAT_IMAGE,
     rating: 5,
     songOrAlbum: SongOrAlbumEnum.ALBUM,
