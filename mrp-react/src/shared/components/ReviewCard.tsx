@@ -1,7 +1,9 @@
 import { Card } from "primereact/card";
-import { SongOrAlbumEnum } from "../utils/enums.tsx";
-import { ReviewType } from "../utils/types.tsx";
 import { Tag } from "primereact/tag";
+
+import { SongOrAlbumEnum } from "@shared/utils";
+import { ReviewType } from "@shared/utils";
+import { formatDate } from "@shared/utils";
 
 interface Props {
   review: ReviewType;
@@ -22,14 +24,17 @@ export default function ReviewCard({ review }: Props) {
       <Card
         title={review.name}
         subTitle={
-          <Tag
-            value={
-              review.songOrAlbum === SongOrAlbumEnum.SONG ? "Song" : "Album"
-            }
-            severity={
-              review.songOrAlbum === SongOrAlbumEnum.SONG ? "success" : "info"
-            }
-          />
+          <div className="flex gap-3">
+            <Tag value={formatDate(review.date)} severity="info" />
+            <Tag
+              value={
+                review.songOrAlbum === SongOrAlbumEnum.SONG ? "Song" : "Album"
+              }
+              severity={
+                review.songOrAlbum === SongOrAlbumEnum.SONG ? "success" : "info"
+              }
+            />
+          </div>
         }
         header={header}
         className="md:w-25rem cursor-pointer card-hover"

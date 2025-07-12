@@ -1,5 +1,5 @@
-import { MOCK_REVIEWS } from "../utils/constants.tsx";
-import { SongOrAlbumEnum } from "../utils/enums.tsx";
+import { MOCK_REVIEWS } from "../../shared/utils/constants.tsx";
+import { SongOrAlbumEnum } from "../../shared/utils/enums.tsx";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Rating } from "primereact/rating";

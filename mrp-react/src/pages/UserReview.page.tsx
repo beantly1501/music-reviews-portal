@@ -1,5 +1,5 @@
 import { useLocation } from "react-router";
-import { SongOrAlbumEnum } from "../utils/enums.tsx";
+import { SongOrAlbumEnum } from "../shared/utils/enums.tsx";
 
 export default function UserReviewPage() {
   const location = useLocation();
