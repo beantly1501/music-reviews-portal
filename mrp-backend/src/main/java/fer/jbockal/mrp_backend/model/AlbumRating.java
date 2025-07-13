@@ -2,6 +2,7 @@ package fer.jbockal.mrp_backend.model;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "album_rating")
@@ -21,12 +22,16 @@ public class AlbumRating {
     private AppUser user;
 
     private Integer grade;
+    private String description;
+    private LocalDate creationDate;
 
     public AlbumRating() {}
-    public AlbumRating(Album album, AppUser user, Integer grade) {
+    public AlbumRating(Album album, AppUser user, Integer grade, String description, LocalDate creationDate) {
         this.album = album;
         this.user = user;
         this.grade = grade;
+        this.description = description;
+        this.creationDate = creationDate;
         this.id = new AlbumRatingId(album.getId(), user.getId());
     }
 }

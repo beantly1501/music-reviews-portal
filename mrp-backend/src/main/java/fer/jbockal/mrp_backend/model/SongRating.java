@@ -1,9 +1,13 @@
 package fer.jbockal.mrp_backend.model;
 
 import jakarta.persistence.*;
-import java.io.Serializable;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 
+@Data
+@NoArgsConstructor
 @Entity
 @Table(name = "song_rating")
 public class SongRating {
@@ -26,7 +30,6 @@ public class SongRating {
     private String description;
     private LocalDate creationDate;
 
-    public SongRating() {}
     public SongRating(Song song, AppUser user, Integer grade, String description, LocalDate creationDate) {
         this.song = song;
         this.user = user;
@@ -34,34 +37,5 @@ public class SongRating {
         this.description = description;
         this.creationDate = creationDate;
         this.id = new SongRatingId(song.getId(), user.getId());
-    }
-}
-
-@Embeddable
-class SongRatingId implements Serializable {
-
-    @Column(name = "song_id")
-    private Long songId;
-
-    @Column(name = "user_id")
-    private Long userId;
-
-    public SongRatingId() {}
-    public SongRatingId(Long songId, Long userId) {
-        this.songId = songId;
-        this.userId = userId;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SongRatingId)) return false;
-        SongRatingId that = (SongRatingId) o;
-        return songId.equals(that.songId) && userId.equals(that.userId);
-    }
-
-    @Override
-    public int hashCode() {
-        return songId.hashCode() + userId.hashCode();
     }
 }
