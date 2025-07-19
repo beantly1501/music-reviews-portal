@@ -16,13 +16,11 @@ public class PlaylistOwner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("userId")
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private AppUser user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("playlistId")
+    @ManyToOne
     @JoinColumn(name = "playlist_id")
     private Playlist playlist;
 }
