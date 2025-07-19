@@ -1,14 +1,12 @@
 package fer.jbockal.mrp_backend.controller;
 
 import fer.jbockal.mrp_backend.dto.SongRatingDto;
+import fer.jbockal.mrp_backend.model.SongRating;
 import fer.jbockal.mrp_backend.service.SongRatingService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/song-rating")
@@ -21,15 +19,14 @@ public class SongRatingController {
     }
 
     @GetMapping("/newest")
-    public ResponseEntity<List<SongRatingDto>> getNewestRatings() {
-        List<SongRatingDto> dtos = songRatingService.getLatestRatings().stream()
-                .map(r -> new SongRatingDto(
-                        r.getSong().getId(),
-                        r.getUser().getId(),
-                        r.getGrade(),
-                        r.getDescription(),
-                        r.getCreationDate()))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+    public ResponseEntity<List<SongRating>> getNewestRatings() {
+        return ResponseEntity.ok(songRatingService.getLatestRatings());
+
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<SongRating> createSongRating(@RequestBody SongRatingDto songRatingDto) {
+
+        return ResponseEntity.ok(songRatingService.createRating(songRatingDto));
     }
 }

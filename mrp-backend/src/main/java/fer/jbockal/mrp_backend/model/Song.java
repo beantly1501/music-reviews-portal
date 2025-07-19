@@ -1,11 +1,17 @@
 package fer.jbockal.mrp_backend.model;
 
 import jakarta.persistence.*;
-
-import java.time.LocalDate;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "song")
+@Getter
+@Setter
+@NoArgsConstructor
+@ToString
 public class Song {
 
     @Id
@@ -14,20 +20,17 @@ public class Song {
 
     private String name;
 
-    @Lob
     @Column(name = "cover", columnDefinition = "BYTEA")
     private byte[] cover;
 
     private String link;
 
-    @Lob
     @Column(name = "file", columnDefinition = "BYTEA")
     private byte[] file;
 
-    private LocalDate year;
+    private Long year;
 
-    public Song() {}
-    public Song(String name, byte[] cover, String link, byte[] file, LocalDate year) {
+    public Song(String name, byte[] cover, String link, byte[] file, Long year) {
         this.name = name;
         this.cover = cover;
         this.link = link;
@@ -35,51 +38,4 @@ public class Song {
         this.year = year;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public byte[] getCover() {
-        return cover;
-    }
-
-    public void setCover(byte[] cover) {
-        this.cover = cover;
-    }
-
-    public String getLink() {
-        return link;
-    }
-
-    public void setLink(String link) {
-        this.link = link;
-    }
-
-    public byte[] getFile() {
-        return file;
-    }
-
-    public void setFile(byte[] file) {
-        this.file = file;
-    }
-
-    public LocalDate getYear() {
-        return year;
-    }
-
-    public void setYear(LocalDate year) {
-        this.year = year;
-    }
 }
