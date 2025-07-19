@@ -19,7 +19,6 @@ public class SongController {
 
     @PostMapping("/create")
     public ResponseEntity<Song> createSong(@RequestBody SongRequestDto songRequest) {
-
         return ResponseEntity.ok(songService.createSong(songRequest));
     }
 

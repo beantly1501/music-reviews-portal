@@ -7,10 +7,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SongRequestDto {
+public class AlbumRequestDto {
     private String name;
     private byte[] cover;
     private String link;
-    private byte[] file;
     private Long year;
 }
