@@ -7,14 +7,20 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class SongService {
 
     private final SongRepository songRepository;
 
+    public List<Song> getAllSongs() {
+        return songRepository.findAll();
+    }
+
     public Song createSong(SongRequestDto songRequest){
-        Song  song = new Song(songRequest.getName(), null, null, null, songRequest.getYear());
+        Song  song = new Song(songRequest.getName(), songRequest.getCover(), songRequest.getLink(), songRequest.getFile(), songRequest.getYear());
         return songRepository.save(song);
     }
 

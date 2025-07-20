@@ -3,20 +3,19 @@ package fer.jbockal.mrp_backend.controller;
 import fer.jbockal.mrp_backend.dto.SongRatingDto;
 import fer.jbockal.mrp_backend.model.SongRating;
 import fer.jbockal.mrp_backend.service.SongRatingService;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+@Controller
+@AllArgsConstructor
 @RequestMapping("/song-rating")
 public class SongRatingController {
 
     private final SongRatingService songRatingService;
-
-    public SongRatingController(SongRatingService songRatingService) {
-        this.songRatingService = songRatingService;
-    }
 
     @GetMapping("/newest")
     public ResponseEntity<List<SongRating>> getNewestRatings() {

@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/song")
 @AllArgsConstructor
@@ -16,6 +18,12 @@ import org.springframework.web.bind.annotation.*;
 public class SongController {
 
     private final SongService songService;
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Song>> getNewestRatings() {
+        return ResponseEntity.ok(songService.getAllSongs());
+
+    }
 
     @PostMapping("/create")
     public ResponseEntity<Song> createSong(@RequestBody SongRequestDto songRequest) {
