@@ -19,6 +19,10 @@ public class SongService {
         return songRepository.findAll();
     }
 
+    public Song findById(long id) {
+        return songRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+    }
+
     public Song createSong(SongRequestDto songRequest){
         Song  song = new Song(songRequest.getName(), songRequest.getCover(), songRequest.getLink(), songRequest.getFile(), songRequest.getYear());
         return songRepository.save(song);
