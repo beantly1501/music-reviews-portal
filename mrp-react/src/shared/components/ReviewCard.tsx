@@ -1,11 +1,11 @@
 import { Card } from "primereact/card";
 import { Tag } from "primereact/tag";
 
-import { formatDate, ReviewType, SongOrAlbumEnum } from "@shared/utils";
+import { formatDate, ReviewCardType, SongOrAlbumEnum } from "@shared/utils";
 import { Rating } from "primereact/rating";
 
 interface Props {
-  review: ReviewType;
+  review: ReviewCardType;
 }
 
 export function ReviewCard({ review }: Props) {

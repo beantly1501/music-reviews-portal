@@ -1,6 +1,7 @@
 import { SongOrAlbumEnum } from "./enums.tsx";
+import { z } from "zod";
 
-export type ReviewType = {
+export type ReviewCardType = {
   id: number;
   name: string;
   image: string; // base64 string
@@ -10,3 +11,27 @@ export type ReviewType = {
   rating: number;
   username: string;
 };
+
+export type SongType = {
+  id: number;
+  name: string;
+  cover?: string;
+  link?: string;
+  file?: string;
+  year: number;
+};
+
+export const songCreateSchema = z.object({
+  name: z.string().nonempty({ message: "Song name is required" }), // ← makes it required
+  cover: z.instanceof(File).optional(),
+  link: z.string().optional(),
+  file: z.instanceof(File).optional(),
+  year: z
+    .number({ error: "Year must be a number" })
+    .int()
+    .min(0, { message: "Year is too small" })
+    .max(new Date().getFullYear(), {
+      message: `Year cannot exceed ${new Date().getFullYear()}`,
+    }),
+});
+export type SongCreateForm = z.infer<typeof songCreateSchema>;

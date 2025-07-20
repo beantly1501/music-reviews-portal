@@ -1,5 +1,5 @@
 import { ReviewCard } from "@shared/components";
-import { ReviewType } from "@shared/utils";
+import { ReviewCardType } from "@shared/utils";
 import { useGetNewestReviews } from "./hooks/useGetNewestReviews.ts";
 
 export default function SongsPage() {
@@ -7,7 +7,7 @@ export default function SongsPage() {
 
   return (
     <div className="flex flex-wrap gap-4 justify-content-center">
-      {reviews?.map((review: ReviewType) => <ReviewCard review={review} />)}
+      {reviews?.map((review: ReviewCardType) => <ReviewCard review={review} />)}
     </div>
   );
 }

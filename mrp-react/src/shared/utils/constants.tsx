@@ -1,6 +1,8 @@
 import { MenuItem } from "primereact/menuitem";
 import { SongOrAlbumEnum } from "./enums.tsx";
 
+export const BACKEND_URL: string = import.meta.env.VITE_BACKEND_URL;
+
 export const TABS_MENU: MenuItem[] = [
   { label: "Newest", icon: "pi pi-clock" },
   { label: "All Reviews", icon: "pi pi-list-check" },

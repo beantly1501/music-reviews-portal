@@ -1,10 +1,10 @@
 import { ReviewCard } from "@shared/components";
-import { ReviewType } from "@shared/utils";
+import { ReviewCardType } from "@shared/utils";
 import { CAT_IMAGE } from "@shared/utils";
 import { SongOrAlbumEnum } from "@shared/utils";
 
 export default function AlbumsPage() {
-  const review: ReviewType = {
+  const review: ReviewCardType = {
     id: 5,
     name: "The doors",
     date: "15-01-2025",

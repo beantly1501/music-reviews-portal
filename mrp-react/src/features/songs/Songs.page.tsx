@@ -1,42 +1,36 @@
-import { ReviewCard } from "@shared/components";
-import { ReviewType } from "@shared/utils";
-import { CAT_IMAGE } from "@shared/utils";
-import { SongOrAlbumEnum } from "@shared/utils";
+import { useGetSongs } from "./hooks/useGetSongs.tsx";
+import { SongCard } from "../../shared/components/SongCard.tsx";
+import { Button } from "primereact/button";
+import CreateSongDialog from "../../shared/components/CreateSongDialog.tsx";
+import { useState } from "react";
 
 export default function SongsPage() {
-  const review: ReviewType = {
-    id: 5,
-    name: "Wish you were here",
-    date: "9-8-2025",
-    description: "test2",
-    image: CAT_IMAGE,
-    rating: 5,
-    songOrAlbum: SongOrAlbumEnum.SONG,
-    username: "jbockal",
-  };
+  const { songs, loading, error, refetch } = useGetSongs();
+
+  const [visibleDialog, setVisibleDialog] = useState<boolean>(false);
+
+  if (loading) return <p>Loading…</p>;
+  if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div className="flex flex-wrap gap-4 justify-content-center">
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-    </div>
+    <>
+      <div className="flex flex-column justify-content-center align-items-center gap-4">
+        <Button
+          label="Add New Song"
+          className="w-10rem"
+          onClick={() => setVisibleDialog(true)}
+        />
+        <div className="flex flex flex-wrap gap-4 justify-content-center">
+          {songs.map((song) => (
+            <SongCard song={song} />
+          ))}
+        </div>
+      </div>
+      <CreateSongDialog
+        visible={visibleDialog}
+        setVisible={setVisibleDialog}
+        onCreated={refetch}
+      />
+    </>
   );
 }
