@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "song")
 @Getter
@@ -29,6 +32,19 @@ public class Song {
     private byte[] file;
 
     private Long year;
+
+    // Many-to-many with Album (bi-directional)
+    @ManyToMany
+    @JoinTable(
+            name = "song_album",
+            joinColumns = @JoinColumn(name = "song_id"),
+            inverseJoinColumns = @JoinColumn(name = "album_id")
+    )
+    private Set<Album> albums = new HashSet<>();
+
+    // Many-to-many with Author (bi-directional)
+    @ManyToMany(mappedBy = "songs")
+    private Set<Author> authors = new HashSet<>();
 
     public Song(String name, byte[] cover, String link, byte[] file, Long year) {
         this.name = name;

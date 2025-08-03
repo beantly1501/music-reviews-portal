@@ -1,8 +1,17 @@
 package fer.jbockal.mrp_backend.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 @Table(name = "author")
 public class Author {
 
@@ -12,47 +21,26 @@ public class Author {
 
     private String name;
 
-    @Lob
     @Column(name = "image", columnDefinition = "BYTEA")
     private byte[] image;
+
     private String description;
 
-    public Author() {}
-    public Author(String name, byte[] image, String description) {
-        this.name = name;
-        this.image = image;
-        this.description = description;
-    }
+    // Many-to-many with Song
+    @ManyToMany
+    @JoinTable(
+            name = "song_author",
+            joinColumns = @JoinColumn(name = "author_id"),
+            inverseJoinColumns = @JoinColumn(name = "song_id")
+    )
+    private Set<Song> songs = new HashSet<>();
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public byte[] getImage() {
-        return image;
-    }
-
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    // Many-to-many with Album
+    @ManyToMany
+    @JoinTable(
+            name = "album_author",
+            joinColumns = @JoinColumn(name = "author_id"),
+            inverseJoinColumns = @JoinColumn(name = "album_id")
+    )
+    private Set<Album> albums = new HashSet<>();
 }

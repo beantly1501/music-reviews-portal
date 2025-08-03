@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "album")
 @Getter
@@ -25,6 +28,12 @@ public class Album {
 
     private String link;
     private Long year;
+
+    @ManyToMany(mappedBy = "albums")
+    private Set<Song> songs = new HashSet<>();
+
+    @ManyToMany(mappedBy = "albums")
+    private Set<Author> authors = new HashSet<>();
 
     public Album(String name, byte[] cover, String link, Long year) {
         this.name = name;
