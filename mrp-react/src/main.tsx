@@ -8,12 +8,15 @@ import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
 import { BrowserRouter } from "react-router";
+import { AuthProvider } from "./shared/components/Auth.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <PrimeReactProvider>
       <BrowserRouter>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </BrowserRouter>
     </PrimeReactProvider>
   </StrictMode>,

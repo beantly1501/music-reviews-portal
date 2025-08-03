@@ -35,3 +35,22 @@ export const songCreateSchema = z.object({
     }),
 });
 export type SongCreateForm = z.infer<typeof songCreateSchema>;
+
+export type UserInfo = {
+  username: string;
+  email: string;
+};
+
+// --- auth-related schemas & types ---
+export const loginSchema = z.object({
+  username: z.string().nonempty({ message: "Username is required" }),
+  password: z.string().nonempty({ message: "Password is required" }),
+});
+export type LoginForm = z.infer<typeof loginSchema>;
+
+export const registerSchema = z.object({
+  username: z.string().nonempty({ message: "Username is required" }),
+  password: z.string().nonempty({ message: "Password is required" }),
+  email: z.email({ message: "Valid email is required" }),
+});
+export type RegisterForm = z.infer<typeof registerSchema>;

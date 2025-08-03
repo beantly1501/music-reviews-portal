@@ -10,4 +10,15 @@ export default defineConfig({
       "@shared/components": "/src/shared/components",
     },
   },
+  server: {
+    proxy: {
+      // proxy /api/* to backend
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path,
+      },
+    },
+  },
 });
