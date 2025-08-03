@@ -1,34 +1,36 @@
-import { MOCK_REVIEWS } from "../../shared/utils/constants.tsx";
-import { SongOrAlbumEnum } from "../../shared/utils/enums.tsx";
+import { MOCK_REVIEWS, useCurrentUser, useLogout } from "@shared/utils";
+import { SongOrAlbumEnum } from "@shared/utils";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
 import { useNavigate } from "react-router";
-import { useEffect } from "react";
+import { Button } from "primereact/button";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchHealth = async () => {
-      try {
-        const response = await fetch("http://localhost:8080/api/health");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log(data, "response data");
-      } catch (err) {
-        console.error("Error fetching health check:", err);
-      }
-    };
+  const { user, loading, error, refresh } = useCurrentUser();
+  const logout = useLogout();
 
-    fetchHealth();
-  }, []);
+  if (loading) return <div>Loading...</div>;
+
+  if (!user || error)
+    return (
+      <div>
+        <div>Error: {error}</div>
+        <button onClick={refresh}>Retry</button>
+      </div>
+    );
 
   return (
     <div>
+      <div>
+        <p>Username: {user.username}</p>
+        <p>Email: {user.email}</p>
+        <Button onClick={logout} label="Log out" />
+      </div>
+
       <h1>My reviews:</h1>
 
       <div>

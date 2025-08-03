@@ -1,4 +1,4 @@
-import { BACKEND_URL, SongType } from "@shared/utils";
+import { SongType } from "@shared/utils";
 import { useEffect, useState } from "react";
 
 export function useGetSongs() {
@@ -10,7 +10,7 @@ export function useGetSongs() {
   async function fetchSongs() {
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/song/all`);
+      const res = await fetch(`api/song/all`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: SongType[] = await res.json();
       setSongs(data);

@@ -10,3 +10,7 @@
 .full-size-body {
   height: auto !important;
 }
+
+.error-text {
+  color: #dc2626;
+}
