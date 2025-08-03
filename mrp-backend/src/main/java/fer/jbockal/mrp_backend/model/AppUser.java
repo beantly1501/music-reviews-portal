@@ -16,13 +16,22 @@ public class AppUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private String username;
+
+    @Column(nullable = false)
     private String password;
+
     private String email;
 
-    public AppUser(String username, String password, String email) {
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER;
+
+    public AppUser(String username, String password, String email, Role role) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.role = role;
     }
 }
