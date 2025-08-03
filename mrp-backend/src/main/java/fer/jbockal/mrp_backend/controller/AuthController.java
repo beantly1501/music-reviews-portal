@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,11 +22,12 @@ public class AuthController {
     private final PasswordEncoder pwEncoder;
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterDto dto) {
         if (users.existsByUsername(dto.username())) {
-            return ResponseEntity.badRequest().body("username already taken");
+            return ResponseEntity.badRequest().body("Username is already taken");
         }
         AppUser u = new AppUser(
                 dto.username(),
@@ -64,4 +66,23 @@ public class AuthController {
         String token = jwtUtil.generateToken(ud);
         return ResponseEntity.ok(new AuthResponse(token));
     }
+
+    @GetMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("Missing Bearer token");
+        }
+        String token = authHeader.substring(7);
+        String username = jwtUtil.extractUsername(token);
+        if (username == null) {
+            return ResponseEntity.status(401).body("Invalid token");
+        }
+        var userDetails = userDetailsService.loadUserByUsername(username);
+        if (jwtUtil.validateToken(token, userDetails)) {
+            return ResponseEntity.ok("valid");
+        } else {
+            return ResponseEntity.status(401).body("invalid or expired");
+        }
+    }
+
 }
