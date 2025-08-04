@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -35,6 +36,12 @@ public class AuthorController {
     @GetMapping("/{id}")
     public ResponseEntity<Author> getById(@PathVariable Long id) {
         return ResponseEntity.ok(authorService.findById(id));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Author>> searchByName(@RequestParam("q") String query) {
+        List<Author> results = authorService.searchByNameFragment(query);
+        return ResponseEntity.ok(results);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

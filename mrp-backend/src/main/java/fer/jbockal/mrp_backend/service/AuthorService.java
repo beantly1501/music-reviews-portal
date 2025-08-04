@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -27,6 +28,11 @@ public class AuthorService {
 
     public Set<Author> findAll() {
         return Set.copyOf(authorRepository.findAll());
+    }
+
+    public List<Author> searchByNameFragment(String fragment) {
+        if (fragment == null || fragment.isBlank()) return List.of();
+        return authorRepository.findByNameContainingIgnoreCase(fragment);
     }
 
     public Author createAuthor(AuthorRequestDto dto) {

@@ -9,4 +9,4 @@ public record SongRatingResponseDto(
         Integer grade,
         String description,
         LocalDate creationDate
-) {}
+) implements ReviewResponseDto {}
