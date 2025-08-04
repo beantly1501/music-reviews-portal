@@ -21,11 +21,6 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final SongRepository songRepository;
     private final AuthorRepository authorRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    public Album findById(long id) {
-        return albumRepository.findById(id).orElseThrow(EntityNotFoundException::new);
-    }
 
     public List<Album> searchByNameFragment(String fragment) {
         if (fragment == null || fragment.isBlank()) {

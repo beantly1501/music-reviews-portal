@@ -11,9 +11,6 @@ import fer.jbockal.mrp_backend.repository.GenreRepository;
 import fer.jbockal.mrp_backend.repository.SongRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
