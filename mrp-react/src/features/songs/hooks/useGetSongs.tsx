@@ -1,32 +1,47 @@
 import { SongType } from "@shared/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+
+function extractErrorMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
+}
 
 export function useGetSongs() {
   const [songs, setSongs] = useState<SongType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // 1) a plain async fetch function you’ll call on mount or on demand
-  async function fetchSongs() {
+  // fetch function
+  const fetchSongs = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`api/song/all`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const token = localStorage.getItem("jwt");
+      const res = await fetch("/api/song/all", {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `HTTP ${res.status}`);
+      }
       const data: SongType[] = await res.json();
       setSongs(data);
       setError(null);
-    } catch (err) {
-      setError(err as Error);
+    } catch (e: unknown) {
+      setError(extractErrorMessage(e));
     } finally {
       setLoading(false);
     }
-  }
-
-  // 2) run it once on mount
-  useEffect(() => {
-    fetchSongs();
   }, []);
 
-  // 3) expose it so your dialog can call it after a successful create
+  useEffect(() => {
+    void fetchSongs();
+  }, [fetchSongs]);
+
   return { songs, loading, error, refetch: fetchSongs };
 }

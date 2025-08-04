@@ -1,4 +1,4 @@
-import { Dispatch } from "react";
+import { Dispatch, useCallback } from "react";
 import { Dialog } from "primereact/dialog";
 import {
   Controller,
@@ -7,7 +7,7 @@ import {
   useForm,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { fileToBase64, SongCreateForm, songCreateSchema } from "@shared/utils";
+import { SongCreateForm, songCreateSchema } from "@shared/utils";
 import { InputText } from "primereact/inputtext";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
@@ -16,6 +16,16 @@ interface Props {
   visible: boolean;
   setVisible: Dispatch<boolean>;
   onCreated: () => void;
+}
+
+function parseIdList(input: string | undefined): number[] {
+  if (!input) return [];
+  return input
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s !== "")
+    .map(Number)
+    .filter((n) => !isNaN(n) && n > 0);
 }
 
 export default function CreateSongDialog({
@@ -39,32 +49,56 @@ export default function CreateSongDialog({
     formState: { errors },
   } = methods;
 
-  const onSubmit: SubmitHandler<SongCreateForm> = async (data) => {
-    // 1) convert files
-    const coverBase64 = data.cover ? await fileToBase64(data.cover) : undefined;
-    const fileBase64 = data.file ? await fileToBase64(data.file) : undefined;
+  const onSubmit: SubmitHandler<SongCreateForm> = useCallback(
+    async (data) => {
+      const formData = new FormData();
+      formData.append("name", data.name);
+      if (data.link) formData.append("link", data.link);
+      if (data.year !== undefined && data.year !== null)
+        formData.append("year", String(data.year));
+      if (data.cover) formData.append("cover", data.cover);
+      if (data.file) formData.append("file", data.file);
 
-    // 2) assemble DTO
-    const payload = {
-      name: data.name,
-      link: data.link,
-      year: data.year,
-      cover: coverBase64,
-      file: fileBase64,
-    };
+      console.log(formData);
 
-    // 3) POST to backend
-    const res = await fetch("http://localhost:8080/api/song/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error(`Create failed: ${res.statusText}`);
+      // grab the raw string values from some extra inputs below
+      const albumIdsInput = (
+        document.getElementById("albumIds") as HTMLInputElement
+      )?.value;
+      const authorIdsInput = (
+        document.getElementById("authorIds") as HTMLInputElement
+      )?.value;
 
-    // 4) tell parent to reload & close dialog
-    onCreated();
-    setVisible(false);
-  };
+      const albumIds = parseIdList(albumIdsInput);
+      const authorIds = parseIdList(authorIdsInput);
+
+      if (albumIds.length > 0) {
+        formData.append("albumIds", JSON.stringify(albumIds));
+      }
+      if (authorIds.length > 0) {
+        formData.append("authorIds", JSON.stringify(authorIds));
+      }
+
+      const token = localStorage.getItem("jwt");
+
+      const headers: Record<string, string> = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const res = await fetch("http://localhost:8080/api/song/create", {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Create failed: ${res.status} ${text}`);
+      }
+
+      onCreated();
+      setVisible(false);
+    },
+    [onCreated, setVisible],
+  );
 
   return (
     <Dialog
@@ -106,7 +140,6 @@ export default function CreateSongDialog({
                   accept="audio/*"
                   maxFileSize={10000000}
                   onSelect={(event: FileUploadSelectEvent) => {
-                    // pull the first File out and feed RHF
                     if (event.files && event.files.length) {
                       field.onChange(event.files[0]);
                     }
@@ -116,6 +149,32 @@ export default function CreateSongDialog({
             />
             {errors.file && (
               <small className="p-error">{errors.file.message}</small>
+            )}
+          </div>
+
+          {/* COVER */}
+          <div className="field">
+            <label htmlFor="cover">Cover Image</label>
+            <Controller
+              name="cover"
+              control={control}
+              render={({ field }) => (
+                <FileUpload
+                  name={field.name}
+                  mode="basic"
+                  customUpload
+                  accept="image/*"
+                  maxFileSize={5_000_000}
+                  onSelect={(event: FileUploadSelectEvent) => {
+                    if (event.files && event.files.length) {
+                      field.onChange(event.files[0]);
+                    }
+                  }}
+                />
+              )}
+            />
+            {errors.cover && (
+              <small className="p-error">{errors.cover.message}</small>
             )}
           </div>
 
@@ -143,9 +202,7 @@ export default function CreateSongDialog({
                   id="year"
                   required
                   type="number"
-                  // convert numeric field.value into a string for InputText
                   value={field.value !== undefined ? String(field.value) : ""}
-                  // parse back to number for RHF
                   onChange={(e) => field.onChange(Number(e.target.value))}
                   onBlur={field.onBlur}
                   name={field.name}
@@ -156,6 +213,22 @@ export default function CreateSongDialog({
             {errors.year && (
               <small className="p-error">{errors.year.message}</small>
             )}
+          </div>
+
+          {/* ALBUM IDS */}
+          <div className="field">
+            <label htmlFor="albumIds">
+              Album IDs (comma-separated, optional)
+            </label>
+            <InputText id="albumIds" placeholder="e.g. 1,2,5" />
+          </div>
+
+          {/* AUTHOR IDS */}
+          <div className="field">
+            <label htmlFor="authorIds">
+              Author IDs (comma-separated, optional)
+            </label>
+            <InputText id="authorIds" placeholder="e.g. 3,4" />
           </div>
 
           <Button type="submit" label="Submit" className="mt-3" />

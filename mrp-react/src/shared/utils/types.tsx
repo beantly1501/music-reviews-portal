@@ -22,7 +22,7 @@ export type SongType = {
 };
 
 export const songCreateSchema = z.object({
-  name: z.string().nonempty({ message: "Song name is required" }), // ← makes it required
+  name: z.string().nonempty({ message: "Song name is required" }),
   cover: z.instanceof(File).optional(),
   link: z.string().optional(),
   file: z.instanceof(File).optional(),
@@ -54,3 +54,14 @@ export const registerSchema = z.object({
   email: z.email({ message: "Valid email is required" }),
 });
 export type RegisterForm = z.infer<typeof registerSchema>;
+
+export type ReviewResponse = {
+  type: "SONG" | "ALBUM";
+  id: number;
+  songId?: number;
+  albumId?: number;
+  username: string;
+  grade: number;
+  description: string;
+  creationDate: string;
+};

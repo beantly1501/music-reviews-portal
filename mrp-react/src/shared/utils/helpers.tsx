@@ -141,3 +141,13 @@ export function useCurrentUser() {
     refresh: fetchUser,
   };
 }
+
+export function extractErrorMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  try {
+    // try stringify in case it's some object
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
+}
