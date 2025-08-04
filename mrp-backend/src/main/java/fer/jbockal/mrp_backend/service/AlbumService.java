@@ -1,5 +1,6 @@
 package fer.jbockal.mrp_backend.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fer.jbockal.mrp_backend.dto.AlbumRequestDto;
 import fer.jbockal.mrp_backend.model.Album;
 import fer.jbockal.mrp_backend.model.Author;
@@ -11,7 +12,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -20,9 +21,17 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final SongRepository songRepository;
     private final AuthorRepository authorRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public Album findById(long id) {
         return albumRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+    }
+
+    public List<Album> searchByNameFragment(String fragment) {
+        if (fragment == null || fragment.isBlank()) {
+            return List.of();
+        }
+        return albumRepository.findByNameContainingIgnoreCase(fragment);
     }
 
     public Album createAlbum(AlbumRequestDto dto) {
@@ -30,6 +39,7 @@ public class AlbumService {
         a.setName(dto.getName());
         a.setYear(dto.getYear());
         a.setCover(dto.getCover());
+        a.setLink(dto.getLink());
 
         if (dto.getSongIds() != null && !dto.getSongIds().isEmpty()) {
             for (Long sid : dto.getSongIds()) {
@@ -37,6 +47,15 @@ public class AlbumService {
                         .orElseThrow(() -> new IllegalArgumentException("Song not found: " + sid));
                 a.getSongs().add(s);
                 s.getAlbums().add(a);
+            }
+        }
+
+        if (dto.getAuthorIds() != null && !dto.getAuthorIds().isEmpty()) {
+            for (Long aid : dto.getAuthorIds()) {
+                Author author = authorRepository.findById(aid)
+                        .orElseThrow(() -> new IllegalArgumentException("Author not found: " + aid));
+                a.getAuthors().add(author);
+                author.getAlbums().add(a);
             }
         }
 
@@ -53,17 +72,16 @@ public class AlbumService {
         if (albumRequest.getName() != null) existing.setName(albumRequest.getName());
         if (albumRequest.getYear() != null) existing.setYear(albumRequest.getYear());
         if (albumRequest.getCover() != null) existing.setCover(albumRequest.getCover());
+        if (albumRequest.getLink() != null) existing.setLink(albumRequest.getLink());
 
         // songs: if provided (non-null), replace
         if (albumRequest.getSongs() != null) {
-            // detach existing
             for (Song s : existing.getSongs()) {
                 s.getAlbums().remove(existing);
             }
             existing.getSongs().clear();
-            // attach from request (expecting they have IDs)
             for (Song reqSong : albumRequest.getSongs()) {
-                if (reqSong.getId() == null) continue; // skip malformed
+                if (reqSong.getId() == null) continue;
                 Song s = songRepository.findById(reqSong.getId())
                         .orElseThrow(() -> new IllegalArgumentException("Song not found: " + reqSong.getId()));
                 existing.getSongs().add(s);
@@ -71,6 +89,7 @@ public class AlbumService {
             }
         }
 
+        // authors: if provided, replace
         if (albumRequest.getAuthors() != null) {
             for (Author a : existing.getAuthors()) {
                 a.getAlbums().remove(existing);
@@ -89,6 +108,22 @@ public class AlbumService {
     }
 
     public void deleteAlbum(Long id) {
-        albumRepository.deleteById(id);
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Album not found: " + id));
+
+        // detach from songs
+        for (Song s : album.getSongs()) {
+            s.getAlbums().remove(album);
+        }
+        album.getSongs().clear();
+
+        // detach from authors
+        for (Author a : album.getAuthors()) {
+            a.getAlbums().remove(album);
+        }
+        album.getAuthors().clear();
+
+        albumRepository.delete(album);
     }
+
 }

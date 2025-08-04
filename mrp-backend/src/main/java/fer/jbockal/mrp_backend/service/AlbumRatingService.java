@@ -1,13 +1,13 @@
 package fer.jbockal.mrp_backend.service;
 
-import fer.jbockal.mrp_backend.dto.SongRatingRequestDto;
-import fer.jbockal.mrp_backend.dto.SongRatingResponseDto;
+import fer.jbockal.mrp_backend.dto.AlbumRatingRequestDto;
+import fer.jbockal.mrp_backend.dto.AlbumRatingResponseDto;
+import fer.jbockal.mrp_backend.model.Album;
+import fer.jbockal.mrp_backend.model.AlbumRating;
 import fer.jbockal.mrp_backend.model.AppUser;
-import fer.jbockal.mrp_backend.model.Song;
-import fer.jbockal.mrp_backend.model.SongRating;
+import fer.jbockal.mrp_backend.repository.AlbumRatingRepository;
+import fer.jbockal.mrp_backend.repository.AlbumRepository;
 import fer.jbockal.mrp_backend.repository.AppUserRepository;
-import fer.jbockal.mrp_backend.repository.SongRatingRepository;
-import fer.jbockal.mrp_backend.repository.SongRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
@@ -18,10 +18,10 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class SongRatingService {
+public class AlbumRatingService {
 
-    private final SongRatingRepository songRatingRepository;
-    private final SongRepository songRepository;
+    private final AlbumRatingRepository albumRatingRepository;
+    private final AlbumRepository albumRepository;
     private final AppUserRepository appUserRepository;
 
     private AppUser resolveAppUserFromPrincipal(Object principalObj) {
@@ -42,74 +42,71 @@ public class SongRatingService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
     }
 
-    public SongRatingResponseDto getById(Long id, Object principal) {
-        SongRating rating = songRatingRepository.findById(id)
+    public AlbumRatingResponseDto getById(Long id, Object principal) {
+        AlbumRating rating = albumRatingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Rating not found: " + id));
         return toDto(rating);
     }
 
-    public List<SongRatingResponseDto> listBySong(Long songId) {
-        Song song = songRepository.findById(songId)
-                .orElseThrow(() -> new IllegalArgumentException("Song not found: " + songId));
-        return songRatingRepository.findBySong(song).stream()
+    public List<AlbumRatingResponseDto> listByAlbum(Long albumId) {
+        Album album = albumRepository.findById(albumId)
+                .orElseThrow(() -> new IllegalArgumentException("Album not found: " + albumId));
+        return albumRatingRepository.findByAlbum(album).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    public List<SongRatingResponseDto> listByCurrentUser(Object principal) {
+    public List<AlbumRatingResponseDto> listByCurrentUser(Object principal) {
         AppUser user = resolveAppUserFromPrincipal(principal);
-        return songRatingRepository.findByUser(user).stream()
+        return albumRatingRepository.findByUser(user).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    public SongRatingResponseDto createRating(SongRatingRequestDto dto, Object principal) {
+    public AlbumRatingResponseDto createRating(AlbumRatingRequestDto dto, Object principal) {
         AppUser user = resolveAppUserFromPrincipal(principal);
-        Song song = songRepository.findById(dto.getSongId())
-                .orElseThrow(() -> new IllegalArgumentException("Song not found: " + dto.getSongId()));
+        Album album = albumRepository.findById(dto.getAlbumId())
+                .orElseThrow(() -> new IllegalArgumentException("Album not found: " + dto.getAlbumId()));
 
-        SongRating rating = new SongRating();
-        rating.setSong(song);
+        AlbumRating rating = new AlbumRating();
+        rating.setAlbum(album);
         rating.setUser(user);
         rating.setGrade(dto.getGrade());
         rating.setDescription(dto.getDescription());
         rating.setCreationDate(LocalDate.now());
 
-        SongRating saved = songRatingRepository.save(rating);
+        AlbumRating saved = albumRatingRepository.save(rating);
         return toDto(saved);
     }
 
-    public SongRatingResponseDto updateRating(Long id, SongRatingRequestDto dto, Object principal) {
+    public AlbumRatingResponseDto updateRating(Long id, AlbumRatingRequestDto dto, Object principal) {
         AppUser user = resolveAppUserFromPrincipal(principal);
-
-        // User can only update their own rating
-        SongRating existing = songRatingRepository.findByIdAndUser(id, user)
+        AlbumRating existing = albumRatingRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new IllegalArgumentException("Rating not found or not owned by user"));
 
         if (dto.getGrade() != null) existing.setGrade(dto.getGrade());
         if (dto.getDescription() != null) existing.setDescription(dto.getDescription());
-        // creationDate and user/song are immutable here
+        // album and user immutable here
 
-        SongRating saved = songRatingRepository.save(existing);
+        AlbumRating saved = albumRatingRepository.save(existing);
         return toDto(saved);
     }
 
     public void deleteRating(Long id, Object principal, boolean isAdmin) {
         AppUser user = resolveAppUserFromPrincipal(principal);
         if (isAdmin) {
-            songRatingRepository.deleteById(id);
+            albumRatingRepository.deleteById(id);
             return;
         }
-        // normal user: only delete own
-        SongRating existing = songRatingRepository.findByIdAndUser(id, user)
+        AlbumRating existing = albumRatingRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new IllegalArgumentException("Rating not found or not owned by user"));
-        songRatingRepository.delete(existing);
+        albumRatingRepository.delete(existing);
     }
 
-    private SongRatingResponseDto toDto(SongRating r) {
-        return new SongRatingResponseDto(
+    private AlbumRatingResponseDto toDto(AlbumRating r) {
+        return new AlbumRatingResponseDto(
                 r.getId(),
-                r.getSong().getId(),
+                r.getAlbum().getId(),
                 r.getUser().getUsername(),
                 r.getGrade(),
                 r.getDescription(),

@@ -1,8 +1,17 @@
 package fer.jbockal.mrp_backend.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 @Table(name = "genre")
 public class Genre {
 
@@ -12,24 +21,7 @@ public class Genre {
 
     private String name;
 
-    public Genre() {}
-    public Genre(String name) {
-        this.name = name;
-    }
+    @ManyToMany(mappedBy = "genres")
+    private Set<Song> songs = new HashSet<>();
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

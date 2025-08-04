@@ -11,6 +11,8 @@ import java.util.Set;
 @NoArgsConstructor
 public class AuthorRequestDto {
     private String name;
+    private byte[] image;
+    private String description;
     private Set<Long> songIds;  // optional
     private Set<Long> albumIds; // optional
 }

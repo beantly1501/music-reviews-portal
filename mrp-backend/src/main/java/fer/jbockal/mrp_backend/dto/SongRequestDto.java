@@ -19,4 +19,5 @@ public class SongRequestDto {
     // optional associations
     private Set<Long> albumIds;
     private Set<Long> authorIds;
+    private Set<Long> genreIds;
 }

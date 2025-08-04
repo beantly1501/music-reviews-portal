@@ -7,8 +7,11 @@ import fer.jbockal.mrp_backend.model.Song;
 import fer.jbockal.mrp_backend.repository.AlbumRepository;
 import fer.jbockal.mrp_backend.repository.AuthorRepository;
 import fer.jbockal.mrp_backend.repository.SongRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -18,14 +21,21 @@ public class AuthorService {
     final SongRepository songRepository;
     final AlbumRepository albumRepository;
 
-    public Author getById(Long id) {
-        return authorRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Author not found: " + id));
+    public Author findById(long id) {
+        return authorRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+    }
+
+    public Set<Author> findAll() {
+        return Set.copyOf(authorRepository.findAll());
     }
 
     public Author createAuthor(AuthorRequestDto dto) {
         Author author = new Author();
         author.setName(dto.getName());
+        author.setDescription(dto.getDescription());
+        if (dto.getImage() != null) {
+            author.setImage(dto.getImage());
+        }
 
         if (dto.getSongIds() != null && !dto.getSongIds().isEmpty()) {
             for (Long sid : dto.getSongIds()) {
@@ -52,23 +62,18 @@ public class AuthorService {
         if (authorRequest.getId() == null) {
             throw new IllegalArgumentException("Author ID is required for update");
         }
-
         Author existing = authorRepository.findById(authorRequest.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Author not found: " + authorRequest.getId()));
 
-        // update name if provided
-        if (authorRequest.getName() != null) {
-            existing.setName(authorRequest.getName());
-        }
+        if (authorRequest.getName() != null) existing.setName(authorRequest.getName());
+        if (authorRequest.getDescription() != null) existing.setDescription(authorRequest.getDescription());
+        if (authorRequest.getImage() != null) existing.setImage(authorRequest.getImage());
 
-        // replace songs if collection provided
         if (authorRequest.getSongs() != null) {
-            // detach current
             for (Song s : existing.getSongs()) {
                 s.getAuthors().remove(existing);
             }
             existing.getSongs().clear();
-            // attach new
             for (Song reqSong : authorRequest.getSongs()) {
                 if (reqSong.getId() == null) continue;
                 Song s = songRepository.findById(reqSong.getId())
@@ -78,7 +83,6 @@ public class AuthorService {
             }
         }
 
-        // replace albums if collection provided
         if (authorRequest.getAlbums() != null) {
             for (Album a : existing.getAlbums()) {
                 a.getAuthors().remove(existing);
@@ -97,6 +101,22 @@ public class AuthorService {
     }
 
     public void deleteAuthor(Long id) {
-        authorRepository.deleteById(id);
+        Author author = authorRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Author not found: " + id));
+
+        // detach from songs
+        for (Song s : author.getSongs()) {
+            s.getAuthors().remove(author);
+        }
+        author.getSongs().clear();
+
+        // detach from albums
+        for (Album a : author.getAlbums()) {
+            a.getAuthors().remove(author);
+        }
+        author.getAlbums().clear();
+
+        authorRepository.delete(author);
     }
+
 }

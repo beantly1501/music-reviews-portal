@@ -23,17 +23,19 @@ public class Song {
 
     private String name;
 
+    @Lob
     @Column(name = "cover", columnDefinition = "BYTEA")
     private byte[] cover;
 
     private String link;
 
+    @Lob
     @Column(name = "file", columnDefinition = "BYTEA")
     private byte[] file;
 
     private Long year;
 
-    // Many-to-many with Album (bi-directional)
+    // Many-to-many with Album
     @ManyToMany
     @JoinTable(
             name = "song_album",
@@ -42,9 +44,19 @@ public class Song {
     )
     private Set<Album> albums = new HashSet<>();
 
-    // Many-to-many with Author (bi-directional)
+    // Many-to-many with Author
     @ManyToMany(mappedBy = "songs")
     private Set<Author> authors = new HashSet<>();
+
+    // Many-to-many with Genre
+    @ManyToMany
+    @JoinTable(
+            name = "song_genre",
+            joinColumns = @JoinColumn(name = "song_id"),
+            inverseJoinColumns = @JoinColumn(name = "genre_id")
+    )
+    private Set<Genre> genres = new HashSet<>();
+
 
     public Song(String name, byte[] cover, String link, byte[] file, Long year) {
         this.name = name;

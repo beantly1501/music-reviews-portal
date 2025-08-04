@@ -3,18 +3,20 @@ package fer.jbockal.mrp_backend.service;
 import fer.jbockal.mrp_backend.dto.SongRequestDto;
 import fer.jbockal.mrp_backend.model.Album;
 import fer.jbockal.mrp_backend.model.Author;
+import fer.jbockal.mrp_backend.model.Genre;
 import fer.jbockal.mrp_backend.model.Song;
 import fer.jbockal.mrp_backend.repository.AlbumRepository;
 import fer.jbockal.mrp_backend.repository.AuthorRepository;
+import fer.jbockal.mrp_backend.repository.GenreRepository;
 import fer.jbockal.mrp_backend.repository.SongRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Base64;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -23,13 +25,17 @@ public class SongService {
     private final SongRepository songRepository;
     private final AlbumRepository albumRepository;
     private final AuthorRepository authorRepository;
+    private final GenreRepository genreRepository;
 
     public List<Song> getAllSongs() {
         return songRepository.findAll();
     }
 
-    public Page<Song> getNewestSongs(int limit) {
-        return songRepository.findNewest(limit);
+    public List<Song> searchByNameFragment(String fragment) {
+        if (fragment == null || fragment.isBlank()) {
+            return List.of();
+        }
+        return songRepository.findByNameContainingIgnoreCase(fragment);
     }
 
     public Song findById(long id) {
@@ -45,15 +51,15 @@ public class SongService {
         }
 
         if (songRequest.getCover() != null) {
-            s.setCover(Base64.getEncoder().encodeToString(songRequest.getCover()));
+            s.setCover(songRequest.getCover()); // raw bytes
         }
 
         if (songRequest.getLink() != null) {
             s.setLink(songRequest.getLink());
         }
 
-        if (songRequest.getFile() != null) {
-            s.setFile(Base64.getEncoder().encodeToString(songRequest.getFile()));
+        if (songRequest.getCover() != null) {
+            s.setFile(songRequest.getFile()); // raw bytes
         }
 
         // link albums if provided
@@ -76,6 +82,15 @@ public class SongService {
             }
         }
 
+        if (songRequest.getGenreIds() != null) {
+            for (Long gid : songRequest.getGenreIds()) {
+                Genre genre = genreRepository.findById(gid)
+                        .orElseThrow(() -> new IllegalArgumentException("Genre not found: " + gid));
+                s.getGenres().add(genre);
+                genre.getSongs().add(s);
+            }
+        }
+
         return songRepository.save(s);
     }
 
@@ -87,6 +102,28 @@ public class SongService {
     }
 
     public void deleteSong(Long id) {
-        songRepository.deleteById(id);
+        Song song = songRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Song not found: " + id));
+
+        // detach from albums
+        for (Album a : song.getAlbums()) {
+            a.getSongs().remove(song);
+        }
+        song.getAlbums().clear();
+
+        // detach from authors
+        for (Author auth : song.getAuthors()) {
+            auth.getSongs().remove(song);
+        }
+        song.getAuthors().clear();
+
+        // detach from genres
+        for (Genre g : song.getGenres()) {
+            g.getSongs().remove(song);
+        }
+        song.getGenres().clear();
+
+        songRepository.delete(song);
     }
+
 }
