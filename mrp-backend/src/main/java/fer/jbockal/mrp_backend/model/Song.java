@@ -23,13 +23,11 @@ public class Song {
 
     private String name;
 
-    @Lob
     @Column(name = "cover", columnDefinition = "BYTEA")
     private byte[] cover;
 
     private String link;
 
-    @Lob
     @Column(name = "file", columnDefinition = "BYTEA")
     private byte[] file;
 

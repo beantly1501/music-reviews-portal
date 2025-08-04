@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fer.jbockal.mrp_backend.dto.SongRequestDto;
 import fer.jbockal.mrp_backend.model.Song;
 import fer.jbockal.mrp_backend.service.SongService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
@@ -61,18 +62,23 @@ public class SongController {
                 .body(resource);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(value = "/create")
     public ResponseEntity<Song> createSong(
-            @RequestPart("name") String name,
-            @RequestPart(value = "year", required = false) Integer year,
-            @RequestPart(value = "link", required = false) String link,
+            HttpServletRequest request,
+            @RequestParam("name") String name,
+            @RequestParam(value = "year", required = false) Integer year,
+            @RequestParam(value = "link", required = false) String link,
             @RequestPart(value = "cover", required = false) MultipartFile cover,
             @RequestPart(value = "file", required = false) MultipartFile file,
-            @RequestPart(value = "albumIds", required = false) String albumIdsJson,
-            @RequestPart(value = "authorIds", required = false) String authorIdsJson,
-            @RequestPart(value = "genreIds", required = false) String genreIdsJson
+            @RequestParam(value = "albumIds", required = false) String albumIdsJson,
+            @RequestParam(value = "authorIds", required = false) String authorIdsJson,
+            @RequestParam(value = "genreIds", required = false) String genreIdsJson
     ) throws IOException {
+
+        System.out.println("Content-Type seen in controller: " + request.getHeader("Content-Type"));
+        log.info("i am here");
+
         SongRequestDto dto = new SongRequestDto();
         dto.setName(name);
         dto.setYear(year != null ? year.longValue() : null);

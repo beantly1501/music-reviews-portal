@@ -21,6 +21,9 @@ public class ReviewController {
     public ResponseEntity<List<ReviewResponseDto>> newest(@RequestParam(name = "count", defaultValue = "20") int count) {
         if (count <= 0) return ResponseEntity.badRequest().build();
         List<ReviewResponseDto> reviews = reviewService.getNewestReviews(count);
+
+        log.info("hii");
+
         return ResponseEntity.ok(reviews);
     }
 }

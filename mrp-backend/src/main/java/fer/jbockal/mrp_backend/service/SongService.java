@@ -55,7 +55,7 @@ public class SongService {
             s.setLink(songRequest.getLink());
         }
 
-        if (songRequest.getCover() != null) {
+        if (songRequest.getFile() != null) {
             s.setFile(songRequest.getFile()); // raw bytes
         }
 
