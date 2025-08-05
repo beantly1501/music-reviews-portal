@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AlbumRatingRequestDto {
-    private Long albumId;
+public class SongReviewRequestDto {
+    private Long songId;
     private Integer grade;
     private String description;
 }

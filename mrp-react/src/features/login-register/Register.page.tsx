@@ -10,7 +10,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { jwtDecode } from "jwt-decode";
-import { RegisterForm, registerSchema } from "@shared/utils";
+import {
+  extractErrorMessage,
+  RegisterForm,
+  registerSchema,
+} from "@shared/utils";
 import { Link, useNavigate } from "react-router";
 
 type JwtPayload = { exp?: number; sub?: string };
@@ -67,13 +71,7 @@ export function RegisterPage() {
       localStorage.setItem("jwt", token);
       navigate("/", { replace: true });
     } catch (e: unknown) {
-      const msg =
-        e instanceof Error
-          ? e.message
-          : typeof e === "string"
-            ? e
-            : "Login failed";
-      setError(msg || "Registration failed");
+      setError(extractErrorMessage(e));
     }
   };
 

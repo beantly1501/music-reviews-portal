@@ -1,7 +1,7 @@
-import { useGetNewestReviews } from "./hooks/useGetNewestReviews.ts";
+import { useGetNewestRatings } from "./hooks/useGetNewestReviews.ts";
 
 export default function SongsPage() {
-  const { reviews, loading, error } = useGetNewestReviews(20);
+  const { reviews, loading, error } = useGetNewestRatings(20);
 
   if (loading) return <div>Loading newest reviews...</div>;
   if (error) return <div className="text-red-500">Error: {error}</div>;
@@ -18,10 +18,4 @@ export default function SongsPage() {
       ))}
     </ul>
   );
-
-  // return (
-  //   <div className="flex flex-wrap gap-4 justify-content-center">
-  //     {reviews?.map((review: ReviewCardType) => <ReviewCard review={review} />)}
-  //   </div>
-  // );
 }

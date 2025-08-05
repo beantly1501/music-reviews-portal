@@ -5,6 +5,7 @@ import fer.jbockal.mrp_backend.service.ReviewService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,8 +23,22 @@ public class ReviewController {
         if (count <= 0) return ResponseEntity.badRequest().build();
         List<ReviewResponseDto> reviews = reviewService.getNewestReviews(count);
 
-        log.info("hii");
+        return ResponseEntity.ok(reviews);
+    }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<ReviewResponseDto>> all() {
+        List<ReviewResponseDto> reviews = reviewService.getAllReviews();
+        return ResponseEntity.ok(reviews);
+    }
+
+    @GetMapping("/mine")
+    public ResponseEntity<List<ReviewResponseDto>> mine(
+            @AuthenticationPrincipal Object principal,
+            @RequestParam(name = "count", required = false) Integer count
+    ) {
+        // default to all if count not provided
+        List<ReviewResponseDto> reviews = reviewService.getReviewsByCurrentUser(principal, count);
         return ResponseEntity.ok(reviews);
     }
 }

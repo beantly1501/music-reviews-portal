@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { extractErrorMessage, ReviewResponse } from "@shared/utils";
 
-export function useGetNewestReviews(count = 20) {
+export function useGetNewestRatings(count = 20) {
   const [reviews, setReviews] = useState<ReviewResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

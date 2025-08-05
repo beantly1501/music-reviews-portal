@@ -62,7 +62,7 @@ public class SongController {
                 .body(resource);
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/create")
     public ResponseEntity<Song> createSong(
             HttpServletRequest request,
@@ -75,9 +75,6 @@ public class SongController {
             @RequestParam(value = "authorIds", required = false) String authorIdsJson,
             @RequestParam(value = "genreIds", required = false) String genreIdsJson
     ) throws IOException {
-
-        System.out.println("Content-Type seen in controller: " + request.getHeader("Content-Type"));
-        log.info("i am here");
 
         SongRequestDto dto = new SongRequestDto();
         dto.setName(name);

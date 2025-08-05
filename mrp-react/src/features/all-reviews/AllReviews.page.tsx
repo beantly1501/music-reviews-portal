@@ -1,63 +1,68 @@
-import { MOCK_REVIEWS } from "@shared/utils";
-import { SongOrAlbumEnum } from "@shared/utils";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
-import { useNavigate } from "react-router";
+import { Button } from "primereact/button";
+import { useGetAllReviews } from "./hooks/useGetAllReviews";
 
-export default function ReviewsPage() {
-    const navigate = useNavigate();
+export default function AllReviewsPage() {
+  const { reviews, loading, error, refresh } = useGetAllReviews();
 
+  if (loading) {
+    return <div>Loading all reviews...</div>;
+  }
+
+  if (error) {
     return (
-        <div>
-            <DataTable
-                value={MOCK_REVIEWS}
-                rowHover
-                stripedRows
-                removableSort
-                onRowClick={(e) =>
-                    navigate(`/user-review/${e.data.id}`, {
-                        state: { review: MOCK_REVIEWS[e.data.id - 1] },
-                    })
-                }
-            >
-                <Column field="name" header="Name" sortable></Column>
-
-                <Column
-                    header="Image"
-                    body={(value) => (
-                        <img
-                            src={value.image}
-                            alt={"cat_img"}
-                            className="w-6rem shadow-2 border-round"
-                        />
-                    )}
-                ></Column>
-
-                <Column
-                    field="rating"
-                    header="Rating"
-                    body={(value) => (
-                        <Rating value={value.rating} cancel={false} readOnly />
-                    )}
-                    sortable
-                ></Column>
-                <Column
-                    header="Type"
-                    body={(value) => (
-                        <Tag
-                            value={
-                                value.songOrAlbum === SongOrAlbumEnum.SONG ? "Song" : "Album"
-                            }
-                            severity={
-                                value.songOrAlbum === SongOrAlbumEnum.SONG ? "success" : "info"
-                            }
-                        />
-                    )}
-                ></Column>
-                <Column field="username" header="Username" sortable></Column>
-            </DataTable>
-        </div>
+      <div>
+        <div>Error fetching reviews: {error}</div>
+        <Button onClick={refresh}>Retry</Button>
+      </div>
     );
+  }
+
+  return (
+    <div>
+      <h1>All Reviews</h1>
+      <DataTable
+        value={reviews}
+        rowHover
+        stripedRows
+        removableSort
+        emptyMessage={"There are currently no reviews."}
+      >
+        <Column field="id" header="ID" sortable />
+        <Column
+          field="type"
+          header="Type"
+          body={(row) => (
+            <Tag
+              value={row.type === "SONG" ? "Song" : "Album"}
+              severity={row.type === "SONG" ? "success" : "info"}
+            />
+          )}
+          sortable
+        />
+        <Column
+          header="Item ID"
+          body={(row) => (row.type === "SONG" ? row.songId : row.albumId)}
+          sortable
+        />
+        <Column field="username" header="Username" sortable />
+        <Column
+          field="grade"
+          header="Rating"
+          body={(row) => <Rating value={row.grade} cancel={false} readOnly />}
+          sortable
+        />
+        <Column field="description" header="Description" />
+        <Column
+          field="creationDate"
+          header="Created"
+          body={(row) => new Date(row.creationDate).toLocaleDateString()}
+          sortable
+        />
+      </DataTable>
+    </div>
+  );
 }

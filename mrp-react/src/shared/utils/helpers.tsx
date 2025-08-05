@@ -116,16 +116,10 @@ export function useCurrentUser() {
       const user: UserInfo = await res.json();
       setState({ user, loading: false, error: null });
     } catch (e: unknown) {
-      const msg =
-        e instanceof Error
-          ? e.message
-          : typeof e === "string"
-            ? e
-            : "Failed to fetch user";
       setState({
         user: null,
         loading: false,
-        error: msg || "Failed to fetch user",
+        error: extractErrorMessage(e),
       });
     }
   }, []);
@@ -150,4 +144,9 @@ export function extractErrorMessage(e: unknown): string {
   } catch {
     return String(e);
   }
+}
+
+// Utility: convert a Base64 string into a data URL
+export function toDataUrl(base64: string, mimeType = "image/jpeg"): string {
+  return `data:${mimeType};base64,${base64}`;
 }

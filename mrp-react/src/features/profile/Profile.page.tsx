@@ -1,89 +1,99 @@
-import { MOCK_REVIEWS, useCurrentUser, useLogout } from "@shared/utils";
-import { SongOrAlbumEnum } from "@shared/utils";
+import { useCurrentUser, useLogout } from "@shared/utils";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
 import { useNavigate } from "react-router";
+import { ProfileInfo } from "./ProfileInfo";
 import { Button } from "primereact/button";
+import { useGetMyReviews } from "./hooks/useGetMyReviews.ts";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
 
-  const { user, loading, error, refresh } = useCurrentUser();
+  const {
+    user,
+    loading: userLoading,
+    error: userError,
+    refresh: refreshUser,
+  } = useCurrentUser();
   const logout = useLogout();
 
-  if (loading) return <div>Loading...</div>;
+  const {
+    reviews,
+    loading: reviewsLoading,
+    error: reviewsError,
+    refresh: refreshRatings,
+  } = useGetMyReviews();
 
-  if (!user || error)
+  if (userLoading || reviewsLoading) return <div>Loading...</div>;
+
+  if (!user || userError) {
     return (
       <div>
-        <div>Error: {error}</div>
-        <button onClick={refresh}>Retry</button>
+        <div>Error: {userError}</div>
+        <Button onClick={refreshUser}>Retry</Button>
       </div>
     );
+  }
+
+  if (reviewsError) {
+    return (
+      <div>
+        <div>Error loading reviews: {reviewsError}</div>
+        <Button onClick={refreshRatings}>Retry</Button>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <div>
-        <p>Username: {user.username}</p>
-        <p>Email: {user.email}</p>
-        <Button onClick={logout} label="Log out" />
-      </div>
+      <ProfileInfo user={user} logout={logout} />
 
-      <h1>My reviews:</h1>
+      <h1>My reviews</h1>
 
-      <div>
-        <DataTable
-          value={MOCK_REVIEWS}
-          rowHover
-          stripedRows
-          removableSort
-          onRowClick={(e) =>
-            navigate(`/user-review/${e.data.id}`, {
-              state: { review: MOCK_REVIEWS[e.data.id - 1] },
-            })
-          }
-        >
-          <Column field="name" header="Name" sortable></Column>
-
-          <Column
-            header="Image"
-            body={(value) => (
-              <img
-                src={value.image}
-                alt={"cat_img"}
-                className="w-6rem shadow-2 border-round"
-              />
-            )}
-          ></Column>
-
-          <Column
-            field="rating"
-            header="Rating"
-            body={(value) => (
-              <Rating value={value.rating} cancel={false} readOnly />
-            )}
-            sortable
-          ></Column>
-          <Column
-            header="Type"
-            body={(value) => (
-              <Tag
-                value={
-                  value.songOrAlbum === SongOrAlbumEnum.SONG ? "Song" : "Album"
-                }
-                severity={
-                  value.songOrAlbum === SongOrAlbumEnum.SONG
-                    ? "success"
-                    : "info"
-                }
-              />
-            )}
-          ></Column>
-          <Column field="username" header="Username" sortable></Column>
-        </DataTable>
-      </div>
+      <DataTable
+        value={reviews}
+        rowHover
+        stripedRows
+        emptyMessage={"You currently have no reviews."}
+        removableSort
+        onRowClick={(e) =>
+          navigate(`/user-review/${e.data.id}`, {
+            state: { review: e.data },
+          })
+        }
+      >
+        <Column field="name" header="Name" sortable />
+        <Column
+          header="Image"
+          body={(value) => (
+            <img
+              src={value.image}
+              alt="item"
+              className="w-6rem shadow-2 border-round"
+            />
+          )}
+        />
+        <Column
+          field="grade"
+          header="Rating"
+          body={(value) => (
+            <Rating value={value.grade} cancel={false} readOnly />
+          )}
+          sortable
+        />
+        <Column
+          header="Type"
+          body={(value) => (
+            <Tag
+              value={value.type === "SONG" ? "Song" : "Album"}
+              severity={value.type === "SONG" ? "success" : "info"}
+            />
+          )}
+        />
+        <Column field="username" header="Username" sortable />
+      </DataTable>
     </div>
   );
 }

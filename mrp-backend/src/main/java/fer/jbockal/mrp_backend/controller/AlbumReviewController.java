@@ -1,8 +1,8 @@
 package fer.jbockal.mrp_backend.controller;
 
-import fer.jbockal.mrp_backend.dto.AlbumRatingRequestDto;
-import fer.jbockal.mrp_backend.dto.AlbumRatingResponseDto;
-import fer.jbockal.mrp_backend.service.AlbumRatingService;
+import fer.jbockal.mrp_backend.dto.AlbumReviewRequestDto;
+import fer.jbockal.mrp_backend.dto.AlbumReviewResponseDto;
+import fer.jbockal.mrp_backend.service.AlbumReviewService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -14,29 +14,29 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/album-rating")
+@RequestMapping("/album-review")
 @AllArgsConstructor
 @Slf4j
-public class AlbumRatingController {
+public class AlbumReviewController {
 
-    private final AlbumRatingService albumRatingService;
+    private final AlbumReviewService albumReviewService;
 
     @PostMapping("/create")
-    public ResponseEntity<AlbumRatingResponseDto> create(
-            @RequestBody AlbumRatingRequestDto dto,
+    public ResponseEntity<AlbumReviewResponseDto> create(
+            @RequestBody AlbumReviewRequestDto dto,
             @AuthenticationPrincipal Object principal
     ) {
-        AlbumRatingResponseDto created = albumRatingService.createRating(dto, principal);
+        AlbumReviewResponseDto created = albumReviewService.createReview(dto, principal);
         return ResponseEntity.ok(created);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<AlbumRatingResponseDto> update(
+    public ResponseEntity<AlbumReviewResponseDto> update(
             @PathVariable Long id,
-            @RequestBody AlbumRatingRequestDto dto,
+            @RequestBody AlbumReviewRequestDto dto,
             @AuthenticationPrincipal Object principal
     ) {
-        AlbumRatingResponseDto updated = albumRatingService.updateRating(id, dto, principal);
+        AlbumReviewResponseDto updated = albumReviewService.updateReview(id, dto, principal);
         return ResponseEntity.ok(updated);
     }
 
@@ -48,25 +48,25 @@ public class AlbumRatingController {
         boolean isAdmin = principal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(a -> a.equals("ROLE_ADMIN") || a.equals("ADMIN"));
-        albumRatingService.deleteRating(id, principal, isAdmin);
+        albumReviewService.deleteReview(id, principal, isAdmin);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AlbumRatingResponseDto> getById(
+    public ResponseEntity<AlbumReviewResponseDto> getById(
             @PathVariable Long id,
             @AuthenticationPrincipal Object principal
     ) {
-        return ResponseEntity.ok(albumRatingService.getById(id, principal));
+        return ResponseEntity.ok(albumReviewService.getById(id, principal));
     }
 
     @GetMapping("/by-album/{albumId}")
-    public ResponseEntity<List<AlbumRatingResponseDto>> listByAlbum(@PathVariable Long albumId) {
-        return ResponseEntity.ok(albumRatingService.listByAlbum(albumId));
+    public ResponseEntity<List<AlbumReviewResponseDto>> listByAlbum(@PathVariable Long albumId) {
+        return ResponseEntity.ok(albumReviewService.listByAlbum(albumId));
     }
 
     @GetMapping("/mine")
-    public ResponseEntity<List<AlbumRatingResponseDto>> listMine(@AuthenticationPrincipal Object principal) {
-        return ResponseEntity.ok(albumRatingService.listByCurrentUser(principal));
+    public ResponseEntity<List<AlbumReviewResponseDto>> listMine(@AuthenticationPrincipal Object principal) {
+        return ResponseEntity.ok(albumReviewService.listByCurrentUser(principal));
     }
 }

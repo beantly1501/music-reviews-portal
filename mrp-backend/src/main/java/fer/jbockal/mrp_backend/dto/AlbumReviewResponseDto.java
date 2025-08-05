@@ -2,7 +2,7 @@ package fer.jbockal.mrp_backend.dto;
 
 import java.time.LocalDate;
 
-public record AlbumRatingResponseDto(
+public record AlbumReviewResponseDto(
         Long id,
         Long albumId,
         String username,

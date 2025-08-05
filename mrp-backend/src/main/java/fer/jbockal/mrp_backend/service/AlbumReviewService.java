@@ -1,11 +1,11 @@
 package fer.jbockal.mrp_backend.service;
 
-import fer.jbockal.mrp_backend.dto.AlbumRatingRequestDto;
-import fer.jbockal.mrp_backend.dto.AlbumRatingResponseDto;
+import fer.jbockal.mrp_backend.dto.AlbumReviewRequestDto;
+import fer.jbockal.mrp_backend.dto.AlbumReviewResponseDto;
 import fer.jbockal.mrp_backend.model.Album;
-import fer.jbockal.mrp_backend.model.AlbumRating;
+import fer.jbockal.mrp_backend.model.AlbumReview;
 import fer.jbockal.mrp_backend.model.AppUser;
-import fer.jbockal.mrp_backend.repository.AlbumRatingRepository;
+import fer.jbockal.mrp_backend.repository.AlbumReviewRepository;
 import fer.jbockal.mrp_backend.repository.AlbumRepository;
 import fer.jbockal.mrp_backend.repository.AppUserRepository;
 import lombok.AllArgsConstructor;
@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class AlbumRatingService {
+public class AlbumReviewService {
 
-    private final AlbumRatingRepository albumRatingRepository;
+    private final AlbumReviewRepository albumReviewRepository;
     private final AlbumRepository albumRepository;
     private final AppUserRepository appUserRepository;
 
@@ -42,69 +42,69 @@ public class AlbumRatingService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
     }
 
-    public AlbumRatingResponseDto getById(Long id, Object principal) {
-        AlbumRating rating = albumRatingRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Rating not found: " + id));
-        return toDto(rating);
+    public AlbumReviewResponseDto getById(Long id, Object principal) {
+        AlbumReview review = albumReviewRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Review not found: " + id));
+        return toDto(review);
     }
 
-    public List<AlbumRatingResponseDto> listByAlbum(Long albumId) {
+    public List<AlbumReviewResponseDto> listByAlbum(Long albumId) {
         Album album = albumRepository.findById(albumId)
                 .orElseThrow(() -> new IllegalArgumentException("Album not found: " + albumId));
-        return albumRatingRepository.findByAlbum(album).stream()
+        return albumReviewRepository.findByAlbum(album).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    public List<AlbumRatingResponseDto> listByCurrentUser(Object principal) {
+    public List<AlbumReviewResponseDto> listByCurrentUser(Object principal) {
         AppUser user = resolveAppUserFromPrincipal(principal);
-        return albumRatingRepository.findByUser(user).stream()
+        return albumReviewRepository.findByUser(user).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    public AlbumRatingResponseDto createRating(AlbumRatingRequestDto dto, Object principal) {
+    public AlbumReviewResponseDto createReview(AlbumReviewRequestDto dto, Object principal) {
         AppUser user = resolveAppUserFromPrincipal(principal);
         Album album = albumRepository.findById(dto.getAlbumId())
                 .orElseThrow(() -> new IllegalArgumentException("Album not found: " + dto.getAlbumId()));
 
-        AlbumRating rating = new AlbumRating();
-        rating.setAlbum(album);
-        rating.setUser(user);
-        rating.setGrade(dto.getGrade());
-        rating.setDescription(dto.getDescription());
-        rating.setCreationDate(LocalDate.now());
+        AlbumReview review = new AlbumReview();
+        review.setAlbum(album);
+        review.setUser(user);
+        review.setGrade(dto.getGrade());
+        review.setDescription(dto.getDescription());
+        review.setCreationDate(LocalDate.now());
 
-        AlbumRating saved = albumRatingRepository.save(rating);
+        AlbumReview saved = albumReviewRepository.save(review);
         return toDto(saved);
     }
 
-    public AlbumRatingResponseDto updateRating(Long id, AlbumRatingRequestDto dto, Object principal) {
+    public AlbumReviewResponseDto updateReview(Long id, AlbumReviewRequestDto dto, Object principal) {
         AppUser user = resolveAppUserFromPrincipal(principal);
-        AlbumRating existing = albumRatingRepository.findByIdAndUser(id, user)
-                .orElseThrow(() -> new IllegalArgumentException("Rating not found or not owned by user"));
+        AlbumReview existing = albumReviewRepository.findByIdAndUser(id, user)
+                .orElseThrow(() -> new IllegalArgumentException("Review not found or not owned by user"));
 
         if (dto.getGrade() != null) existing.setGrade(dto.getGrade());
         if (dto.getDescription() != null) existing.setDescription(dto.getDescription());
         // album and user immutable here
 
-        AlbumRating saved = albumRatingRepository.save(existing);
+        AlbumReview saved = albumReviewRepository.save(existing);
         return toDto(saved);
     }
 
-    public void deleteRating(Long id, Object principal, boolean isAdmin) {
+    public void deleteReview(Long id, Object principal, boolean isAdmin) {
         AppUser user = resolveAppUserFromPrincipal(principal);
         if (isAdmin) {
-            albumRatingRepository.deleteById(id);
+            albumReviewRepository.deleteById(id);
             return;
         }
-        AlbumRating existing = albumRatingRepository.findByIdAndUser(id, user)
-                .orElseThrow(() -> new IllegalArgumentException("Rating not found or not owned by user"));
-        albumRatingRepository.delete(existing);
+        AlbumReview existing = albumReviewRepository.findByIdAndUser(id, user)
+                .orElseThrow(() -> new IllegalArgumentException("Review not found or not owned by user"));
+        albumReviewRepository.delete(existing);
     }
 
-    private AlbumRatingResponseDto toDto(AlbumRating r) {
-        return new AlbumRatingResponseDto(
+    private AlbumReviewResponseDto toDto(AlbumReview r) {
+        return new AlbumReviewResponseDto(
                 r.getId(),
                 r.getAlbum().getId(),
                 r.getUser().getUsername(),

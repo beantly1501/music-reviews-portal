@@ -1,12 +1,14 @@
 package fer.jbockal.mrp_backend.service;
 
-import fer.jbockal.mrp_backend.dto.AlbumRatingResponseDto;
+import fer.jbockal.mrp_backend.dto.AlbumReviewResponseDto;
 import fer.jbockal.mrp_backend.dto.ReviewResponseDto;
-import fer.jbockal.mrp_backend.dto.SongRatingResponseDto;
-import fer.jbockal.mrp_backend.model.AlbumRating;
-import fer.jbockal.mrp_backend.model.SongRating;
-import fer.jbockal.mrp_backend.repository.AlbumRatingRepository;
-import fer.jbockal.mrp_backend.repository.SongRatingRepository;
+import fer.jbockal.mrp_backend.dto.SongReviewResponseDto;
+import fer.jbockal.mrp_backend.model.AlbumReview;
+import fer.jbockal.mrp_backend.model.AppUser;
+import fer.jbockal.mrp_backend.model.SongReview;
+import fer.jbockal.mrp_backend.repository.AlbumReviewRepository;
+import fer.jbockal.mrp_backend.repository.AppUserRepository;
+import fer.jbockal.mrp_backend.repository.SongReviewRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -21,24 +23,25 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ReviewService {
 
-    private final SongRatingRepository songRatingRepository;
-    private final AlbumRatingRepository albumRatingRepository;
+    private final SongReviewRepository songReviewRepository;
+    private final AlbumReviewRepository albumReviewRepository;
+    private final AppUserRepository appUserRepository;
 
     public List<ReviewResponseDto> getNewestReviews(int count) {
         if (count <= 0) return List.of();
 
-        List<SongRating> newestSongRatings = songRatingRepository.findAll(
+        List<SongReview> newestSongReviews = songReviewRepository.findAll(
                 PageRequest.of(0, count, Sort.by(Sort.Direction.DESC, "creationDate"))
         ).getContent();
 
-        List<AlbumRating> newestAlbumRatings = albumRatingRepository.findAll(
+        List<AlbumReview> newestAlbumReviews = albumReviewRepository.findAll(
                 PageRequest.of(0, count, Sort.by(Sort.Direction.DESC, "creationDate"))
         ).getContent();
 
         List<ReviewResponseDto> combined = new ArrayList<>();
 
-        combined.addAll(newestSongRatings.stream()
-                .map(r -> new SongRatingResponseDto(
+        combined.addAll(newestSongReviews.stream()
+                .map(r -> new SongReviewResponseDto(
                         r.getId(),
                         r.getSong().getId(),
                         r.getUser().getUsername(),
@@ -48,8 +51,8 @@ public class ReviewService {
                 ))
                 .toList());
 
-        combined.addAll(newestAlbumRatings.stream()
-                .map(r -> new AlbumRatingResponseDto(
+        combined.addAll(newestAlbumReviews.stream()
+                .map(r -> new AlbumReviewResponseDto(
                         r.getId(),
                         r.getAlbum().getId(),
                         r.getUser().getUsername(),
@@ -63,5 +66,77 @@ public class ReviewService {
                 .sorted(Comparator.comparing(ReviewResponseDto::creationDate).reversed())
                 .limit(count)
                 .collect(Collectors.toList());
+    }
+
+    public List<ReviewResponseDto> getAllReviews() {
+        List<SongReview> allSongReviews = songReviewRepository.findAll(Sort.by(Sort.Direction.DESC, "creationDate"));
+        List<AlbumReview> allAlbumReviews = albumReviewRepository.findAll(Sort.by(Sort.Direction.DESC, "creationDate"));
+
+        return mergeAndSort(allSongReviews, allAlbumReviews);
+    }
+
+    public List<ReviewResponseDto> getReviewsByCurrentUser(Object principal, Integer count) {
+        // Here, count==null means no limit
+        AppUser user = resolveAppUserFromPrincipal(principal);
+        List<SongReview> userSongReviews = songReviewRepository.findByUser(user);
+        List<AlbumReview> userAlbumReviews = albumReviewRepository.findByUser(user);
+
+        List<ReviewResponseDto> merged = mergeAndSort(userSongReviews, userAlbumReviews);
+        if (count != null && count > 0) {
+            return merged.stream().limit(count).collect(Collectors.toList());
+        }
+        return merged;
+    }
+
+    private List<ReviewResponseDto> mergeAndSort(
+            List<SongReview> songReviews,
+            List<AlbumReview> albumReviews
+    ) {
+        List<ReviewResponseDto> combined = new ArrayList<>();
+
+        songReviews.forEach(r -> combined.add(
+                new SongReviewResponseDto(
+                        r.getId(),
+                        r.getSong().getId(),
+                        r.getUser().getUsername(),
+                        r.getGrade(),
+                        r.getDescription(),
+                        r.getCreationDate()
+                )
+        ));
+
+        albumReviews.forEach(r -> combined.add(
+                new AlbumReviewResponseDto(
+                        r.getId(),
+                        r.getAlbum().getId(),
+                        r.getUser().getUsername(),
+                        r.getGrade(),
+                        r.getDescription(),
+                        r.getCreationDate()
+                )
+        ));
+
+        return combined.stream()
+                .sorted(Comparator.comparing(ReviewResponseDto::creationDate).reversed())
+                .collect(Collectors.toList());
+    }
+
+    private AppUser resolveAppUserFromPrincipal(Object principalObj) {
+        // duplicate logic from controller or refactor to utility
+        if (principalObj == null) {
+            throw new IllegalArgumentException("Not authenticated");
+        }
+        String username;
+        if (principalObj instanceof org.springframework.security.core.userdetails.User userDetails) {
+            username = userDetails.getUsername();
+        } else if (principalObj instanceof org.springframework.security.core.userdetails.UserDetails ud) {
+            username = ud.getUsername();
+        } else if (principalObj instanceof String) {
+            username = (String) principalObj;
+        } else {
+            throw new IllegalArgumentException("Unsupported principal type: " + principalObj.getClass());
+        }
+        return appUserRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
     }
 }

@@ -11,19 +11,18 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Entity
 @AllArgsConstructor
-@Table(name = "song_rating")
-public class SongRating {
+@Table(name = "album_review")
+public class AlbumReview {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Optionally, load the Song and User objects
-    @ManyToOne(fetch = FetchType.LAZY)        // << lazy by default for ManyToOne, but good to be explicit
-    @JoinColumn(name = "song_id", nullable = false)
-    private Song song;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "album_id", nullable = false)
+    private Album album;
 
-    @ManyToOne(fetch = FetchType.LAZY)        // << lazy by default for ManyToOne, but good to be explicit
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private AppUser user;
 

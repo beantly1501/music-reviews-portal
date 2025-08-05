@@ -9,10 +9,10 @@ import java.time.LocalDate;
         property = "type"
 )
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = SongRatingResponseDto.class, name = "SONG"),
-        @JsonSubTypes.Type(value = AlbumRatingResponseDto.class, name = "ALBUM")
+        @JsonSubTypes.Type(value = SongReviewResponseDto.class, name = "SONG"),
+        @JsonSubTypes.Type(value = AlbumReviewResponseDto.class, name = "ALBUM")
 })
-public sealed interface ReviewResponseDto permits SongRatingResponseDto, AlbumRatingResponseDto {
+public sealed interface ReviewResponseDto permits SongReviewResponseDto, AlbumReviewResponseDto {
     Long id();
     String username();
     Integer grade();

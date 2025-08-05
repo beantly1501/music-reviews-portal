@@ -1,8 +1,8 @@
 import { useGetSongs } from "./hooks/useGetSongs.tsx";
-import { SongCard } from "../../shared/components/SongCard.tsx";
 import { Button } from "primereact/button";
 import CreateSongDialog from "../../shared/components/CreateSongDialog.tsx";
 import { useState } from "react";
+import SongCard from "../../shared/components/SongCard.tsx";
 
 export default function SongsPage() {
   const { songs, loading, error, refetch } = useGetSongs();
