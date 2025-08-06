@@ -5,27 +5,28 @@ import { Dialog } from "primereact/dialog";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Rating } from "primereact/rating";
 import { Button } from "primereact/button";
-import { SongReviewFormData, songReviewSchema } from "@shared/utils";
+import { AlbumReviewFormData, albumReviewSchema } from "@shared/utils";
 
-export interface SongReviewModalProps {
+export interface CreateAlbumReviewProps {
   visible: boolean;
   name: string;
-  songId: number;
+  albumId: number;
   onHide: () => void;
-  onSubmit: (data: SongReviewFormData) => Promise<void>;
+  onSubmit: (data: AlbumReviewFormData) => Promise<void>;
 }
 
-export const CreateSongReview = ({
+export const CreateAlbumReview = ({
   visible,
   name,
-  songId,
+  albumId,
   onHide,
   onSubmit,
-}: SongReviewModalProps) => {
-  const methods = useForm<SongReviewFormData>({
-    resolver: zodResolver(songReviewSchema),
-    defaultValues: { songId, grade: 0, description: "" },
+}: CreateAlbumReviewProps) => {
+  const methods = useForm<AlbumReviewFormData>({
+    resolver: zodResolver(albumReviewSchema),
+    defaultValues: { albumId, grade: 0, description: "" },
   });
+
   const {
     handleSubmit,
     reset,
@@ -33,15 +34,14 @@ export const CreateSongReview = ({
     control,
   } = methods;
 
-  // Reset form when dialog opens/closes
   useEffect(() => {
     if (visible) {
-      reset({ songId, grade: 0, description: "" });
+      reset({ albumId, grade: 0, description: "" });
     }
-  }, [visible, songId, reset]);
+  }, [visible, albumId, reset]);
 
-  const submitHandler = async (data: SongReviewFormData) => {
-    await onSubmit(data);
+  const submitHandler = async (data: AlbumReviewFormData) => {
+    await onSubmit(data as AlbumReviewFormData);
     onHide();
   };
 
@@ -80,17 +80,18 @@ export const CreateSongReview = ({
                 <label htmlFor="grade" style={{ width: "100px" }}>
                   Grade
                 </label>
-                <div>
-                  <Rating
-                    id="grade"
-                    {...field}
-                    value={field.value}
-                    onChange={(e) => field.onChange(e.value)}
-                    cancel={false}
-                    className="w-full justify-content-center"
-                    stars={5}
-                  />
-                </div>
+                <Rating
+                  id="grade"
+                  {...field}
+                  value={field.value}
+                  onChange={(e) => field.onChange(e.value)}
+                  cancel={false}
+                  className="w-full justify-content-center"
+                  stars={5}
+                />
+                {errors.grade && (
+                  <small className="p-error">{errors.grade.message}</small>
+                )}
               </div>
             )}
           />

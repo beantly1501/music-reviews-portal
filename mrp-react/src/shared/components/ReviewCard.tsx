@@ -53,7 +53,7 @@ export const ReviewCard = ({ review }: ReviewCardProps) => {
         />
         <Tag
           value={review.type === "SONG" ? "Song" : "Album"}
-          severity="info"
+          severity={review.type === "SONG" ? "success" : "info"}
           style={{ fontWeight: 600, padding: "0.25rem 0.75rem" }}
         />
       </div>

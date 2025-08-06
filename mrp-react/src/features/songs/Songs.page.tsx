@@ -1,6 +1,6 @@
 import { useGetSongs } from "./hooks/useGetSongs.tsx";
 import { Button } from "primereact/button";
-import CreateSongDialog from "../../shared/components/CreateSongDialog.tsx";
+import CreateSongDialog from "./CreateSongDialog.tsx";
 import { useState } from "react";
 import SongCard from "../../shared/components/SongCard.tsx";
 
@@ -22,7 +22,7 @@ export default function SongsPage() {
         />
         <div className="flex flex flex-wrap gap-4 justify-content-center">
           {songs.map((song) => (
-            <SongCard song={song} />
+            <SongCard song={song} refetch={refetch} />
           ))}
         </div>
       </div>

@@ -8,7 +8,7 @@ export default function SongsPage() {
   if (error) return <div className="text-red-500">Error: {error}</div>;
 
   return (
-    <div className="flex flex-wrap">
+    <div className="flex flex-wrap justify-content-center">
       {reviews.map((review) => (
         <ReviewCard review={review} />
       ))}

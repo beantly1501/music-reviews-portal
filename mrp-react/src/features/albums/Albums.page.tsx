@@ -1,41 +1,43 @@
-import { ReviewCard } from "@shared/components";
-import { ReviewCardType } from "@shared/utils";
-import { CAT_IMAGE } from "@shared/utils";
-import { SongOrAlbumEnum } from "@shared/utils";
+import { useState } from "react";
+import { Button } from "primereact/button";
+import { useGetAlbums } from "./hooks/useGetAlbums";
+import CreateAlbumDialog from "./CreateAlbumDialog";
+import AlbumCard from "../../shared/components/AlbumCard.tsx";
 
 export default function AlbumsPage() {
-  const review: ReviewCardType = {
-    id: 5,
-    name: "The doors",
-    date: "15-01-2025",
-    description: "test",
-    image: CAT_IMAGE,
-    rating: 5,
-    songOrAlbum: SongOrAlbumEnum.ALBUM,
-    username: "jbockal",
-  };
+  const { albums, loading, error, refetch } = useGetAlbums();
+  const [visibleDialog, setVisibleDialog] = useState<boolean>(false);
 
   return (
-    <div className="flex flex-wrap gap-4 justify-content-center">
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-      <ReviewCard review={review} />
-    </div>
+    <>
+      <div className="flex flex-column justify-content-center align-items-center gap-4 p-4">
+        <Button
+          label="Add New Album"
+          className="w-12rem"
+          onClick={() => setVisibleDialog(true)}
+        />
+
+        {loading && <div>Loading albums...</div>}
+        {error && <div style={{ color: "red" }}>{error}</div>}
+
+        {!loading && !error && albums.length > 0 && (
+          <div className="flex flex-wrap gap-4 justify-content-center">
+            {albums.map((album) => (
+              <AlbumCard album={album} refetch={refetch} />
+            ))}
+          </div>
+        )}
+
+        {!loading && !error && albums.length === 0 && (
+          <div>No albums found.</div>
+        )}
+      </div>
+
+      <CreateAlbumDialog
+        visible={visibleDialog}
+        setVisible={setVisibleDialog}
+        onCreated={refetch}
+      />
+    </>
   );
 }

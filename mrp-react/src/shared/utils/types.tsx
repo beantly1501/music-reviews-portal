@@ -1,16 +1,4 @@
-import { SongOrAlbumEnum } from "./enums.tsx";
 import { z } from "zod";
-
-export type ReviewCardType = {
-  id: number;
-  name: string;
-  image: string; // base64 string
-  date: string;
-  description: string;
-  songOrAlbum: SongOrAlbumEnum;
-  rating: number;
-  username: string;
-};
 
 export type SongType = {
   id: number;
@@ -18,6 +6,15 @@ export type SongType = {
   cover?: string;
   link?: string;
   file?: string;
+  year: number;
+  reviewed: boolean;
+};
+
+export type AlbumType = {
+  id: number;
+  name: string;
+  cover?: string;
+  link?: string;
   year: number;
   reviewed: boolean;
 };
@@ -36,6 +33,21 @@ export const songCreateSchema = z.object({
     }),
 });
 export type SongCreateForm = z.infer<typeof songCreateSchema>;
+
+export const albumCreateSchema = z.object({
+  name: z.string().min(1, "Album name is required"),
+  link: z.string().url("Link must be a valid URL").optional(),
+  year: z
+    .number({ error: "Year must be a number" })
+    .int("Year must be an integer")
+    .positive("Year must be positive")
+    .optional(),
+  cover: z
+    .instanceof(File, { message: "Cover must be a valid file" })
+    .optional(),
+});
+
+export type AlbumCreateForm = z.infer<typeof albumCreateSchema>;
 
 export type UserInfo = {
   username: string;
@@ -69,8 +81,24 @@ export type ReviewResponse = {
   creationDate: string;
 };
 
-export type SongReviewFormData = {
-  songId: number;
-  grade: number;
-  description: string;
-};
+export const songReviewSchema = z.object({
+  songId: z.number(),
+  grade: z
+    .number()
+    .min(1, "Grade is required")
+    .max(5, "Grade must be between 1 and 5"),
+  description: z.string().min(1, "Description is required"),
+});
+
+export type SongReviewFormData = z.infer<typeof songReviewSchema>;
+
+export const albumReviewSchema = z.object({
+  albumId: z.number(),
+  grade: z
+    .number()
+    .min(1, "Grade is required")
+    .max(5, "Grade must be between 1 and 5"),
+  description: z.string().min(1, "Description is required"),
+});
+
+export type AlbumReviewFormData = z.infer<typeof albumReviewSchema>;

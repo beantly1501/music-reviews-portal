@@ -48,7 +48,12 @@ export default function AllReviewsPage() {
           sortable
         />
 
-        <Column field="username" header="Username" sortable />
+        <Column
+          field="username"
+          header="Username"
+          body={(row) => <strong>{row.username}</strong>}
+          sortable
+        />
         <Column
           field="grade"
           header="Rating"

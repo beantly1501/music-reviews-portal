@@ -9,9 +9,10 @@ import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts
 
 interface Props {
   song: SongType;
+  refetch: () => void;
 }
 
-export default function SongCard({ song }: Props) {
+export default function SongCard({ song, refetch }: Props) {
   const [loadingAudio, setLoadingAudio] = useState(false);
   const [visibleDialog, setVisibleDialog] = useState(false);
 
@@ -30,6 +31,8 @@ export default function SongCard({ song }: Props) {
         summary: `Reviewed ${song.name}`,
         life: 3000,
       });
+
+      refetch();
     } catch {
       toastRef.current?.show({
         severity: "error",
