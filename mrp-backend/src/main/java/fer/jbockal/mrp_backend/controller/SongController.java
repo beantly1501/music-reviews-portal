@@ -8,12 +8,10 @@ import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.model.Song;
 import fer.jbockal.mrp_backend.service.AppUserService;
 import fer.jbockal.mrp_backend.service.SongService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -68,10 +66,9 @@ public class SongController {
                 .body(resource);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/create")
     public ResponseEntity<Song> createSong(
-            HttpServletRequest request,
             @RequestParam("name") String name,
             @RequestParam(value = "year", required = false) Integer year,
             @RequestParam(value = "link", required = false) String link,

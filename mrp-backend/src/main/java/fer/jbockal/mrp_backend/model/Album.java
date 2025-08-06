@@ -23,7 +23,6 @@ public class Album {
 
     private String name;
 
-    @Lob
     @Column(name = "cover", columnDefinition = "BYTEA")
     private byte[] cover;
 
