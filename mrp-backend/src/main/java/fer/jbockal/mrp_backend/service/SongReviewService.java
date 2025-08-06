@@ -22,25 +22,7 @@ public class SongReviewService {
 
     private final SongReviewRepository songReviewRepository;
     private final SongRepository songRepository;
-    private final AppUserRepository appUserRepository;
-
-    private AppUser resolveAppUserFromPrincipal(Object principalObj) {
-        if (principalObj == null) {
-            throw new IllegalArgumentException("Not authenticated");
-        }
-        String username;
-        if (principalObj instanceof User userDetails) {
-            username = userDetails.getUsername();
-        } else if (principalObj instanceof org.springframework.security.core.userdetails.UserDetails ud) {
-            username = ud.getUsername();
-        } else if (principalObj instanceof String) {
-            username = (String) principalObj;
-        } else {
-            throw new IllegalArgumentException("Unsupported principal type: " + principalObj.getClass());
-        }
-        return appUserRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-    }
+    private final AppUserService appUserService;
 
     public SongReviewResponseDto getById(Long id, Object principal) {
         SongReview review = songReviewRepository.findById(id)
@@ -57,14 +39,14 @@ public class SongReviewService {
     }
 
     public List<SongReviewResponseDto> listByCurrentUser(Object principal) {
-        AppUser user = resolveAppUserFromPrincipal(principal);
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
         return songReviewRepository.findByUser(user).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
     public SongReviewResponseDto createReview(SongReviewRequestDto dto, Object principal) {
-        AppUser user = resolveAppUserFromPrincipal(principal);
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
         Song song = songRepository.findById(dto.getSongId())
                 .orElseThrow(() -> new IllegalArgumentException("Song not found: " + dto.getSongId()));
 
@@ -80,7 +62,7 @@ public class SongReviewService {
     }
 
     public SongReviewResponseDto updateReview(Long id, SongReviewRequestDto dto, Object principal) {
-        AppUser user = resolveAppUserFromPrincipal(principal);
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
 
         // User can only update their own review
         SongReview existing = songReviewRepository.findByIdAndUser(id, user)
@@ -95,7 +77,7 @@ public class SongReviewService {
     }
 
     public void deleteReview(Long id, Object principal, boolean isAdmin) {
-        AppUser user = resolveAppUserFromPrincipal(principal);
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
         if (isAdmin) {
             songReviewRepository.deleteById(id);
             return;
@@ -110,6 +92,7 @@ public class SongReviewService {
         return new SongReviewResponseDto(
                 r.getId(),
                 r.getSong().getId(),
+                r.getSong().getName(),
                 r.getUser().getUsername(),
                 r.getGrade(),
                 r.getDescription(),

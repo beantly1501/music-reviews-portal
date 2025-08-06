@@ -1,14 +1,5 @@
-import { SongType } from "@shared/utils";
+import { extractErrorMessage, SongType } from "@shared/utils";
 import { useEffect, useState, useCallback } from "react";
-
-function extractErrorMessage(e: unknown): string {
-  if (e instanceof Error) return e.message;
-  try {
-    return JSON.stringify(e);
-  } catch {
-    return String(e);
-  }
-}
 
 export function useGetSongs() {
   const [songs, setSongs] = useState<SongType[]>([]);

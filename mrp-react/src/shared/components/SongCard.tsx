@@ -1,19 +1,43 @@
 import { useEffect, useRef, useState } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
-import { SongType, toDataUrl } from "@shared/utils";
+import { SongReviewFormData, SongType, toDataUrl } from "@shared/utils";
 import "primeflex/primeflex.css";
+import { CreateSongReview } from "../../features/songs/CreateSongReview.tsx";
+import { Toast } from "primereact/toast";
+import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts";
 
 interface Props {
   song: SongType;
 }
 
 export default function SongCard({ song }: Props) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [loadingAudio, setLoadingAudio] = useState(false);
+  const [visibleDialog, setVisibleDialog] = useState(false);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
 
+  const toastRef = useRef<Toast | null>(null);
+
   const coverUrl = song.cover ? toDataUrl(song.cover) : null;
+
+  const handleSubmit = async (formData: SongReviewFormData) => {
+    try {
+      await submitSongReview(formData);
+      toastRef.current?.show({
+        severity: "success",
+        summary: `Reviewed ${song.name}`,
+        life: 3000,
+      });
+    } catch {
+      toastRef.current?.show({
+        severity: "error",
+        summary: "Error creating review",
+        life: 3000,
+      });
+    }
+  };
 
   // Fetch audio file
   useEffect(() => {
@@ -76,16 +100,34 @@ export default function SongCard({ song }: Props) {
           onClick={() => window.open(song.link, "_blank")}
         />
       )}
+      {!song.reviewed && (
+        <Button
+          label="Review Song"
+          icon="pi pi-star"
+          className="mx-auto"
+          onClick={() => setVisibleDialog(true)}
+        />
+      )}
     </div>
   );
 
   return (
-    <Card
-      title={song.name}
-      subTitle={`Released ${song.year}`}
-      header={header}
-      footer={footer}
-      className="p-shadow-2 p-mb-4"
-    />
+    <>
+      <Card
+        title={song.name}
+        subTitle={`Released ${song.year}`}
+        header={header}
+        footer={footer}
+        className="p-shadow-2 p-mb-4"
+      />
+      <CreateSongReview
+        visible={visibleDialog}
+        name={song.name}
+        songId={song.id}
+        onHide={() => setVisibleDialog(false)}
+        onSubmit={(data) => handleSubmit(data)}
+      />
+      <Toast ref={toastRef} />
+    </>
   );
 }

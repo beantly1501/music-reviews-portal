@@ -3,6 +3,7 @@ package fer.jbockal.mrp_backend.service;
 import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.repository.AppUserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -15,5 +16,23 @@ public class AppUserService {
 
     public Optional<AppUser> getUserById(Long id) {
         return appUserRepository.findById(id);
+    }
+
+    public AppUser resolveAppUserFromPrincipal(Object principalObj) {
+        if (principalObj == null) {
+            throw new IllegalArgumentException("Not authenticated");
+        }
+        String username;
+        if (principalObj instanceof User userDetails) {
+            username = userDetails.getUsername();
+        } else if (principalObj instanceof org.springframework.security.core.userdetails.UserDetails ud) {
+            username = ud.getUsername();
+        } else if (principalObj instanceof String) {
+            username = (String) principalObj;
+        } else {
+            throw new IllegalArgumentException("Unsupported principal type: " + principalObj.getClass());
+        }
+        return appUserRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
     }
 }

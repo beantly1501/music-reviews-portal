@@ -25,7 +25,7 @@ public class ReviewService {
 
     private final SongReviewRepository songReviewRepository;
     private final AlbumReviewRepository albumReviewRepository;
-    private final AppUserRepository appUserRepository;
+    private final AppUserService appUserService;
 
     public List<ReviewResponseDto> getNewestReviews(int count) {
         if (count <= 0) return List.of();
@@ -44,6 +44,7 @@ public class ReviewService {
                 .map(r -> new SongReviewResponseDto(
                         r.getId(),
                         r.getSong().getId(),
+                        r.getSong().getName(),
                         r.getUser().getUsername(),
                         r.getGrade(),
                         r.getDescription(),
@@ -55,6 +56,7 @@ public class ReviewService {
                 .map(r -> new AlbumReviewResponseDto(
                         r.getId(),
                         r.getAlbum().getId(),
+                        r.getAlbum().getName(),
                         r.getUser().getUsername(),
                         r.getGrade(),
                         r.getDescription(),
@@ -77,7 +79,7 @@ public class ReviewService {
 
     public List<ReviewResponseDto> getReviewsByCurrentUser(Object principal, Integer count) {
         // Here, count==null means no limit
-        AppUser user = resolveAppUserFromPrincipal(principal);
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
         List<SongReview> userSongReviews = songReviewRepository.findByUser(user);
         List<AlbumReview> userAlbumReviews = albumReviewRepository.findByUser(user);
 
@@ -98,6 +100,7 @@ public class ReviewService {
                 new SongReviewResponseDto(
                         r.getId(),
                         r.getSong().getId(),
+                        r.getSong().getName(),
                         r.getUser().getUsername(),
                         r.getGrade(),
                         r.getDescription(),
@@ -109,6 +112,7 @@ public class ReviewService {
                 new AlbumReviewResponseDto(
                         r.getId(),
                         r.getAlbum().getId(),
+                        r.getAlbum().getName(),
                         r.getUser().getUsername(),
                         r.getGrade(),
                         r.getDescription(),
@@ -119,24 +123,5 @@ public class ReviewService {
         return combined.stream()
                 .sorted(Comparator.comparing(ReviewResponseDto::creationDate).reversed())
                 .collect(Collectors.toList());
-    }
-
-    private AppUser resolveAppUserFromPrincipal(Object principalObj) {
-        // duplicate logic from controller or refactor to utility
-        if (principalObj == null) {
-            throw new IllegalArgumentException("Not authenticated");
-        }
-        String username;
-        if (principalObj instanceof org.springframework.security.core.userdetails.User userDetails) {
-            username = userDetails.getUsername();
-        } else if (principalObj instanceof org.springframework.security.core.userdetails.UserDetails ud) {
-            username = ud.getUsername();
-        } else if (principalObj instanceof String) {
-            username = (String) principalObj;
-        } else {
-            throw new IllegalArgumentException("Unsupported principal type: " + principalObj.getClass());
-        }
-        return appUserRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
     }
 }

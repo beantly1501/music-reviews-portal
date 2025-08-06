@@ -3,7 +3,10 @@ package fer.jbockal.mrp_backend.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fer.jbockal.mrp_backend.dto.SongRequestDto;
+import fer.jbockal.mrp_backend.dto.SongResponseDto;
+import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.model.Song;
+import fer.jbockal.mrp_backend.service.AppUserService;
 import fer.jbockal.mrp_backend.service.SongService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -13,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,11 +31,13 @@ import java.util.Set;
 public class SongController {
 
     private final SongService songService;
+    private final AppUserService appUserService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<Song>> all() {
-        return ResponseEntity.ok(songService.getAllSongs());
-
+    public ResponseEntity<List<SongResponseDto>> all(@AuthenticationPrincipal Object principal) {
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
+        List<SongResponseDto> dtos = songService.getAllSongsWithReviewed(user);
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/search")

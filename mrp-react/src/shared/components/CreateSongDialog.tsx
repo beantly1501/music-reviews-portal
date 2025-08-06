@@ -59,8 +59,6 @@ export default function CreateSongDialog({
       if (data.cover) formData.append("cover", data.cover);
       if (data.file) formData.append("file", data.file);
 
-      console.log(formData);
-
       // grab the raw string values from some extra inputs below
       const albumIdsInput = (
         document.getElementById("albumIds") as HTMLInputElement

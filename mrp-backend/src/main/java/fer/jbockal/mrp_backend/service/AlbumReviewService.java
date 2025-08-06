@@ -22,25 +22,7 @@ public class AlbumReviewService {
 
     private final AlbumReviewRepository albumReviewRepository;
     private final AlbumRepository albumRepository;
-    private final AppUserRepository appUserRepository;
-
-    private AppUser resolveAppUserFromPrincipal(Object principalObj) {
-        if (principalObj == null) {
-            throw new IllegalArgumentException("Not authenticated");
-        }
-        String username;
-        if (principalObj instanceof User userDetails) {
-            username = userDetails.getUsername();
-        } else if (principalObj instanceof org.springframework.security.core.userdetails.UserDetails ud) {
-            username = ud.getUsername();
-        } else if (principalObj instanceof String) {
-            username = (String) principalObj;
-        } else {
-            throw new IllegalArgumentException("Unsupported principal type: " + principalObj.getClass());
-        }
-        return appUserRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-    }
+    private final AppUserService  appUserService;
 
     public AlbumReviewResponseDto getById(Long id, Object principal) {
         AlbumReview review = albumReviewRepository.findById(id)
@@ -57,14 +39,14 @@ public class AlbumReviewService {
     }
 
     public List<AlbumReviewResponseDto> listByCurrentUser(Object principal) {
-        AppUser user = resolveAppUserFromPrincipal(principal);
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
         return albumReviewRepository.findByUser(user).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
     public AlbumReviewResponseDto createReview(AlbumReviewRequestDto dto, Object principal) {
-        AppUser user = resolveAppUserFromPrincipal(principal);
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
         Album album = albumRepository.findById(dto.getAlbumId())
                 .orElseThrow(() -> new IllegalArgumentException("Album not found: " + dto.getAlbumId()));
 
@@ -80,7 +62,7 @@ public class AlbumReviewService {
     }
 
     public AlbumReviewResponseDto updateReview(Long id, AlbumReviewRequestDto dto, Object principal) {
-        AppUser user = resolveAppUserFromPrincipal(principal);
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
         AlbumReview existing = albumReviewRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new IllegalArgumentException("Review not found or not owned by user"));
 
@@ -93,7 +75,7 @@ public class AlbumReviewService {
     }
 
     public void deleteReview(Long id, Object principal, boolean isAdmin) {
-        AppUser user = resolveAppUserFromPrincipal(principal);
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
         if (isAdmin) {
             albumReviewRepository.deleteById(id);
             return;
@@ -107,6 +89,7 @@ public class AlbumReviewService {
         return new AlbumReviewResponseDto(
                 r.getId(),
                 r.getAlbum().getId(),
+                r.getAlbum().getName(),
                 r.getUser().getUsername(),
                 r.getGrade(),
                 r.getDescription(),

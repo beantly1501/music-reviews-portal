@@ -64,23 +64,10 @@ export default function ProfilePage() {
           })
         }
       >
-        <Column field="name" header="Name" sortable />
         <Column
-          header="Image"
-          body={(value) => (
-            <img
-              src={value.image}
-              alt="item"
-              className="w-6rem shadow-2 border-round"
-            />
-          )}
-        />
-        <Column
-          field="grade"
-          header="Rating"
-          body={(value) => (
-            <Rating value={value.grade} cancel={false} readOnly />
-          )}
+          field="name"
+          header="Name"
+          body={(row) => (row.type === "SONG" ? row.songName : row.albumName)}
           sortable
         />
         <Column
@@ -92,7 +79,21 @@ export default function ProfilePage() {
             />
           )}
         />
-        <Column field="username" header="Username" sortable />
+        <Column
+          field="grade"
+          header="Rating"
+          body={(value) => (
+            <Rating value={value.grade} cancel={false} readOnly />
+          )}
+          sortable
+        />
+        <Column field="description" header="Description" />
+        <Column
+          field="creationDate"
+          header="Creation Date"
+          body={(row) => new Date(row.creationDate).toLocaleDateString("hr-HR")}
+          sortable
+        />
       </DataTable>
     </div>
   );

@@ -19,6 +19,7 @@ export type SongType = {
   link?: string;
   file?: string;
   year: number;
+  reviewed: boolean;
 };
 
 export const songCreateSchema = z.object({
@@ -59,9 +60,17 @@ export type ReviewResponse = {
   type: "SONG" | "ALBUM";
   id: number;
   songId?: number;
+  songName?: string;
+  albumName?: string;
   albumId?: number;
   username: string;
   grade: number;
   description: string;
   creationDate: string;
+};
+
+export type SongReviewFormData = {
+  songId: number;
+  grade: number;
+  description: string;
 };

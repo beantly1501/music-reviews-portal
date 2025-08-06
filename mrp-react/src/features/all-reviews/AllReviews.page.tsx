@@ -31,7 +31,11 @@ export default function AllReviewsPage() {
         removableSort
         emptyMessage={"There are currently no reviews."}
       >
-        <Column field="id" header="ID" sortable />
+        <Column
+          header="Name"
+          body={(row) => (row.type === "SONG" ? row.songName : row.albumName)}
+          sortable
+        />
         <Column
           field="type"
           header="Type"
@@ -43,11 +47,7 @@ export default function AllReviewsPage() {
           )}
           sortable
         />
-        <Column
-          header="Item ID"
-          body={(row) => (row.type === "SONG" ? row.songId : row.albumId)}
-          sortable
-        />
+
         <Column field="username" header="Username" sortable />
         <Column
           field="grade"
@@ -59,7 +59,7 @@ export default function AllReviewsPage() {
         <Column
           field="creationDate"
           header="Created"
-          body={(row) => new Date(row.creationDate).toLocaleDateString()}
+          body={(row) => new Date(row.creationDate).toLocaleDateString("hr-HR")}
           sortable
         />
       </DataTable>

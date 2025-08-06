@@ -1,31 +1,57 @@
 package fer.jbockal.mrp_backend.service;
 
 import fer.jbockal.mrp_backend.dto.SongRequestDto;
-import fer.jbockal.mrp_backend.model.Album;
-import fer.jbockal.mrp_backend.model.Author;
-import fer.jbockal.mrp_backend.model.Genre;
-import fer.jbockal.mrp_backend.model.Song;
-import fer.jbockal.mrp_backend.repository.AlbumRepository;
-import fer.jbockal.mrp_backend.repository.AuthorRepository;
-import fer.jbockal.mrp_backend.repository.GenreRepository;
-import fer.jbockal.mrp_backend.repository.SongRepository;
+import fer.jbockal.mrp_backend.dto.SongResponseDto;
+import fer.jbockal.mrp_backend.model.*;
+import fer.jbockal.mrp_backend.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class SongService {
 
     private final SongRepository songRepository;
+    private final SongReviewRepository songReviewRepository;
     private final AlbumRepository albumRepository;
     private final AuthorRepository authorRepository;
     private final GenreRepository genreRepository;
 
     public List<Song> getAllSongs() {
         return songRepository.findAll();
+    }
+
+    public List<SongResponseDto> getAllSongsWithReviewed(AppUser user) {
+        // 1) load all songs
+        List<Song> songs = songRepository.findAll();
+
+        // 2) load the user's reviews and extract reviewed song IDs
+        Set<Long> reviewedIds = songReviewRepository
+                .findByUser(user)
+                .stream()
+                .map(sr -> sr.getSong().getId())
+                .collect(Collectors.toSet());
+
+        // 3) map into DTOs
+        return songs.stream().map(song ->
+                new SongResponseDto(
+                        song.getId(),
+                        song.getName(),
+                        song.getCover(),
+                        song.getLink(),
+                        song.getFile(),
+                        song.getYear(),
+                        song.getAlbums(),
+                        song.getAuthors(),
+                        song.getGenres(),
+                        reviewedIds.contains(song.getId())
+                )
+        ).collect(Collectors.toList());
     }
 
     public List<Song> searchByNameFragment(String fragment) {
