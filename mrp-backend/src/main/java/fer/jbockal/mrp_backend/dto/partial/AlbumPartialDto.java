@@ -1,7 +1,5 @@
-package fer.jbockal.mrp_backend.dto;
+package fer.jbockal.mrp_backend.dto.partial;
 
-import fer.jbockal.mrp_backend.dto.partial.ArtistPartialDto;
-import fer.jbockal.mrp_backend.dto.partial.SongPartialDto;
 import fer.jbockal.mrp_backend.model.Artist;
 import fer.jbockal.mrp_backend.model.Song;
 import lombok.AllArgsConstructor;
@@ -11,13 +9,10 @@ import java.util.Set;
 
 @Data
 @AllArgsConstructor
-public class AlbumResponseDto {
+public class AlbumPartialDto {
     private Long id;
     private String name;
     private byte[] cover;
     private String link;
     private Long year;
-    private Set<SongPartialDto> songs;
-    private Set<ArtistPartialDto> artists;
-    private boolean reviewed;
 }

@@ -2,14 +2,17 @@ package fer.jbockal.mrp_backend.service;
 
 import fer.jbockal.mrp_backend.dto.AlbumRequestDto;
 import fer.jbockal.mrp_backend.dto.AlbumResponseDto;
+import fer.jbockal.mrp_backend.dto.partial.ArtistPartialDto;
+import fer.jbockal.mrp_backend.dto.partial.SongPartialDto;
 import fer.jbockal.mrp_backend.model.Album;
 import fer.jbockal.mrp_backend.model.AppUser;
-import fer.jbockal.mrp_backend.model.Author;
+import fer.jbockal.mrp_backend.model.Artist;
 import fer.jbockal.mrp_backend.model.Song;
 import fer.jbockal.mrp_backend.repository.AlbumRepository;
 import fer.jbockal.mrp_backend.repository.AlbumReviewRepository;
-import fer.jbockal.mrp_backend.repository.AuthorRepository;
+import fer.jbockal.mrp_backend.repository.ArtistRepository;
 import fer.jbockal.mrp_backend.repository.SongRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,55 +26,50 @@ public class AlbumService {
 
     private final AlbumRepository albumRepository;
     private final SongRepository songRepository;
-    private final AuthorRepository authorRepository;
+    private final ArtistRepository artistRepository;
     private final AlbumReviewRepository albumReviewRepository;
 
-    public List<Album> searchByNameFragment(String fragment) {
+    /**
+     * Search albums by name fragment and map to response DTOs (reviewed=false).
+     */
+    public List<AlbumResponseDto> searchByNameFragment(String fragment) {
         if (fragment == null || fragment.isBlank()) {
             return List.of();
         }
-        return albumRepository.findByNameContainingIgnoreCase(fragment);
+        return albumRepository
+                .findByNameContainingIgnoreCase(fragment)
+                .stream()
+                .map(album -> toDto(album, false))
+                .collect(Collectors.toList());
     }
 
+    /**
+     * Fetch all albums with user's review status.
+     */
     public List<AlbumResponseDto> getAllAlbumsWithReviewed(AppUser user) {
         List<Album> albums = albumRepository.findAll();
-
-        Set<Long> reviewedAlbumIds = albumReviewRepository.findByUser(user)
+        Set<Long> reviewedAlbumIds = albumReviewRepository
+                .findByUser(user)
                 .stream()
                 .map(ar -> ar.getAlbum().getId())
                 .collect(Collectors.toSet());
 
         return albums.stream()
-                .map(album -> new AlbumResponseDto(
-                        album.getId(),
-                        album.getName(),
-                        album.getCover(),
-                        album.getLink(),
-                        album.getYear(),
-                        album.getSongs(),
-                        album.getAuthors(),
-                        reviewedAlbumIds.contains(album.getId())
-                ))
+                .map(album -> toDto(album, reviewedAlbumIds.contains(album.getId())))
                 .collect(Collectors.toList());
     }
 
-    public Album createAlbum(AlbumRequestDto albumRequest) {
+    /**
+     * Create a new album and map to response DTO.
+     */
+    public AlbumResponseDto createAlbum(AlbumRequestDto albumRequest) {
         Album a = new Album();
         a.setName(albumRequest.getName());
+        if (albumRequest.getYear() != null) a.setYear(albumRequest.getYear());
+        if (albumRequest.getCover() != null) a.setCover(albumRequest.getCover());
+        if (albumRequest.getLink() != null) a.setLink(albumRequest.getLink());
 
-        if (albumRequest.getYear() != null) {
-            a.setYear(albumRequest.getYear());
-        }
-
-        if (albumRequest.getCover() != null) {
-            a.setCover(albumRequest.getCover());
-        }
-
-        if (albumRequest.getLink() != null) {
-            a.setLink(albumRequest.getLink());
-        }
-
-        if (albumRequest.getSongIds() != null && !albumRequest.getSongIds().isEmpty()) {
+        if (albumRequest.getSongIds() != null) {
             for (Long sid : albumRequest.getSongIds()) {
                 Song s = songRepository.findById(sid)
                         .orElseThrow(() -> new IllegalArgumentException("Song not found: " + sid));
@@ -79,81 +77,102 @@ public class AlbumService {
                 s.getAlbums().add(a);
             }
         }
-
-        if (albumRequest.getAuthorIds() != null && !albumRequest.getAuthorIds().isEmpty()) {
-            for (Long aid : albumRequest.getAuthorIds()) {
-                Author author = authorRepository.findById(aid)
-                        .orElseThrow(() -> new IllegalArgumentException("Author not found: " + aid));
-                a.getAuthors().add(author);
-                author.getAlbums().add(a);
+        if (albumRequest.getArtistIds() != null) {
+            for (Long aid : albumRequest.getArtistIds()) {
+                Artist artist = artistRepository.findById(aid)
+                        .orElseThrow(() -> new IllegalArgumentException("Artist not found: " + aid));
+                a.getArtists().add(artist);
+                artist.getAlbums().add(a);
             }
         }
 
-        return albumRepository.save(a);
+        Album saved = albumRepository.save(a);
+        return toDto(saved, false);
     }
 
-    public Album updateAlbum(Album albumRequest) {
+    /**
+     * Update an existing Album entity and map to response DTO.
+     * Uses the passed-in Album object's collections as stubs for IDs.
+     */
+    public AlbumResponseDto updateAlbum(Album albumRequest) {
         if (albumRequest.getId() == null) {
             throw new IllegalArgumentException("Album ID is required for update");
         }
         Album existing = albumRepository.findById(albumRequest.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Album not found: " + albumRequest.getId()));
+                .orElseThrow(() -> new EntityNotFoundException("Album not found: " + albumRequest.getId()));
 
         if (albumRequest.getName() != null) existing.setName(albumRequest.getName());
         if (albumRequest.getYear() != null) existing.setYear(albumRequest.getYear());
-        if (albumRequest.getCover() != null) existing.setCover(albumRequest.getCover());
         if (albumRequest.getLink() != null) existing.setLink(albumRequest.getLink());
+        if (albumRequest.getCover() != null) existing.setCover(albumRequest.getCover());
 
-        // songs: if provided (non-null), replace
+        // replace songs if provided
         if (albumRequest.getSongs() != null) {
-            for (Song s : existing.getSongs()) {
-                s.getAlbums().remove(existing);
-            }
+            existing.getSongs().forEach(s -> s.getAlbums().remove(existing));
             existing.getSongs().clear();
-            for (Song reqSong : albumRequest.getSongs()) {
-                if (reqSong.getId() == null) continue;
-                Song s = songRepository.findById(reqSong.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Song not found: " + reqSong.getId()));
+            for (Song stub : albumRequest.getSongs()) {
+                if (stub.getId() == null) continue;
+                Song s = songRepository.findById(stub.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Song not found: " + stub.getId()));
                 existing.getSongs().add(s);
                 s.getAlbums().add(existing);
             }
         }
-
-        // authors: if provided, replace
-        if (albumRequest.getAuthors() != null) {
-            for (Author a : existing.getAuthors()) {
-                a.getAlbums().remove(existing);
-            }
-            existing.getAuthors().clear();
-            for (Author reqAuthor : albumRequest.getAuthors()) {
-                if (reqAuthor.getId() == null) continue;
-                Author author = authorRepository.findById(reqAuthor.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Author not found: " + reqAuthor.getId()));
-                existing.getAuthors().add(author);
-                author.getAlbums().add(existing);
+        // replace artists if provided
+        if (albumRequest.getArtists() != null) {
+            existing.getArtists().forEach(ar -> ar.getAlbums().remove(existing));
+            existing.getArtists().clear();
+            for (Artist stub : albumRequest.getArtists()) {
+                if (stub.getId() == null) continue;
+                Artist art = artistRepository.findById(stub.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Artist not found: " + stub.getId()));
+                existing.getArtists().add(art);
+                art.getAlbums().add(existing);
             }
         }
 
-        return albumRepository.save(existing);
+        Album updated = albumRepository.save(existing);
+        return toDto(updated, false);
     }
 
+    /**
+     * Delete an album, removing bidirectional links.
+     */
     public void deleteAlbum(Long id) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Album not found: " + id));
 
-        // detach from songs
-        for (Song s : album.getSongs()) {
-            s.getAlbums().remove(album);
-        }
+        album.getSongs().forEach(s -> s.getAlbums().remove(album));
         album.getSongs().clear();
-
-        // detach from authors
-        for (Author a : album.getAuthors()) {
-            a.getAlbums().remove(album);
-        }
-        album.getAuthors().clear();
+        album.getArtists().forEach(a -> a.getAlbums().remove(album));
+        album.getArtists().clear();
 
         albumRepository.delete(album);
     }
 
+    /**
+     * Helper to map Album entity to AlbumResponseDto.
+     */
+    private AlbumResponseDto toDto(Album album, boolean reviewed) {
+        Set<SongPartialDto> songs = album.getSongs().stream()
+                .map(s -> new SongPartialDto(s.getId(), s.getName(), s.getCover(), s.getLink(), s.getFile(), s.getYear()))
+                .collect(Collectors.toSet());
+        Set<ArtistPartialDto> artists = album.getArtists().stream()
+                .map(ar -> new ArtistPartialDto(ar.getId(), ar.getName(), ar.getImage(), ar.getDescription()))
+                .collect(Collectors.toSet());
+
+        songs = songs.isEmpty() ? null : songs;
+        artists = artists.isEmpty() ? null : artists;
+
+        return new AlbumResponseDto(
+                album.getId(),
+                album.getName(),
+                album.getCover(),
+                album.getLink(),
+                album.getYear(),
+                songs,
+                artists,
+                reviewed
+        );
+    }
 }

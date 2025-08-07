@@ -1,6 +1,8 @@
 package fer.jbockal.mrp_backend.service;
 
 import fer.jbockal.mrp_backend.dto.GenreRequestDto;
+import fer.jbockal.mrp_backend.dto.GenreResponseDto;
+import fer.jbockal.mrp_backend.dto.partial.SongPartialDto;
 import fer.jbockal.mrp_backend.model.Genre;
 import fer.jbockal.mrp_backend.model.Song;
 import fer.jbockal.mrp_backend.repository.GenreRepository;
@@ -9,6 +11,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -16,32 +20,56 @@ public class GenreService {
 
     private final GenreRepository genreRepository;
 
-    public Genre findById(long id) {
-        return genreRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+    /**
+     * Find a genre by ID and map to DTO including its songs.
+     */
+    public GenreResponseDto findById(long id) {
+        Genre genre = genreRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Genre not found: " + id));
+        return toDto(genre);
     }
 
-    public List<Genre> searchByNameFragment(String fragment) {
+    /**
+     * Search genres by name fragment (case-insensitive) and map to DTOs.
+     */
+    public List<GenreResponseDto> searchByNameFragment(String fragment) {
         if (fragment == null || fragment.isBlank()) {
             return List.of();
         }
-        return genreRepository.findByNameContainingIgnoreCase(fragment);
+        return genreRepository.findByNameContainingIgnoreCase(fragment)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
-    public List<Genre> findAll() {
-        return genreRepository.findAll();
+    /**
+     * Retrieve all genres and map to DTOs.
+     */
+    public List<GenreResponseDto> findAll() {
+        return genreRepository.findAll()
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Genre createGenre(GenreRequestDto dto) {
+    /**
+     * Create a new genre from the request DTO and map to response DTO.
+     */
+    public GenreResponseDto createGenre(GenreRequestDto dto) {
         Genre g = new Genre();
         g.setName(dto.getName());
-        return genreRepository.save(g);
+        Genre saved = genreRepository.save(g);
+        return toDto(saved);
     }
 
+    /**
+     * Delete a genre by ID, removing references from songs.
+     */
     public void deleteGenre(Long id) {
         Genre genre = genreRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Genre not found: " + id));
 
-        // detach from songs, so they don't have an id which points to nothing
+        // detach from songs
         for (Song s : genre.getSongs()) {
             s.getGenres().remove(genre);
         }
@@ -50,4 +78,26 @@ public class GenreService {
         genreRepository.deleteById(id);
     }
 
+    /**
+     * Helper to map Genre entity to Response DTO, including nested SongPartialDto set.
+     */
+    private GenreResponseDto toDto(Genre genre) {
+        Set<SongPartialDto> songs = genre.getSongs().stream()
+                .map(s -> new SongPartialDto(
+                        s.getId(),
+                        s.getName(),
+                        s.getCover(),
+                        s.getLink(),
+                        s.getFile(),
+                        s.getYear()
+                ))
+                .collect(Collectors.toSet());
+
+        songs = songs.isEmpty() ? null : songs;
+        return new GenreResponseDto(
+                genre.getId(),
+                genre.getName(),
+                songs
+        );
+    }
 }

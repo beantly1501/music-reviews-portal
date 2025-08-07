@@ -15,5 +15,5 @@ public class AlbumRequestDto {
     private String link;
     private Long year;
     private Set<Long> songIds;   // optional association
-    private Set<Long> authorIds; // optional association
+    private Set<Long> artistIds; // optional association
 }

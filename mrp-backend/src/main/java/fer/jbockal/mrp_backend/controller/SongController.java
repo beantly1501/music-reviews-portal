@@ -8,6 +8,7 @@ import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.model.Song;
 import fer.jbockal.mrp_backend.service.AppUserService;
 import fer.jbockal.mrp_backend.service.SongService;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
@@ -31,6 +32,9 @@ public class SongController {
     private final SongService songService;
     private final AppUserService appUserService;
 
+    /**
+     * Fetch all songs with review status and grades for current user.
+     */
     @GetMapping("/all")
     public ResponseEntity<List<SongResponseDto>> all(@AuthenticationPrincipal Object principal) {
         AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
@@ -38,44 +42,44 @@ public class SongController {
         return ResponseEntity.ok(dtos);
     }
 
+    /**
+     * Search songs by name fragment (case-insensitive).
+     */
     @GetMapping("/search")
-    public ResponseEntity<List<Song>> searchByName(@RequestParam("q") String query) {
-        List<Song> results = songService.searchByNameFragment(query);
+    public ResponseEntity<List<SongResponseDto>> searchByName(@RequestParam("q") String query) {
+        List<SongResponseDto> results = songService.searchByNameFragment(query);
         return ResponseEntity.ok(results);
     }
 
+    /**
+     * Stream the raw audio file for a given song ID.
+     */
     @GetMapping(
-            value    = "/audio-file/{id}",
-            produces = { "audio/mpeg", "audio/ogg", "audio/wav" } // adjust to your formats
+            value = "/audio-file/{id}",
+            produces = {"audio/mpeg", "audio/ogg", "audio/wav"}
     )
     public ResponseEntity<ByteArrayResource> streamSongFile(@PathVariable Long id) {
-        // 1) load your entity (with the byte[] in it)
-        Song song = songService.findById(id);
-        byte[] data = song.getFile();
-
-        // 2) wrap in a Resource
+        byte[] data = songService.getSongFile(id);
         ByteArrayResource resource = new ByteArrayResource(data);
-
-        // 3) build headers
         HttpHeaders headers = new HttpHeaders();
         headers.setContentLength(data.length);
-
-        return ResponseEntity
-                .ok()
+        return ResponseEntity.ok()
                 .headers(headers)
                 .body(resource);
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    /**
+     * Create a new song. Returns the created SongResponseDto.
+     */
     @PostMapping(value = "/create")
-    public ResponseEntity<Song> createSong(
+    public ResponseEntity<SongResponseDto> createSong(
             @RequestParam("name") String name,
             @RequestParam(value = "year", required = false) Integer year,
             @RequestParam(value = "link", required = false) String link,
             @RequestPart(value = "cover", required = false) MultipartFile cover,
             @RequestPart(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "albumIds", required = false) String albumIdsJson,
-            @RequestParam(value = "authorIds", required = false) String authorIdsJson,
+            @RequestParam(value = "artistIds", required = false) String artistIdsJson,
             @RequestParam(value = "genreIds", required = false) String genreIdsJson
     ) throws IOException {
 
@@ -83,35 +87,29 @@ public class SongController {
         dto.setName(name);
         dto.setYear(year != null ? year.longValue() : null);
         dto.setLink(link);
-        if (cover != null && !cover.isEmpty()) {
-            dto.setCover(cover.getBytes());
-        }
-        if (file != null && !file.isEmpty()) {
-            dto.setFile(file.getBytes());
-        }
-        if (albumIdsJson != null) {
-            Set<Long> albumIds = parseIdSet(albumIdsJson);
-            dto.setAlbumIds(albumIds);
-        }
-        if (authorIdsJson != null) {
-            Set<Long> authorIds = parseIdSet(authorIdsJson);
-            dto.setAuthorIds(authorIds);
-        }
-        if (genreIdsJson != null) {
-            Set<Long> genreIds = parseIdSet(genreIdsJson);
-            dto.setGenreIds(genreIds);
-        }
+        if (cover != null && !cover.isEmpty()) dto.setCover(cover.getBytes());
+        if (file != null && !file.isEmpty()) dto.setFile(file.getBytes());
+        if (albumIdsJson != null) dto.setAlbumIds(parseIdSet(albumIdsJson));
+        if (artistIdsJson != null) dto.setArtistIds(parseIdSet(artistIdsJson));
+        if (genreIdsJson != null) dto.setGenreIds(parseIdSet(genreIdsJson));
 
-        Song created = songService.createSong(dto);
+        SongResponseDto created = songService.createSong(dto);
         return ResponseEntity.ok(created);
     }
 
+    /**
+     * Update an existing Song entity. Returns the updated SongResponseDto.
+     */
     @PutMapping("/update")
-    public ResponseEntity<Song> updateSong(@RequestBody Song songRequest) {
+    public ResponseEntity<SongResponseDto> updateSong(@RequestBody Song songRequest) {
         log.info("Updating song {}", songRequest);
-        return ResponseEntity.ok(songService.updateSong(songRequest));
+        SongResponseDto updated = songService.updateSong(songRequest);
+        return ResponseEntity.ok(updated);
     }
 
+    /**
+     * Delete a song by ID (admin only).
+     */
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteSong(@PathVariable Long id) {
@@ -120,11 +118,12 @@ public class SongController {
         return ResponseEntity.noContent().build();
     }
 
-    // helper to parse JSON array string into Set<Long>
+    // Helper to parse JSON array string into Set<Long>
     private Set<Long> parseIdSet(String json) {
         try {
             ObjectMapper om = new ObjectMapper();
-            return om.readValue(json, new TypeReference<Set<Long>>() {});
+            return om.readValue(json, new TypeReference<Set<Long>>() {
+            });
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid id set JSON", e);
         }

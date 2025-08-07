@@ -1,7 +1,7 @@
 package fer.jbockal.mrp_backend.controller;
 
 import fer.jbockal.mrp_backend.dto.GenreRequestDto;
-import fer.jbockal.mrp_backend.model.Genre;
+import fer.jbockal.mrp_backend.dto.GenreResponseDto;
 import fer.jbockal.mrp_backend.service.GenreService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,29 +19,43 @@ public class GenreController {
 
     private final GenreService genreService;
 
+    /**
+     * Retrieve all genres.
+     */
     @GetMapping("/all")
-    public ResponseEntity<List<Genre>> listAll() {
+    public ResponseEntity<List<GenreResponseDto>> listAll() {
         return ResponseEntity.ok(genreService.findAll());
     }
 
+    /**
+     * Search genres by name fragment.
+     */
     @GetMapping("/search")
-    public ResponseEntity<List<Genre>> searchByName(@RequestParam("q") String query) {
-        List<Genre> results = genreService.searchByNameFragment(query);
-        return ResponseEntity.ok(results);
+    public ResponseEntity<List<GenreResponseDto>> searchByName(@RequestParam("q") String query) {
+        return ResponseEntity.ok(genreService.searchByNameFragment(query));
     }
 
+    /**
+     * Get a single genre by ID.
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<Genre> getById(@PathVariable Long id) {
+    public ResponseEntity<GenreResponseDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(genreService.findById(id));
     }
 
+    /**
+     * Create a new genre (ADMIN only).
+     */
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
-    public ResponseEntity<Genre> create(@RequestBody GenreRequestDto dto) {
-        Genre created = genreService.createGenre(dto);
+    public ResponseEntity<GenreResponseDto> create(@RequestBody GenreRequestDto dto) {
+        GenreResponseDto created = genreService.createGenre(dto);
         return ResponseEntity.ok(created);
     }
 
+    /**
+     * Delete a genre by ID (ADMIN only).
+     */
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

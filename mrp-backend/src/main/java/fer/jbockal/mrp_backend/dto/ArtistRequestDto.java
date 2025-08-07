@@ -9,7 +9,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class AuthorRequestDto {
+public class ArtistRequestDto {
     private String name;
     private byte[] image;
     private String description;

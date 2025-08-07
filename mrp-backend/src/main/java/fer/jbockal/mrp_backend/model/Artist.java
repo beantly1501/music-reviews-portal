@@ -12,8 +12,8 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "author")
-public class Author {
+@Table(name = "artist")
+public class Artist {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,8 +29,8 @@ public class Author {
     // Many-to-many with Song
     @ManyToMany
     @JoinTable(
-            name = "song_author",
-            joinColumns = @JoinColumn(name = "author_id"),
+            name = "song_artist",
+            joinColumns = @JoinColumn(name = "artist_id"),
             inverseJoinColumns = @JoinColumn(name = "song_id")
     )
     private Set<Song> songs = new HashSet<>();
@@ -38,8 +38,8 @@ public class Author {
     // Many-to-many with Album
     @ManyToMany
     @JoinTable(
-            name = "album_author",
-            joinColumns = @JoinColumn(name = "author_id"),
+            name = "album_artist",
+            joinColumns = @JoinColumn(name = "artist_id"),
             inverseJoinColumns = @JoinColumn(name = "album_id")
     )
     private Set<Album> albums = new HashSet<>();

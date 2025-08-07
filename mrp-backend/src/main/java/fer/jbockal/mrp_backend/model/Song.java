@@ -42,9 +42,9 @@ public class Song {
     )
     private Set<Album> albums = new HashSet<>();
 
-    // Many-to-many with Author
+    // Many-to-many with Artist
     @ManyToMany(mappedBy = "songs")
-    private Set<Author> authors = new HashSet<>();
+    private Set<Artist> artists = new HashSet<>();
 
     // Many-to-many with Genre
     @ManyToMany

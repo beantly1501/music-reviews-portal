@@ -33,7 +33,7 @@ public class Album {
     private Set<Song> songs = new HashSet<>();
 
     @ManyToMany(mappedBy = "albums")
-    private Set<Author> authors = new HashSet<>();
+    private Set<Artist> artists = new HashSet<>();
 
     public Album(String name, byte[] cover, String link, Long year) {
         this.name = name;
