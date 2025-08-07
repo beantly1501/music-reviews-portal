@@ -125,3 +125,14 @@ export const artistCreateSchema = z.object({
     }),
 });
 export type ArtistCreateForm = z.infer<typeof artistCreateSchema>;
+
+export type AlbumMultiselectType = {
+  id: number;
+  name: string;
+  year: number;
+};
+
+export type ArtistMultiselectType = {
+  id: number;
+  name: string;
+};
