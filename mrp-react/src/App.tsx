@@ -10,6 +10,7 @@ import ErrorPage from "./pages/Error.page.tsx";
 import { ProtectedRoute } from "./shared/components/ProtectedRoute.tsx";
 import { RegisterPage } from "./features/login-register/Register.page.tsx";
 import AllReviewsPage from "./features/all-reviews/AllReviews.page.tsx";
+import ArtistsPage from "./features/artists/Artists.page.tsx";
 
 export default function App() {
   return (
@@ -51,7 +52,7 @@ export default function App() {
           path="artists"
           element={
             <ProtectedRoute>
-              <AlbumsPage />
+              <ArtistsPage />
             </ProtectedRoute>
           }
         />

@@ -1,17 +1,16 @@
-import { extractErrorMessage, SongType } from "@shared/utils";
+import { extractErrorMessage, ArtistType } from "@shared/utils";
 import { useEffect, useState, useCallback } from "react";
 
-export function useGetSongs() {
-  const [songs, setSongs] = useState<SongType[]>([]);
+export function useGetArtists() {
+  const [artists, setArtists] = useState<ArtistType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // fetch function
-  const fetchSongs = useCallback(async () => {
+  const fetchArtists = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("jwt");
-      const res = await fetch("/api/song/all", {
+      const res = await fetch("/api/artist/all", {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
@@ -20,8 +19,8 @@ export function useGetSongs() {
         const text = await res.text();
         throw new Error(text || `HTTP ${res.status}`);
       }
-      const data: SongType[] = await res.json();
-      setSongs(data);
+      const data: ArtistType[] = await res.json();
+      setArtists(data);
       setError(null);
     } catch (e: unknown) {
       setError(extractErrorMessage(e));
@@ -31,10 +30,10 @@ export function useGetSongs() {
   }, []);
 
   useEffect(() => {
-    void fetchSongs();
-  }, [fetchSongs]);
+    void fetchArtists();
+  }, [fetchArtists]);
 
-  console.log(songs);
+  console.log(artists, "artists");
 
-  return { songs, loading, error, refetch: fetchSongs };
+  return { artists, loading, error, refetch: fetchArtists };
 }

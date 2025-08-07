@@ -1,4 +1,4 @@
-import { Dispatch, useCallback } from "react";
+import { Dispatch, useCallback, useEffect } from "react";
 import { Dialog } from "primereact/dialog";
 import {
   Controller,
@@ -11,6 +11,8 @@ import { SongCreateForm, songCreateSchema } from "@shared/utils";
 import { InputText } from "primereact/inputtext";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
+import { MultiSelect } from "primereact/multiselect";
+import { useGetGenres } from "../../shared/hooks/useGetGenres.ts";
 
 interface Props {
   visible: boolean;
@@ -33,6 +35,13 @@ export default function CreateSongDialog({
   setVisible,
   onCreated,
 }: Props) {
+  const {
+    genres,
+    loading: genresLoading,
+    refetch: refetchGenres,
+  } = useGetGenres();
+  const genreOptions = genres.map((g) => ({ label: g.name, value: g.id }));
+
   const methods = useForm<SongCreateForm>({
     resolver: zodResolver(songCreateSchema),
     defaultValues: {
@@ -49,6 +58,10 @@ export default function CreateSongDialog({
     formState: { errors },
   } = methods;
 
+  useEffect(() => {
+    if (visible) refetchGenres();
+  }, [visible]);
+
   const onSubmit: SubmitHandler<SongCreateForm> = useCallback(
     async (data) => {
       const formData = new FormData();
@@ -56,6 +69,9 @@ export default function CreateSongDialog({
       if (data.link) formData.append("link", data.link);
       if (data.year !== undefined && data.year !== null)
         formData.append("year", String(data.year));
+      if (data.genreIds?.length) {
+        formData.append("genreIds", JSON.stringify(data.genreIds));
+      }
       if (data.cover) formData.append("cover", data.cover);
       if (data.file) formData.append("file", data.file);
 
@@ -100,7 +116,6 @@ export default function CreateSongDialog({
 
   return (
     <Dialog
-      className="w-25rem"
       visible={visible}
       header={() => <div>Add a song</div>}
       onHide={() => setVisible(false)}
@@ -115,65 +130,65 @@ export default function CreateSongDialog({
             <Controller
               name="name"
               control={control}
-              render={({ field }) => (
-                <InputText required id="name" {...field} />
-              )}
+              render={({ field }) => <InputText id="name" {...field} />}
             />
             {errors.name && (
               <small className="p-error">{errors.name.message}</small>
             )}
           </div>
 
-          {/* AUDIO FILE */}
-          <div className="field">
-            <label htmlFor="file">Audio File</label>
-            <Controller
-              name="file"
-              control={control}
-              render={({ field }) => (
-                <FileUpload
-                  name={field.name}
-                  mode="basic"
-                  customUpload
-                  accept="audio/*"
-                  maxFileSize={10000000}
-                  onSelect={(event: FileUploadSelectEvent) => {
-                    if (event.files && event.files.length) {
-                      field.onChange(event.files[0]);
-                    }
-                  }}
-                />
+          <div className="flex justify-content-around">
+            {/* AUDIO FILE */}
+            <div className="field">
+              <label htmlFor="file">Audio File</label>
+              <Controller
+                name="file"
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    name={field.name}
+                    mode="basic"
+                    customUpload
+                    accept="audio/*"
+                    maxFileSize={10000000}
+                    onSelect={(event: FileUploadSelectEvent) => {
+                      if (event.files && event.files.length) {
+                        field.onChange(event.files[0]);
+                      }
+                    }}
+                  />
+                )}
+              />
+              {errors.file && (
+                <small className="p-error">{errors.file.message}</small>
               )}
-            />
-            {errors.file && (
-              <small className="p-error">{errors.file.message}</small>
-            )}
-          </div>
+            </div>
 
-          {/* COVER */}
-          <div className="field">
-            <label htmlFor="cover">Cover Image</label>
-            <Controller
-              name="cover"
-              control={control}
-              render={({ field }) => (
-                <FileUpload
-                  name={field.name}
-                  mode="basic"
-                  customUpload
-                  accept="image/*"
-                  maxFileSize={5_000_000}
-                  onSelect={(event: FileUploadSelectEvent) => {
-                    if (event.files && event.files.length) {
-                      field.onChange(event.files[0]);
-                    }
-                  }}
-                />
+            {/* COVER */}
+            <div className="field">
+              <label htmlFor="cover">Cover Image</label>
+              <Controller
+                name="cover"
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    name={field.name}
+                    mode="basic"
+                    customUpload
+                    accept="image/*"
+                    maxFileSize={5_000_000}
+                    onSelect={(event: FileUploadSelectEvent) => {
+                      if (event.files && event.files.length) {
+                        field.onChange(event.files[0]);
+                      }
+                    }}
+                  />
+                )}
+              />
+              {errors.cover && (
+                <small className="p-error">{errors.cover.message}</small>
               )}
-            />
-            {errors.cover && (
-              <small className="p-error">{errors.cover.message}</small>
-            )}
+            </div>
           </div>
 
           {/* LINK */}
@@ -198,7 +213,6 @@ export default function CreateSongDialog({
               render={({ field }) => (
                 <InputText
                   id="year"
-                  required
                   type="number"
                   value={field.value !== undefined ? String(field.value) : ""}
                   onChange={(e) => field.onChange(Number(e.target.value))}
@@ -211,6 +225,27 @@ export default function CreateSongDialog({
             {errors.year && (
               <small className="p-error">{errors.year.message}</small>
             )}
+          </div>
+
+          {/* GENRES */}
+          <div className="field">
+            <label htmlFor="genreIds">Genres (optional)</label>
+            <Controller
+              name="genreIds"
+              control={control}
+              render={({ field }) => (
+                <MultiSelect
+                  id="genreIds"
+                  disabled={genresLoading}
+                  value={field.value}
+                  options={genreOptions}
+                  onChange={(e) => field.onChange(e.value)}
+                  filter
+                  placeholder="Select genres"
+                  display="chip"
+                />
+              )}
+            />
           </div>
 
           {/* ALBUM IDS */}

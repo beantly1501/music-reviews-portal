@@ -33,5 +33,7 @@ export function useGetAlbums() {
     void fetchAlbums();
   }, [fetchAlbums]);
 
+  console.log(albums, "albums");
+
   return { albums, loading, error, refetch: fetchAlbums };
 }

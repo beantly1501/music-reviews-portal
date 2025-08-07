@@ -39,5 +39,7 @@ export function useGetNewestRatings(count = 20) {
     };
   }, [count]);
 
+  console.log(reviews, "reviews");
+
   return { reviews, loading, error };
 }

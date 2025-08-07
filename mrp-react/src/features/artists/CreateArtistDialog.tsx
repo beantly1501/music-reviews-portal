@@ -7,8 +7,9 @@ import {
   useForm,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlbumCreateForm, albumCreateSchema } from "@shared/utils";
+import { ArtistCreateForm, artistCreateSchema } from "@shared/utils";
 import { InputText } from "primereact/inputtext";
+import { InputTextarea } from "primereact/inputtextarea";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
 
@@ -28,18 +29,17 @@ function parseIdList(input: string | undefined): number[] {
     .filter((n) => !isNaN(n) && n > 0);
 }
 
-export default function CreateAlbumDialog({
+export default function CreateArtistDialog({
   visible,
   setVisible,
   onCreated,
 }: Props) {
-  const methods = useForm<AlbumCreateForm>({
-    resolver: zodResolver(albumCreateSchema),
+  const methods = useForm<ArtistCreateForm>({
+    resolver: zodResolver(artistCreateSchema),
     defaultValues: {
       name: "",
-      link: "",
-      year: undefined,
-      cover: undefined,
+      description: "",
+      image: undefined,
     },
   });
 
@@ -49,39 +49,38 @@ export default function CreateAlbumDialog({
     formState: { errors },
   } = methods;
 
-  const onSubmit: SubmitHandler<AlbumCreateForm> = useCallback(
+  const onSubmit: SubmitHandler<ArtistCreateForm> = useCallback(
     async (data) => {
       const formData = new FormData();
       formData.append("name", data.name);
-      if (data.link) formData.append("link", data.link);
-      if (data.year !== undefined && data.year !== null) {
-        formData.append("year", String(data.year));
+      if (data.description) {
+        formData.append("description", data.description);
       }
-      if (data.cover) {
-        formData.append("cover", data.cover);
+      if (data.image) {
+        formData.append("image", data.image);
       }
 
       const songIdsInput = (
         document.getElementById("songIds") as HTMLInputElement
       )?.value;
-      const authorIdsInput = (
-        document.getElementById("authorIds") as HTMLInputElement
+      const albumIdsInput = (
+        document.getElementById("albumIds") as HTMLInputElement
       )?.value;
       const songIds = parseIdList(songIdsInput);
-      const authorIds = parseIdList(authorIdsInput);
+      const albumIds = parseIdList(albumIdsInput);
 
       if (songIds.length > 0) {
         formData.append("songIds", JSON.stringify(songIds));
       }
-      if (authorIds.length > 0) {
-        formData.append("authorIds", JSON.stringify(authorIds));
+      if (albumIds.length > 0) {
+        formData.append("albumIds", JSON.stringify(albumIds));
       }
 
       const token = localStorage.getItem("jwt");
       const headers: Record<string, string> = {};
       if (token) headers.Authorization = `Bearer ${token}`;
 
-      const res = await fetch("/api/album/create", {
+      const res = await fetch("/api/artist/create", {
         method: "POST",
         headers,
         body: formData,
@@ -89,7 +88,7 @@ export default function CreateAlbumDialog({
 
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(`Create album failed: ${res.status} ${text}`);
+        throw new Error(`Create artist failed: ${res.status} ${text}`);
       }
 
       onCreated();
@@ -101,16 +100,16 @@ export default function CreateAlbumDialog({
   return (
     <Dialog
       visible={visible}
-      header={() => <div>Add an Album</div>}
+      header={() => <div>Add an Artist</div>}
       onHide={() => setVisible(false)}
       resizable={false}
       draggable={false}
     >
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
-          {/* ALBUM NAME */}
+          {/* ARTIST NAME */}
           <div className="field">
-            <label htmlFor="name">Album Name</label>
+            <label htmlFor="name">Artist Name</label>
             <Controller
               name="name"
               control={control}
@@ -121,11 +120,31 @@ export default function CreateAlbumDialog({
             )}
           </div>
 
-          {/* COVER IMAGE */}
+          {/* DESCRIPTION */}
           <div className="field">
-            <label htmlFor="cover">Cover Image</label>
+            <label htmlFor="description">Description</label>
             <Controller
-              name="cover"
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <InputTextarea
+                  autoResize
+                  id="description"
+                  rows={4}
+                  {...field}
+                />
+              )}
+            />
+            {errors.description && (
+              <small className="p-error">{errors.description.message}</small>
+            )}
+          </div>
+
+          {/* IMAGE */}
+          <div className="field">
+            <label htmlFor="image">Image</label>
+            <Controller
+              name="image"
               control={control}
               render={({ field }) => (
                 <FileUpload
@@ -142,45 +161,6 @@ export default function CreateAlbumDialog({
                 />
               )}
             />
-            {errors.cover && (
-              <small className="p-error">{errors.cover.message}</small>
-            )}
-          </div>
-
-          {/* LINK */}
-          <div className="field">
-            <label htmlFor="link">Link to Album</label>
-            <Controller
-              name="link"
-              control={control}
-              render={({ field }) => <InputText id="link" {...field} />}
-            />
-            {errors.link && (
-              <small className="p-error">{errors.link.message}</small>
-            )}
-          </div>
-
-          {/* YEAR */}
-          <div className="field">
-            <label htmlFor="year">Year</label>
-            <Controller
-              name="year"
-              control={control}
-              render={({ field }) => (
-                <InputText
-                  id="year"
-                  type="number"
-                  value={field.value !== undefined ? String(field.value) : ""}
-                  onChange={(e) => field.onChange(Number(e.target.value))}
-                  onBlur={field.onBlur}
-                  name={field.name}
-                  ref={field.ref}
-                />
-              )}
-            />
-            {errors.year && (
-              <small className="p-error">{errors.year.message}</small>
-            )}
           </div>
 
           {/* SONG IDS */}
@@ -191,12 +171,12 @@ export default function CreateAlbumDialog({
             <InputText id="songIds" placeholder="e.g. 1,2,5" />
           </div>
 
-          {/* AUTHOR IDS */}
+          {/* ALBUM IDS */}
           <div className="field">
-            <label htmlFor="authorIds">
-              Author IDs (comma-separated, optional)
+            <label htmlFor="albumIds">
+              Album IDs (comma-separated, optional)
             </label>
-            <InputText id="authorIds" placeholder="e.g. 3,4" />
+            <InputText id="albumIds" placeholder="e.g. 3,4" />
           </div>
 
           <Button type="submit" label="Submit" className="mt-3" />

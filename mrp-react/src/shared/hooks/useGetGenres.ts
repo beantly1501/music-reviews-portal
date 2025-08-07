@@ -1,17 +1,17 @@
-import { extractErrorMessage, SongType } from "@shared/utils";
+// hooks/useGetGenres.ts
 import { useEffect, useState, useCallback } from "react";
+import { extractErrorMessage, GenreType } from "@shared/utils";
 
-export function useGetSongs() {
-  const [songs, setSongs] = useState<SongType[]>([]);
+export function useGetGenres() {
+  const [genres, setGenres] = useState<GenreType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // fetch function
-  const fetchSongs = useCallback(async () => {
+  const fetchGenres = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("jwt");
-      const res = await fetch("/api/song/all", {
+      const res = await fetch("/api/genre/all", {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
@@ -20,8 +20,8 @@ export function useGetSongs() {
         const text = await res.text();
         throw new Error(text || `HTTP ${res.status}`);
       }
-      const data: SongType[] = await res.json();
-      setSongs(data);
+      const data: GenreType[] = await res.json();
+      setGenres(data);
       setError(null);
     } catch (e: unknown) {
       setError(extractErrorMessage(e));
@@ -31,10 +31,8 @@ export function useGetSongs() {
   }, []);
 
   useEffect(() => {
-    void fetchSongs();
-  }, [fetchSongs]);
+    void fetchGenres();
+  }, [fetchGenres]);
 
-  console.log(songs);
-
-  return { songs, loading, error, refetch: fetchSongs };
+  return { genres, loading, error, refetch: fetchGenres };
 }

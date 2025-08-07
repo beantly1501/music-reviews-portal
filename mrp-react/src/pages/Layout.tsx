@@ -6,7 +6,7 @@ import { useMatchMedia } from "primereact/hooks";
 
 export default function Layout() {
   const navigate = useNavigate();
-  const [selectedTabIndex, setSelectedTabIndex] = useState<number>();
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
 
   const changeTab = (e: TabMenuTabChangeEvent) => {
     switch (e.index) {

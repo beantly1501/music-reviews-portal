@@ -69,7 +69,8 @@ export function RegisterPage() {
       if (!token || isTokenExpired(token)) throw new Error("Invalid token");
 
       localStorage.setItem("jwt", token);
-      navigate("/", { replace: true });
+
+      navigate("/");
     } catch (e: unknown) {
       setError(extractErrorMessage(e));
     }

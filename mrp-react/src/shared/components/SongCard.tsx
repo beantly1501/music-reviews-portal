@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
+import { Chip } from "primereact/chip";
 import { SongReviewFormData, SongType, toDataUrl } from "@shared/utils";
 import "primeflex/primeflex.css";
 import { CreateSongReview } from "../../features/songs/CreateSongReview.tsx";
 import { Toast } from "primereact/toast";
 import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts";
+import { Rating } from "primereact/rating";
+import { Tag } from "primereact/tag";
 
 interface Props {
   song: SongType;
@@ -31,7 +34,6 @@ export default function SongCard({ song, refetch }: Props) {
         summary: `Reviewed ${song.name}`,
         life: 3000,
       });
-
       refetch();
     } catch {
       toastRef.current?.show({
@@ -64,7 +66,7 @@ export default function SongCard({ song, refetch }: Props) {
         objectUrlRef.current = url;
         if (audioRef.current) audioRef.current.src = url;
       } catch {
-        return;
+        // handle error silently
       } finally {
         setLoadingAudio(false);
       }
@@ -103,7 +105,14 @@ export default function SongCard({ song, refetch }: Props) {
           onClick={() => window.open(song.link, "_blank")}
         />
       )}
-      {!song.reviewed && (
+      {song.reviewed ? (
+        <Rating
+          className="mt-3"
+          value={song.grade}
+          unselectable="on"
+          cancel={false}
+        />
+      ) : (
         <Button
           label="Review Song"
           icon="pi pi-star"
@@ -117,12 +126,26 @@ export default function SongCard({ song, refetch }: Props) {
   return (
     <>
       <Card
-        title={song.name}
+        title={
+          <div className="flex justify-content-between">
+            <p className="m-0 p-0">{song.name}</p>
+            {song.reviewed && <Tag value="Reviewed" severity="success" />}
+          </div>
+        }
         subTitle={`Released ${song.year}`}
         header={header}
         footer={footer}
         className="p-shadow-2 p-mb-4"
-      />
+      >
+        {song.genres && song.genres.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {song.genres.map((genre) => (
+              <Chip key={genre.id ?? genre.name} label={genre.name} />
+            ))}
+          </div>
+        )}
+      </Card>
+
       <CreateSongReview
         visible={visibleDialog}
         name={song.name}
@@ -130,6 +153,7 @@ export default function SongCard({ song, refetch }: Props) {
         onHide={() => setVisibleDialog(false)}
         onSubmit={(data) => handleSubmit(data)}
       />
+
       <Toast ref={toastRef} />
     </>
   );
