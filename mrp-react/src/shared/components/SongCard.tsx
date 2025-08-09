@@ -1,16 +1,19 @@
 // src/features/songs/SongCard.tsx
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Chip } from "primereact/chip";
-import { SongReviewFormData, SongType, toDataUrl } from "@shared/utils";
-import "primeflex/primeflex.css";
-import { CreateSongReview } from "../../features/songs/CreateSongReview.tsx";
-import { Toast } from "primereact/toast";
-import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts";
 import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
+import { Toast } from "primereact/toast";
+import "primeflex/primeflex.css";
+
+import { SongReviewFormData, SongType } from "@shared/utils";
 import noImageAvailable from "../../assets/images/no-image-available.jpg";
+import { useGetImage } from "../hooks/useGetImage.ts";
+import { useSongAudio } from "../hooks/useSongAudio.ts";
+import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts";
+import { CreateSongReview } from "../../features/songs/CreateSongReview.tsx";
 
 interface Props {
   song: SongType;
@@ -18,14 +21,22 @@ interface Props {
 }
 
 export default function SongCard({ song, refetch }: Props) {
-  const [loadingAudio, setLoadingAudio] = useState(false);
   const [visibleDialog, setVisibleDialog] = useState(false);
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const objectUrlRef = useRef<string | null>(null);
   const toastRef = useRef<Toast | null>(null);
 
-  const coverUrl = song.cover ? toDataUrl(song.cover) : noImageAvailable;
+  // Image (works for song/album/artist endpoints passed as a URL string)
+  const {
+    loading: loadingImage,
+    exists: imageExists,
+    url: imageUrl,
+  } = useGetImage(`/api/${song.imageUrl}`);
+
+  // Audio (deduped/cached fetch by song id + fileUrl)
+  const {
+    loading: loadingAudio,
+    exists: audioExists,
+    url: audioUrl,
+  } = useSongAudio(song.id, song.fileUrl);
 
   const handleSubmit = async (formData: SongReviewFormData) => {
     try {
@@ -45,48 +56,27 @@ export default function SongCard({ song, refetch }: Props) {
     }
   };
 
-  // fetch audio (only when the song has a file)
-  useEffect(() => {
-    if (!song.file) return;
-    const controller = new AbortController();
-    const token = localStorage.getItem("jwt");
-    if (!token) return;
-
-    const fetchAudio = async () => {
-      setLoadingAudio(true);
-      try {
-        const res = await fetch(`/api/song/audio-file/${song.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-          signal: controller.signal,
-        });
-        if (!res.ok) throw new Error(`Fetch audio failed: ${res.status}`);
-        const blob = await res.blob();
-        if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
-        const url = URL.createObjectURL(blob);
-        objectUrlRef.current = url;
-        if (audioRef.current) audioRef.current.src = url;
-      } catch {
-        // ignore
-      } finally {
-        setLoadingAudio(false);
-      }
-    };
-
-    fetchAudio();
-    return () => {
-      controller.abort();
-      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
-    };
-  }, [song.id, song.file]);
-
   return (
     <>
       <Card className="song-card p-shadow-2">
-        {/* fixed image section */}
-        <img src={coverUrl} alt={song.name} className="song-card__img" />
+        {/* Artwork */}
+        <div className="song-card__img-wrapper">
+          {loadingImage ? (
+            <div className="song-card__img placeholder flex align-items-center justify-content-center">
+              <i className="pi pi-spin pi-spinner" />
+            </div>
+          ) : (
+            <img
+              src={imageExists && imageUrl ? imageUrl : noImageAvailable}
+              alt={song.name}
+              className="song-card__img"
+            />
+          )}
+        </div>
 
+        {/* Body */}
         <div className="song-card__content">
-          {/* title row (tag space reserved even when hidden) */}
+          {/* Title row */}
           <div className="song-card__title-row">
             <h3 className="song-card__title">{song.name}</h3>
             <Tag
@@ -98,28 +88,30 @@ export default function SongCard({ song, refetch }: Props) {
 
           <div className="song-card__subtitle">Released {song.year}</div>
 
-          {/* chips (fixed-height block) */}
+          {/* Genres */}
           <div className="song-card__chips">
             {song.genres?.map((g) => (
               <Chip key={g.id} label={g.name} className="h-2rem" />
             ))}
           </div>
 
-          {/* push controls to bottom */}
+          {/* Spacer pushes controls to bottom */}
           <div className="song-card__spacer" />
 
-          {/* controls (each row fixed height) */}
+          {/* Controls */}
           <div className="song-card__controls">
+            {/* Audio */}
             <div className="song-card__audio">
               {loadingAudio ? (
                 <i className="pi pi-spin pi-spinner" />
-              ) : song.file ? (
-                <audio controls ref={audioRef} />
+              ) : audioExists && audioUrl ? (
+                <audio controls src={audioUrl} />
               ) : (
                 <div className="song-card__placeholder" />
               )}
             </div>
 
+            {/* External link */}
             <div className="song-card__link">
               <Button
                 label="Open Spotify / Youtube link"
@@ -129,8 +121,9 @@ export default function SongCard({ song, refetch }: Props) {
               />
             </div>
 
+            {/* Review */}
             <div className="song-card__review">
-              {song.reviewed ? (
+              {song.grade ? (
                 <Rating value={song.grade} cancel={false} />
               ) : (
                 <Button
@@ -149,7 +142,7 @@ export default function SongCard({ song, refetch }: Props) {
         name={song.name}
         songId={song.id}
         onHide={() => setVisibleDialog(false)}
-        onSubmit={(data) => handleSubmit(data)}
+        onSubmit={handleSubmit}
       />
       <Toast ref={toastRef} />
     </>

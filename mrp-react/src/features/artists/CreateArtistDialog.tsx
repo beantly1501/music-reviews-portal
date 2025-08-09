@@ -1,4 +1,5 @@
-import { Dispatch, useCallback } from "react";
+// src/features/artists/CreateArtistDialog.tsx
+import { Dispatch, useCallback, useEffect, useMemo, useState } from "react";
 import { Dialog } from "primereact/dialog";
 import {
   Controller,
@@ -10,12 +11,26 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArtistCreateForm,
   artistCreateSchema,
+  getToken,
   parseIdList,
 } from "@shared/utils";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
+
+import { useGetSongs } from "../songs/hooks/useGetSongs.tsx";
+import { useGetAlbums } from "../albums/hooks/useGetAlbums.ts";
+
+import CreateLimitedSongDialog from "../../shared/components/CreateLimitedSongDialog.tsx";
+import CreateLimitedAlbumDialog from "../../shared/components/CreateLimitedAlbumDialog.tsx";
+
+import SongMultiSelect, {
+  SongOption,
+} from "../../shared/components/SongMultiSelect.tsx";
+import AlbumMultiSelect, {
+  AlbumOption,
+} from "../../shared/components/AlbumMultiSelect.tsx";
 
 interface Props {
   visible: boolean;
@@ -28,6 +43,68 @@ export default function CreateArtistDialog({
   setVisible,
   onCreated,
 }: Props) {
+  const { songs, loading: songsLoading, refetch: refetchSongs } = useGetSongs();
+  const {
+    albums,
+    loading: albumsLoading,
+    refetch: refetchAlbums,
+  } = useGetAlbums();
+
+  // Local selection state
+  const [selectedSongIds, setSelectedSongIds] = useState<number[]>([]);
+  const [selectedAlbumIds, setSelectedAlbumIds] = useState<number[]>([]);
+
+  // Quick-create dialog visibility
+  const [songDialogVisible, setSongDialogVisible] = useState(false);
+  const [albumDialogVisible, setAlbumDialogVisible] = useState(false);
+
+  // Hidden inputs sync (kept for existing submit logic)
+  useEffect(() => {
+    const el = document.getElementById("songIds") as HTMLInputElement | null;
+    if (el) el.value = selectedSongIds.join(",");
+  }, [selectedSongIds]);
+
+  useEffect(() => {
+    const el = document.getElementById("albumIds") as HTMLInputElement | null;
+    if (el) el.value = selectedAlbumIds.join(",");
+  }, [selectedAlbumIds]);
+
+  // When the dialog opens, you may refresh lists (optional)
+  useEffect(() => {
+    if (visible) {
+      refetchSongs?.();
+      refetchAlbums?.();
+    }
+  }, [visible, refetchSongs, refetchAlbums]);
+
+  // After creating inside child dialogs, refetch so new option appears
+  const handleSongCreated = useCallback(() => {
+    refetchSongs?.();
+    setSongDialogVisible(false);
+  }, [refetchSongs]);
+
+  const handleAlbumCreated = useCallback(() => {
+    refetchAlbums?.();
+    setAlbumDialogVisible(false);
+  }, [refetchAlbums]);
+
+  // Map fetched data into options for MultiSelects
+  const songOptions: SongOption[] = useMemo(
+    () =>
+      (songs ?? []).map((s) => ({
+        id: s.id,
+        name: s.name,
+        year: s.year,
+      })) as SongOption[],
+    [songs],
+  );
+
+  const albumOptions: AlbumOption[] = useMemo(
+    () => (albums as AlbumOption[]) ?? [],
+    [albums],
+  );
+
+  // Form
   const methods = useForm<ArtistCreateForm>({
     resolver: zodResolver(artistCreateSchema),
     defaultValues: {
@@ -47,30 +124,26 @@ export default function CreateArtistDialog({
     async (data) => {
       const formData = new FormData();
       formData.append("name", data.name);
-      if (data.description) {
-        formData.append("description", data.description);
-      }
-      if (data.image) {
-        formData.append("image", data.image);
-      }
+      if (data.description) formData.append("description", data.description);
+      if (data.image) formData.append("image", data.image);
 
+      // read raw ids from hidden inputs (kept for API compatibility)
       const songIdsInput = (
         document.getElementById("songIds") as HTMLInputElement
       )?.value;
       const albumIdsInput = (
         document.getElementById("albumIds") as HTMLInputElement
       )?.value;
+
       const songIds = parseIdList(songIdsInput);
       const albumIds = parseIdList(albumIdsInput);
 
-      if (songIds.length > 0) {
+      if (songIds.length > 0)
         formData.append("songIds", JSON.stringify(songIds));
-      }
-      if (albumIds.length > 0) {
+      if (albumIds.length > 0)
         formData.append("albumIds", JSON.stringify(albumIds));
-      }
 
-      const token = localStorage.getItem("jwt");
+      const token = getToken();
       const headers: Record<string, string> = {};
       if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -157,25 +230,57 @@ export default function CreateArtistDialog({
             />
           </div>
 
-          {/* SONG IDS */}
+          {/* SONGS MULTISELECT */}
           <div className="field">
-            <label htmlFor="songIds">
-              Song IDs (comma-separated, optional)
-            </label>
-            <InputText id="songIds" placeholder="e.g. 1,2,5" />
+            <label htmlFor="songIdsSelect">Songs (optional)</label>
+            <SongMultiSelect
+              value={selectedSongIds}
+              options={songOptions}
+              loading={songsLoading}
+              onChange={setSelectedSongIds}
+              onCreateNew={() => setSongDialogVisible(true)}
+              appendTo={
+                typeof document !== "undefined" ? document.body : undefined
+              }
+              className="w-full"
+            />
           </div>
 
-          {/* ALBUM IDS */}
+          {/* ALBUMS MULTISELECT */}
           <div className="field">
-            <label htmlFor="albumIds">
-              Album IDs (comma-separated, optional)
-            </label>
-            <InputText id="albumIds" placeholder="e.g. 3,4" />
+            <label htmlFor="albumIdsSelect">Albums (optional)</label>
+            <AlbumMultiSelect
+              value={selectedAlbumIds}
+              options={albumOptions}
+              loading={albumsLoading}
+              onChange={setSelectedAlbumIds}
+              onCreateNew={() => setAlbumDialogVisible(true)}
+              appendTo={
+                typeof document !== "undefined" ? document.body : undefined
+              }
+              className="w-full"
+            />
           </div>
+
+          {/* HIDDEN INPUTS kept for existing onSubmit logic (do not remove) */}
+          <input type="hidden" id="songIds" />
+          <input type="hidden" id="albumIds" />
 
           <Button type="submit" label="Submit" className="mt-3" />
         </form>
       </FormProvider>
+
+      {/* CREATE DIALOGS */}
+      <CreateLimitedSongDialog
+        visible={songDialogVisible}
+        setVisible={setSongDialogVisible}
+        onCreated={handleSongCreated}
+      />
+      <CreateLimitedAlbumDialog
+        visible={albumDialogVisible}
+        setVisible={setAlbumDialogVisible}
+        onCreated={handleAlbumCreated}
+      />
     </Dialog>
   );
 }

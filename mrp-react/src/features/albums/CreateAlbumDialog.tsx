@@ -9,7 +9,12 @@ import {
   useForm,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlbumCreateForm, albumCreateSchema, parseIdList } from "@shared/utils";
+import {
+  AlbumCreateForm,
+  albumCreateSchema,
+  getToken,
+  parseIdList,
+} from "@shared/utils";
 import { InputText } from "primereact/inputtext";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
@@ -110,14 +115,6 @@ export default function CreateAlbumDialog({
     formState: { errors },
   } = methods;
 
-  // when dialog opens, refresh lists
-  useEffect(() => {
-    if (visible) {
-      refetchArtists?.();
-      refetchSongs?.();
-    }
-  }, [visible, refetchArtists, refetchSongs]);
-
   const onSubmit: SubmitHandler<AlbumCreateForm> = useCallback(
     async (data) => {
       const formData = new FormData();
@@ -147,7 +144,7 @@ export default function CreateAlbumDialog({
         formData.append("artistIds", JSON.stringify(artistIds));
       }
 
-      const token = localStorage.getItem("jwt");
+      const token = getToken();
       const headers: Record<string, string> = {};
       if (token) headers.Authorization = `Bearer ${token}`;
 

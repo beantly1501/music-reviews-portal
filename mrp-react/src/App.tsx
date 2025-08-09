@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router";
+import { Route, Routes } from "react-router-dom";
 import Layout from "./pages/Layout.tsx";
 import SongsPage from "./features/songs/Songs.page.tsx";
 import NewestReviewsPage from "./features/newest-reviews/NewestReviews.page.tsx";

@@ -1,7 +1,7 @@
-import { AlbumReviewFormData } from "@shared/utils";
+import { AlbumReviewFormData, getToken } from "@shared/utils";
 
 export async function submitAlbumReview(data: AlbumReviewFormData) {
-  const token = localStorage.getItem("jwt");
+  const token = getToken();
   if (!token) throw new Error("Not authenticated");
 
   const res = await fetch("/api/album-review/create", {

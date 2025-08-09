@@ -1,7 +1,7 @@
-import { SongReviewFormData } from "@shared/utils";
+import { getToken, SongReviewFormData } from "@shared/utils";
 
 export async function submitSongReview(data: SongReviewFormData) {
-  const token = localStorage.getItem("jwt");
+  const token = getToken();
   if (!token) throw new Error("Not authenticated");
 
   const res = await fetch("/api/song-review/create", {

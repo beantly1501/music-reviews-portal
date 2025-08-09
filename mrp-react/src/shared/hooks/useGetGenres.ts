@@ -1,6 +1,6 @@
 // hooks/useGetGenres.ts
 import { useEffect, useState, useCallback } from "react";
-import { extractErrorMessage, GenreType } from "@shared/utils";
+import { extractErrorMessage, GenreType, getToken } from "@shared/utils";
 
 export function useGetGenres() {
   const [genres, setGenres] = useState<GenreType[]>([]);
@@ -10,7 +10,7 @@ export function useGetGenres() {
   const fetchGenres = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("jwt");
+      const token = getToken();
       const res = await fetch("/api/genre/all", {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),

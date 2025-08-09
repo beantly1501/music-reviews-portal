@@ -3,7 +3,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { ProfileInfo } from "./ProfileInfo";
 import { Button } from "primereact/button";
 import { useGetMyReviews } from "./hooks/useGetMyReviews.ts";

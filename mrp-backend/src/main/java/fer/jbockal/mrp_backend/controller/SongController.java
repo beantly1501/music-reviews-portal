@@ -51,6 +51,11 @@ public class SongController {
     @GetMapping(value = "/audio-file/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<ByteArrayResource> streamAudio(@PathVariable Long id) {
         byte[] bytes = songService.getSongFile(id);
+
+        if (bytes == null) {
+            return ResponseEntity.notFound().build();
+        }
+
         var resource = new ByteArrayResource(bytes);
         String filename = URLEncoder.encode("song-" + id, StandardCharsets.UTF_8) + ".bin";
         return ResponseEntity.ok()
@@ -62,6 +67,11 @@ public class SongController {
     @GetMapping(value = "/image/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<ByteArrayResource> image(@PathVariable Long id) {
         byte[] bytes = songService.getSongImage(id);
+
+        if (bytes == null) {
+            return ResponseEntity.notFound().build();
+        }
+
         var resource = new ByteArrayResource(bytes);
         String filename = URLEncoder.encode("song-img-" + id, StandardCharsets.UTF_8) + ".bin";
         return ResponseEntity.ok()

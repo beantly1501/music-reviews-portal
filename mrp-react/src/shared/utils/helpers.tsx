@@ -1,5 +1,5 @@
 import { jwtDecode, JwtPayload } from "jwt-decode";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { UserInfo } from "./types.tsx";
 import { useCallback, useEffect, useState } from "react";
 
@@ -48,7 +48,7 @@ export async function checkServerTokenValidity(
 }
 
 export async function ensureValidTokenOrRefresh() {
-  const token = localStorage.getItem("jwt");
+  const token = getToken();
   if (!token || isTokenExpired(token)) {
     // attempt refresh or redirect to login-register
     // e.g., call /api/auth/refresh and replace token
@@ -84,7 +84,7 @@ export function useCurrentUser() {
   const fetchUser = useCallback(async () => {
     setState({ user: null, loading: true, error: null });
 
-    const token = localStorage.getItem("jwt");
+    const token = getToken();
     if (!token) {
       setState({ user: null, loading: false, error: "No auth token" });
       return;

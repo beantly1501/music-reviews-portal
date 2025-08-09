@@ -33,11 +33,13 @@ export default function AlbumsPage() {
         )}
       </div>
 
-      <CreateAlbumDialog
-        visible={visibleDialog}
-        setVisible={setVisibleDialog}
-        onCreated={refetch}
-      />
+      {visibleDialog && (
+        <CreateAlbumDialog
+          visible={visibleDialog}
+          setVisible={setVisibleDialog}
+          onCreated={refetch}
+        />
+      )}
     </>
   );
 }

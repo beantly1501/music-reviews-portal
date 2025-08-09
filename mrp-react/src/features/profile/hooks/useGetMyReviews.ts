@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { extractErrorMessage, ReviewResponse } from "@shared/utils";
+import { extractErrorMessage, getToken, ReviewResponse } from "@shared/utils";
 
 interface UseGetMyReviewsResult {
   reviews: ReviewResponse[];
@@ -17,7 +17,7 @@ export function useGetMyReviews(count?: number): UseGetMyReviewsResult {
     setLoading(true);
     setError(null);
 
-    const jwt = localStorage.getItem("jwt");
+    const jwt = getToken();
     if (!jwt) {
       setError("No authentication token found.");
       setLoading(false);

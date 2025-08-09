@@ -1,4 +1,4 @@
-import { extractErrorMessage, AlbumType } from "@shared/utils";
+import { extractErrorMessage, AlbumType, getToken } from "@shared/utils";
 import { useEffect, useState, useCallback } from "react";
 
 export function useGetAlbums() {
@@ -9,7 +9,7 @@ export function useGetAlbums() {
   const fetchAlbums = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("jwt");
+      const token = getToken();
       const res = await fetch("/api/album/all", {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -32,8 +32,6 @@ export function useGetAlbums() {
   useEffect(() => {
     void fetchAlbums();
   }, [fetchAlbums]);
-
-  console.log(albums, "albums");
 
   return { albums, loading, error, refetch: fetchAlbums };
 }

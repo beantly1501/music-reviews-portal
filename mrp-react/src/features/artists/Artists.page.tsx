@@ -8,6 +8,9 @@ export default function ArtistsPage() {
   const { artists, loading, error, refetch } = useGetArtists();
   const [visibleDialog, setVisibleDialog] = useState<boolean>(false);
 
+  if (loading) return <p>Loading…</p>;
+  if (error) return <p>Error: {error}</p>;
+
   return (
     <>
       <div className="flex flex-column justify-content-center align-items-center gap-4 p-4">
@@ -16,9 +19,6 @@ export default function ArtistsPage() {
           className="w-12rem"
           onClick={() => setVisibleDialog(true)}
         />
-
-        {loading && <div>Loading artists...</div>}
-        {error && <div style={{ color: "red" }}>{error}</div>}
 
         {!loading && !error && artists.length > 0 && (
           <div className="flex flex-wrap gap-4 justify-content-center">

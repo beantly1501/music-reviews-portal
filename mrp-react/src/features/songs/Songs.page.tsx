@@ -26,11 +26,16 @@ export default function SongsPage() {
           ))}
         </div>
       </div>
-      <CreateSongDialog
-        visible={visibleDialog}
-        setVisible={setVisibleDialog}
-        onCreated={refetch}
-      />
+
+      {!loading && !error && songs.length === 0 && <div>No songs found.</div>}
+
+      {visibleDialog && (
+        <CreateSongDialog
+          visible={visibleDialog}
+          setVisible={setVisibleDialog}
+          onCreated={refetch}
+        />
+      )}
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { extractErrorMessage, ReviewResponse } from "@shared/utils";
+import { extractErrorMessage, getToken, ReviewResponse } from "@shared/utils";
 
 export function useGetNewestRatings(count = 20) {
   const [reviews, setReviews] = useState<ReviewResponse[]>([]);
@@ -13,7 +13,7 @@ export function useGetNewestRatings(count = 20) {
       setLoading(true);
       setError(null);
       try {
-        const token = localStorage.getItem("jwt");
+        const token = getToken();
         const url = `/api/reviews/newest?count=${encodeURIComponent(count)}`;
         const res = await fetch(url, {
           headers: {
@@ -38,8 +38,6 @@ export function useGetNewestRatings(count = 20) {
       cancelled = true;
     };
   }, [count]);
-
-  console.log(reviews, "reviews");
 
   return { reviews, loading, error };
 }

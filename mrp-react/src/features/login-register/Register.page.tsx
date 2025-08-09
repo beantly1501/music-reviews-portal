@@ -1,4 +1,3 @@
-// RegisterPage.tsx
 import { useState } from "react";
 import {
   Controller,
@@ -16,7 +15,8 @@ import {
   RegisterForm,
   registerSchema,
 } from "@shared/utils";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../shared/components/Auth.tsx";
 
 type JwtPayload = { exp?: number; sub?: string };
 
@@ -32,6 +32,7 @@ function isTokenExpired(token: string): boolean {
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
   const methods = useForm<RegisterForm>({
@@ -40,7 +41,7 @@ export function RegisterPage() {
       username: "",
       password: "",
       email: "",
-      role: "USER", // default role
+      role: "USER",
     },
   });
 
@@ -56,12 +57,7 @@ export function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: data.username,
-          password: data.password,
-          email: data.email,
-          role: data.role, // <-- include Role enum
-        }),
+        body: JSON.stringify(data),
       });
       if (!res.ok) {
         const txt = await res.text();
@@ -71,7 +67,7 @@ export function RegisterPage() {
       const token: string = body.token;
       if (!token || isTokenExpired(token)) throw new Error("Invalid token");
 
-      localStorage.setItem("jwt", token);
+      login(token);
       navigate("/");
     } catch (e: unknown) {
       setError(extractErrorMessage(e));
@@ -123,7 +119,6 @@ export function RegisterPage() {
             )}
           </div>
 
-          {/* Role selector */}
           <div className="field">
             <label className="block mb-2">Role</label>
             <div className="flex items-center gap-6">

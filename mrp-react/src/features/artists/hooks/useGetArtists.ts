@@ -1,4 +1,4 @@
-import { extractErrorMessage, ArtistType } from "@shared/utils";
+import { extractErrorMessage, ArtistType, getToken } from "@shared/utils";
 import { useEffect, useState, useCallback } from "react";
 
 export function useGetArtists() {
@@ -9,7 +9,7 @@ export function useGetArtists() {
   const fetchArtists = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("jwt");
+      const token = getToken();
       const res = await fetch("/api/artist/all", {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -32,8 +32,6 @@ export function useGetArtists() {
   useEffect(() => {
     void fetchArtists();
   }, [fetchArtists]);
-
-  console.log(artists, "artists");
 
   return { artists, loading, error, refetch: fetchArtists };
 }

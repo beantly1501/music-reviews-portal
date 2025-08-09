@@ -3,9 +3,9 @@ import { z } from "zod";
 export type SongType = {
   id: number;
   name: string;
-  cover?: string;
+  imageUrl?: string;
   link?: string;
-  file?: string;
+  fileUrl?: string;
   genres?: GenreType[];
   year: number;
   reviewed: boolean;
@@ -24,7 +24,7 @@ export type AlbumType = {
 export type ArtistType = {
   id: number;
   name: string;
-  image?: string;
+  imageUrl?: string;
   description: string;
 };
 

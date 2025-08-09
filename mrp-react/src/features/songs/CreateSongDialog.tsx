@@ -7,7 +7,12 @@ import {
   useForm,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { parseIdList, SongCreateForm, songCreateSchema } from "@shared/utils";
+import {
+  getToken,
+  parseIdList,
+  SongCreateForm,
+  songCreateSchema,
+} from "@shared/utils";
 import { InputText } from "primereact/inputtext";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
@@ -101,8 +106,7 @@ export default function CreateSongDialog({
   );
 
   const genreOptions: GenreOption[] = useMemo(
-    () =>
-      (genres ?? []).map((g) => ({ id: g.id, name: g.name })) as GenreOption[],
+    () => (genres as GenreOption[]) ?? [],
     [genres],
   );
 
@@ -123,14 +127,6 @@ export default function CreateSongDialog({
     control,
     formState: { errors },
   } = methods;
-
-  useEffect(() => {
-    if (visible) {
-      refetchGenres?.();
-      refetchArtists?.();
-      refetchAlbums?.();
-    }
-  }, [visible, refetchGenres, refetchArtists, refetchAlbums]);
 
   const onSubmit: SubmitHandler<SongCreateForm> = useCallback(
     async (data) => {
@@ -163,7 +159,7 @@ export default function CreateSongDialog({
         formData.append("artistIds", JSON.stringify(artistIds));
       }
 
-      const token = localStorage.getItem("jwt");
+      const token = getToken();
       const headers: Record<string, string> = {};
       if (token) headers.Authorization = `Bearer ${token}`;
 

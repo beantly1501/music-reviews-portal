@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useLocation } from "react-router";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import { TabMenu, TabMenuTabChangeEvent } from "primereact/tabmenu";
 import { MOBILE_TABS_MENU, TABS_MENU } from "@shared/utils";

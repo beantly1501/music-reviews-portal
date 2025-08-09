@@ -83,16 +83,12 @@ public class SongService {
 
     @Transactional(readOnly = true)
     public byte[] getSongImage(Long id) {
-        byte[] bytes = songRepository.findCoverById(id);
-        if (bytes == null) throw new IllegalArgumentException("Image not found for song: " + id);
-        return bytes;
+        return songRepository.findCoverById(id);
     }
 
     @Transactional(readOnly = true)
     public byte[] getSongFile(Long id) {
-        byte[] bytes = songRepository.findFileById(id);
-        if (bytes == null) throw new IllegalArgumentException("Audio file not found for song: " + id);
-        return bytes;
+        return songRepository.findFileById(id);
     }
 
     // ---------- WRITE: create / update / delete ----------

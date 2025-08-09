@@ -1,25 +1,30 @@
 import { Card } from "primereact/card";
-import { ArtistType, toDataUrl } from "@shared/utils";
+import { ArtistType } from "@shared/utils";
+import { useGetImage } from "../hooks/useGetImage.ts";
+import noImageAvailable from "../../assets/images/no-image-available.jpg";
 
 interface Props {
   artist: ArtistType;
 }
 
 export default function ArtistCard({ artist }: Props) {
-  const imageUrl = artist.image ? toDataUrl(artist.image) : null;
+  const {
+    loading: loadingImage,
+    exists: imageExists,
+    url: imageUrl,
+  } = useGetImage(`/api/${artist.imageUrl}`);
 
-  const header = imageUrl ? (
+  const header = loadingImage ? (
+    <div className="song-card__img placeholder flex align-items-center justify-content-center">
+      <i className="pi pi-spin pi-spinner" />
+    </div>
+  ) : (
     <img
-      src={imageUrl}
+      src={imageExists && imageUrl ? imageUrl : noImageAvailable}
       alt={artist.name}
-      className="img-fluid"
-      style={{
-        maxHeight: "200px",
-        objectFit: "cover",
-        borderRadius: "0.5rem",
-      }}
+      className="song-card__img"
     />
-  ) : null;
+  );
 
   return (
     <Card

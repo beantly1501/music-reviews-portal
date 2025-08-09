@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArtistCreateForm,
   artistCreateSchema,
+  getToken,
   parseIdList,
 } from "@shared/utils";
 import { InputText } from "primereact/inputtext";
@@ -70,7 +71,7 @@ export default function CreateLimitedArtistDialog({
         formData.append("albumIds", JSON.stringify(albumIds));
       }
 
-      const token = localStorage.getItem("jwt");
+      const token = getToken();
       const headers: Record<string, string> = {};
       if (token) headers.Authorization = `Bearer ${token}`;
 

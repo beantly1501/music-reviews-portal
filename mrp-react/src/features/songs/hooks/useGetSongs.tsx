@@ -1,4 +1,4 @@
-import { extractErrorMessage, SongType } from "@shared/utils";
+import { extractErrorMessage, getToken, SongType } from "@shared/utils";
 import { useEffect, useState, useCallback } from "react";
 
 export function useGetSongs() {
@@ -10,7 +10,7 @@ export function useGetSongs() {
   const fetchSongs = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("jwt");
+      const token = getToken();
       const res = await fetch("/api/song/all", {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -33,8 +33,6 @@ export function useGetSongs() {
   useEffect(() => {
     void fetchSongs();
   }, [fetchSongs]);
-
-  console.log(songs);
 
   return { songs, loading, error, refetch: fetchSongs };
 }
