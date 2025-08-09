@@ -17,8 +17,8 @@ public class ImageController {
 
 
     @GetMapping("/song/{id}")
-    public ResponseEntity<byte[]> getSongCover(@PathVariable Long id) {
-        return imageService.getSongCover(id)
+    public ResponseEntity<byte[]> getSongImage(@PathVariable Long id) {
+        return imageService.getSongImage(id)
                 .map(data -> ResponseEntity.ok()
                         .contentType(data.mediaType())
                         .cacheControl(CacheControl.maxAge(Duration.ofHours(24)).cachePublic())
@@ -27,8 +27,18 @@ public class ImageController {
     }
 
     @GetMapping("/album/{id}")
-    public ResponseEntity<byte[]> getAlbumCover(@PathVariable Long id) {
-        return imageService.getAlbumCover(id)
+    public ResponseEntity<byte[]> getAlbumImage(@PathVariable Long id) {
+        return imageService.getAlbumImage(id)
+                .map(data -> ResponseEntity.ok()
+                        .contentType(data.mediaType())
+                        .cacheControl(CacheControl.maxAge(Duration.ofHours(24)).cachePublic())
+                        .body(data.bytes()))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/artist/{id}")
+    public ResponseEntity<byte[]> getArtistImage(@PathVariable Long id) {
+        return imageService.getArtistImage(id)
                 .map(data -> ResponseEntity.ok()
                         .contentType(data.mediaType())
                         .cacheControl(CacheControl.maxAge(Duration.ofHours(24)).cachePublic())

@@ -16,13 +16,12 @@ import java.util.Set;
 public class SongResponseDto {
     private Long id;
     private String name;
-    private byte[] cover;
+    private String imageUrl;
+    private String fileUrl;
     private String link;
-    private byte[] file;
     private Long year;
     private Set<AlbumPartialDto> albums;
     private Set<ArtistPartialDto> artists;
     private Set<GenrePartialDto> genres;
-    private boolean reviewed;
     private Integer grade;
 }

@@ -12,7 +12,7 @@ import java.util.Set;
 public class ArtistResponseDto {
     public Long id;
     private String name;
-    private byte[] image;
+    private String imageUrl;
     private String description;
     private Set<SongPartialDto> songs;
     private Set<AlbumPartialDto> albums;

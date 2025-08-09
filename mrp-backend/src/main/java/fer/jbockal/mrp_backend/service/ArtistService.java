@@ -146,17 +146,29 @@ public class ArtistService {
      */
     private ArtistResponseDto toDto(Artist artist) {
         Set<SongPartialDto> songs = artist.getSongs().stream()
-                .map(s -> new SongPartialDto(s.getId(), s.getName(), s.getCover(), s.getLink(), s.getFile(), s.getYear()))
+                .map(s -> {
+                    String imageUrl = "/images/song/" + s.getId();
+                    String fileUrl = "/song/audio-file/" + s.getId();
+                    return new SongPartialDto(s.getId(), s.getName(), imageUrl, s.getLink(), fileUrl, s.getYear());
+                })
                 .collect(Collectors.toSet());
+
         Set<AlbumPartialDto> albums = artist.getAlbums().stream()
-                .map(a -> new AlbumPartialDto(a.getId(), a.getName(), a.getCover(), a.getLink(), a.getYear()))
+                .map(a -> {
+                    String imageUrl = "/images/album/" + a.getId();
+                    return new AlbumPartialDto(a.getId(), a.getName(), imageUrl, a.getLink(), a.getYear());
+                })
                 .collect(Collectors.toSet());
+
         songs = songs.isEmpty() ? null : songs;
         albums = albums.isEmpty() ? null : albums;
+
+        String imageUrl = "/images/artist/" + artist.getId();
+
         return new ArtistResponseDto(
                 artist.getId(),
                 artist.getName(),
-                artist.getImage(),
+                imageUrl,
                 artist.getDescription(),
                 songs,
                 albums

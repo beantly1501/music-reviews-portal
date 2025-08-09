@@ -1,3 +1,4 @@
+// src/features/songs/SongCard.tsx
 import { useEffect, useRef, useState } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
@@ -9,6 +10,7 @@ import { Toast } from "primereact/toast";
 import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts";
 import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
+import noImageAvailable from "../../assets/images/no-image-available.jpg";
 
 interface Props {
   song: SongType;
@@ -21,10 +23,9 @@ export default function SongCard({ song, refetch }: Props) {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
-
   const toastRef = useRef<Toast | null>(null);
 
-  const coverUrl = song.cover ? toDataUrl(song.cover) : null;
+  const coverUrl = song.cover ? toDataUrl(song.cover) : noImageAvailable;
 
   const handleSubmit = async (formData: SongReviewFormData) => {
     try {
@@ -44,10 +45,9 @@ export default function SongCard({ song, refetch }: Props) {
     }
   };
 
-  // Fetch audio file
+  // fetch audio (only when the song has a file)
   useEffect(() => {
     if (!song.file) return;
-
     const controller = new AbortController();
     const token = localStorage.getItem("jwt");
     if (!token) return;
@@ -66,7 +66,7 @@ export default function SongCard({ song, refetch }: Props) {
         objectUrlRef.current = url;
         if (audioRef.current) audioRef.current.src = url;
       } catch {
-        // handle error silently
+        // ignore
       } finally {
         setLoadingAudio(false);
       }
@@ -79,71 +79,69 @@ export default function SongCard({ song, refetch }: Props) {
     };
   }, [song.id, song.file]);
 
-  const header = coverUrl ? (
-    <img
-      src={coverUrl}
-      alt={song.name}
-      className="img-fluid"
-      style={{ maxHeight: "200px", objectFit: "cover", borderRadius: "0.5rem" }}
-    />
-  ) : null;
-
-  const footer = (
-    <div className="flex flex-column align-content-center align-items-center justify-content-center gap-2">
-      <div className="mx-auto">
-        {loadingAudio ? (
-          <i className="pi pi-spin pi-spinner" />
-        ) : (
-          song.file && <audio controls ref={audioRef} />
-        )}
-      </div>
-      {song.link && (
-        <Button
-          label="Open Spotify / Youtube link"
-          icon="pi pi-external-link"
-          className="mx-auto"
-          onClick={() => window.open(song.link, "_blank")}
-        />
-      )}
-      {song.reviewed ? (
-        <Rating
-          className="mt-3"
-          value={song.grade}
-          unselectable="on"
-          cancel={false}
-        />
-      ) : (
-        <Button
-          label="Review Song"
-          icon="pi pi-star"
-          className="mx-auto"
-          onClick={() => setVisibleDialog(true)}
-        />
-      )}
-    </div>
-  );
-
   return (
     <>
-      <Card
-        title={
-          <div className="flex justify-content-between">
-            <p className="m-0 p-0">{song.name}</p>
-            {song.reviewed && <Tag value="Reviewed" severity="success" />}
+      <Card className="song-card p-shadow-2">
+        {/* fixed image section */}
+        <img src={coverUrl} alt={song.name} className="song-card__img" />
+
+        <div className="song-card__content">
+          {/* title row (tag space reserved even when hidden) */}
+          <div className="song-card__title-row">
+            <h3 className="song-card__title">{song.name}</h3>
+            <Tag
+              value="Reviewed"
+              severity="success"
+              style={{ visibility: song.reviewed ? "visible" : "hidden" }}
+            />
           </div>
-        }
-        subTitle={`Released ${song.year}`}
-        header={header}
-        footer={footer}
-        className="p-shadow-2 p-mb-4"
-      >
-        {song.genres && song.genres.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {song.genres.map((genre) => (
-              <Chip key={genre.id ?? genre.name} label={genre.name} />
+
+          <div className="song-card__subtitle">Released {song.year}</div>
+
+          {/* chips (fixed-height block) */}
+          <div className="song-card__chips">
+            {song.genres?.map((g) => (
+              <Chip key={g.id} label={g.name} className="h-2rem" />
             ))}
           </div>
-        )}
+
+          {/* push controls to bottom */}
+          <div className="song-card__spacer" />
+
+          {/* controls (each row fixed height) */}
+          <div className="song-card__controls">
+            <div className="song-card__audio">
+              {loadingAudio ? (
+                <i className="pi pi-spin pi-spinner" />
+              ) : song.file ? (
+                <audio controls ref={audioRef} />
+              ) : (
+                <div className="song-card__placeholder" />
+              )}
+            </div>
+
+            <div className="song-card__link">
+              <Button
+                label="Open Spotify / Youtube link"
+                icon="pi pi-external-link"
+                onClick={() => song.link && window.open(song.link, "_blank")}
+                style={{ visibility: song.link ? "visible" : "hidden" }}
+              />
+            </div>
+
+            <div className="song-card__review">
+              {song.reviewed ? (
+                <Rating value={song.grade} cancel={false} />
+              ) : (
+                <Button
+                  label="Review Song"
+                  icon="pi pi-star"
+                  onClick={() => setVisibleDialog(true)}
+                />
+              )}
+            </div>
+          </div>
+        </div>
       </Card>
 
       <CreateSongReview
@@ -153,7 +151,6 @@ export default function SongCard({ song, refetch }: Props) {
         onHide={() => setVisibleDialog(false)}
         onSubmit={(data) => handleSubmit(data)}
       />
-
       <Toast ref={toastRef} />
     </>
   );

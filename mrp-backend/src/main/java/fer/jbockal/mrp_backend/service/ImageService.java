@@ -2,6 +2,7 @@ package fer.jbockal.mrp_backend.service;
 
 import fer.jbockal.mrp_backend.dto.ImageDataDto;
 import fer.jbockal.mrp_backend.repository.AlbumRepository;
+import fer.jbockal.mrp_backend.repository.ArtistRepository;
 import fer.jbockal.mrp_backend.repository.SongRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
@@ -18,19 +19,26 @@ public class ImageService {
 
     private final SongRepository songRepository;
     private final AlbumRepository albumRepository;
+    private final ArtistRepository artistRepository;
 
     // Set true to return a placeholder image instead of 404 when missing.
     private static final String PLACEHOLDER_PATH = "static/cover-placeholder.png";
 
-    public Optional<ImageDataDto> getSongCover(Long songId) {
+    public Optional<ImageDataDto> getSongImage(Long songId) {
         return songRepository.findById(songId)
                 .flatMap(song -> coverFromBytes(song.getCover()))
                 .or(this::placeholderIfEnabled);
     }
 
-    public Optional<ImageDataDto> getAlbumCover(Long albumId) {
+    public Optional<ImageDataDto> getAlbumImage(Long albumId) {
         return albumRepository.findById(albumId)
                 .flatMap(album -> coverFromBytes(album.getCover()))
+                .or(this::placeholderIfEnabled);
+    }
+
+    public Optional<ImageDataDto> getArtistImage(Long artistId) {
+        return artistRepository.findById(artistId)
+                .flatMap(album -> coverFromBytes(album.getImage()))
                 .or(this::placeholderIfEnabled);
     }
 

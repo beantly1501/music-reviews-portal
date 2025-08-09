@@ -198,38 +198,43 @@ public class SongService {
         songRepository.delete(song);
     }
 
-    /**
-     * Map a Song entity to a SongResponseDto.
-     */
     private SongResponseDto toDto(Song song, Integer grade) {
-        boolean reviewed = grade != null;
+        Set<AlbumPartialDto> albumDtos = song.getAlbums().isEmpty() ? null :
+                song.getAlbums().stream()
+                        .map(a -> {
+                            String imageUrl = "/images/album/" + a.getId();
+                            return new AlbumPartialDto(a.getId(), a.getName(), imageUrl, a.getLink(), a.getYear());
+                        })
+                        .collect(Collectors.toSet());
 
-        Set<AlbumPartialDto> albumDtos = song.getAlbums().stream()
-                .map(a -> new AlbumPartialDto(a.getId(), a.getName(), a.getCover(), a.getLink(), a.getYear()))
-                .collect(Collectors.toSet());
-        Set<ArtistPartialDto> artistDtos = song.getArtists().stream()
-                .map(ar -> new ArtistPartialDto(ar.getId(), ar.getName(), ar.getImage(), ar.getDescription()))
-                .collect(Collectors.toSet());
-        Set<GenrePartialDto> genreDtos = song.getGenres().stream()
-                .map(g -> new GenrePartialDto(g.getId(), g.getName()))
-                .collect(Collectors.toSet());
+        Set<ArtistPartialDto> artistDtos = song.getArtists().isEmpty() ? null :
+                song.getArtists().stream()
+                        .map(ar -> {
+                            String imageUrl = "/images/artist/" + ar.getId();
+                            return new ArtistPartialDto(ar.getId(), ar.getName(), imageUrl, ar.getDescription());
+                        })
+                        .collect(Collectors.toSet());
 
-        albumDtos = albumDtos.isEmpty() ? null : albumDtos;
-        artistDtos = artistDtos.isEmpty() ? null : artistDtos;
-        genreDtos = genreDtos.isEmpty() ? null : genreDtos;
+        Set<GenrePartialDto> genreDtos = song.getGenres().isEmpty() ? null :
+                song.getGenres().stream()
+                        .map(g -> new GenrePartialDto(g.getId(), g.getName()))
+                        .collect(Collectors.toSet());
+
+        String imageUrl = "/images/song/" + song.getId();
+        String fileUrl = "/song/audio-file/" + song.getId();
 
         return new SongResponseDto(
                 song.getId(),
                 song.getName(),
-                song.getCover(),
+                imageUrl,
+                fileUrl,
                 song.getLink(),
-                song.getFile(),
                 song.getYear(),
                 albumDtos,
                 artistDtos,
                 genreDtos,
-                reviewed,
                 grade
         );
     }
+
 }

@@ -14,7 +14,7 @@ import java.util.Set;
 public class AlbumResponseDto {
     private Long id;
     private String name;
-    private byte[] cover;
+    private String imageUrl;
     private String link;
     private Long year;
     private Set<SongPartialDto> songs;

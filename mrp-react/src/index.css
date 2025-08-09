@@ -14,3 +14,84 @@
 .error-text {
   color: #dc2626;
 }
+
+/* src/features/songs/SongCard.css */
+
+.song-card {
+  width: 320px;            /* same width for all cards */
+  height: 560px;           /* same height for all cards */
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;        /* keeps image corners rounded */
+}
+
+.song-card__img {
+  width: 100%;
+  height: 180px;           /* fixed image height */
+  object-fit: cover;
+  display: block;
+  margin: 0;               /* remove any gaps */
+}
+
+.song-card__content {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  padding-top: 8px; /* reduced so image sits flush */
+  flex: 1;
+}
+
+/* title row */
+.song-card__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;        /* reserve space even if tag hidden */
+  margin-bottom: 4px;
+}
+.song-card__title {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  display: -webkit-box;    /* clamp to 2 lines */
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.song-card__subtitle {
+  min-height: 22px;
+  color: #6b6b6b;
+}
+
+/* chip area – fixed height to prevent shifts */
+.song-card__chips {
+  min-height: 44px;        /* ~2 rows of chips */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* pushes controls to the bottom */
+.song-card__spacer {
+  flex: 1;
+}
+
+/* controls block with fixed slots */
+.song-card__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding-top: 8px;
+}
+
+/* each row in controls has fixed height */
+.song-card__audio { height: 42px; display: flex; align-items: center; }
+.song-card__audio audio { width: 100%; }
+
+.song-card__link   { height: 44px; display: flex; align-items: center; justify-content: center; }
+.song-card__review { height: 44px; display: flex; align-items: center; justify-content: center; }
+
+/* simple placeholder block */
+.song-card__placeholder { width: 100%; height: 100%; }

@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,7 +16,6 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
 public class Song {
 
     @Id
@@ -23,12 +24,18 @@ public class Song {
 
     private String name;
 
-    @Column(name = "cover", columnDefinition = "BYTEA")
-    private byte[] cover;
-
     private String link;
 
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "cover", columnDefinition = "BYTEA")
+    @JdbcTypeCode(SqlTypes.BINARY)
+    private byte[] cover;
+
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
     @Column(name = "file", columnDefinition = "BYTEA")
+    @JdbcTypeCode(SqlTypes.BINARY)
     private byte[] file;
 
     private Long year;

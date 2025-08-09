@@ -81,16 +81,21 @@ public class GenreService {
     /**
      * Helper to map Genre entity to Response DTO, including nested SongPartialDto set.
      */
+
     private GenreResponseDto toDto(Genre genre) {
         Set<SongPartialDto> songs = genre.getSongs().stream()
-                .map(s -> new SongPartialDto(
-                        s.getId(),
-                        s.getName(),
-                        s.getCover(),
-                        s.getLink(),
-                        s.getFile(),
-                        s.getYear()
-                ))
+                .map(s -> {
+                    String imageUrl = "/images/song/" + s.getId();
+                    String fileUrl = "/song/audio-file/" + s.getId();
+                    return new SongPartialDto(
+                            s.getId(),
+                            s.getName(),
+                            imageUrl,
+                            s.getLink(),
+                            fileUrl,
+                            s.getYear()
+                    );
+                })
                 .collect(Collectors.toSet());
 
         songs = songs.isEmpty() ? null : songs;

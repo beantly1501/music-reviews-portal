@@ -1,5 +1,3 @@
-// src/features/songs/CreateSongDialog.tsx
-
 import { Dispatch, useCallback, useEffect, useMemo, useState } from "react";
 import { Dialog } from "primereact/dialog";
 import {
@@ -13,7 +11,6 @@ import { parseIdList, SongCreateForm, songCreateSchema } from "@shared/utils";
 import { InputText } from "primereact/inputtext";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
-import { MultiSelect } from "primereact/multiselect";
 import { useGetGenres } from "../../shared/hooks/useGetGenres.ts";
 import { useGetArtists } from "../artists/hooks/useGetArtists.ts";
 import { useGetAlbums } from "../albums/hooks/useGetAlbums.ts";
@@ -25,6 +22,10 @@ import AlbumMultiSelect, {
 import ArtistMultiSelect, {
   ArtistOption,
 } from "../../shared/components/ArtistMultiSelect.tsx";
+import GenresMultiSelect, {
+  GenreOption,
+} from "../../shared/components/GenresMultiSelect.tsx";
+import CreateGenreDialog from "../../shared/components/CreateGenreDialog.tsx";
 
 interface Props {
   visible: boolean;
@@ -42,9 +43,7 @@ export default function CreateSongDialog({
     loading: genresLoading,
     refetch: refetchGenres,
   } = useGetGenres();
-  const genreOptions = genres.map((g) => ({ label: g.name, value: g.id }));
 
-  // fetch albums & artists
   const {
     artists,
     loading: artistsLoading,
@@ -61,8 +60,9 @@ export default function CreateSongDialog({
 
   const [artistDialogVisible, setArtistDialogVisible] = useState(false);
   const [albumDialogVisible, setAlbumDialogVisible] = useState(false);
+  const [genreDialogVisible, setGenreDialogVisible] = useState(false);
 
-  // keep hidden inputs (used by existing submit logic) in sync
+  // hidden inputs sync (for existing submit logic)
   useEffect(() => {
     const el = document.getElementById("artistIds") as HTMLInputElement | null;
     if (el) el.value = selectedArtistIds.join(",");
@@ -84,6 +84,11 @@ export default function CreateSongDialog({
     setAlbumDialogVisible(false);
   }, [refetchAlbums]);
 
+  const handleGenreCreated = useCallback(() => {
+    refetchGenres?.();
+    setGenreDialogVisible(false);
+  }, [refetchGenres]);
+
   // map fetched data for MultiSelects
   const artistOptions: ArtistOption[] = useMemo(
     () => (artists as ArtistOption[]) ?? [],
@@ -93,6 +98,12 @@ export default function CreateSongDialog({
   const albumOptions: AlbumOption[] = useMemo(
     () => (albums as AlbumOption[]) ?? [],
     [albums],
+  );
+
+  const genreOptions: GenreOption[] = useMemo(
+    () =>
+      (genres ?? []).map((g) => ({ id: g.id, name: g.name })) as GenreOption[],
+    [genres],
   );
 
   const methods = useForm<SongCreateForm>({
@@ -134,7 +145,7 @@ export default function CreateSongDialog({
       if (data.cover) formData.append("cover", data.cover);
       if (data.file) formData.append("file", data.file);
 
-      // grab the raw string values from hidden inputs
+      // raw values from hidden inputs
       const albumIdsInput = (
         document.getElementById("albumIds") as HTMLInputElement
       )?.value;
@@ -285,22 +296,23 @@ export default function CreateSongDialog({
             )}
           </div>
 
-          {/* GENRES */}
+          {/* GENRES MULTISELECT */}
           <div className="field">
             <label htmlFor="genreIds">Genres (optional)</label>
             <Controller
               name="genreIds"
               control={control}
               render={({ field }) => (
-                <MultiSelect
+                <GenresMultiSelect
                   id="genreIds"
-                  disabled={genresLoading}
-                  value={field.value}
+                  value={(field.value as number[]) ?? []}
                   options={genreOptions}
-                  onChange={(e) => field.onChange(e.value)}
-                  filter
-                  placeholder="Select genres"
-                  display="chip"
+                  loading={genresLoading}
+                  onChange={field.onChange}
+                  onCreateNew={() => setGenreDialogVisible(true)}
+                  appendTo={
+                    typeof document !== "undefined" ? document.body : undefined
+                  }
                   className="w-full"
                 />
               )}
@@ -347,7 +359,7 @@ export default function CreateSongDialog({
         </form>
       </FormProvider>
 
-      {/* OPEN YOUR EXISTING CREATE DIALOGS OVER THE TOP */}
+      {/* CREATE DIALOGS */}
       <CreateLimitedAlbumDialog
         visible={albumDialogVisible}
         setVisible={setAlbumDialogVisible}
@@ -357,6 +369,11 @@ export default function CreateSongDialog({
         visible={artistDialogVisible}
         setVisible={setArtistDialogVisible}
         onCreated={handleArtistCreated}
+      />
+      <CreateGenreDialog
+        visible={genreDialogVisible}
+        setVisible={setGenreDialogVisible}
+        onCreated={handleGenreCreated}
       />
     </Dialog>
   );

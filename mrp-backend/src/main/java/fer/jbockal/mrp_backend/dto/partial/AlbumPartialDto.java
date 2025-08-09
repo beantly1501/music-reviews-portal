@@ -12,7 +12,7 @@ import java.util.Set;
 public class AlbumPartialDto {
     private Long id;
     private String name;
-    private byte[] cover;
+    private String imageUrl;
     private String link;
     private Long year;
 }

@@ -9,6 +9,6 @@ import java.util.Set;
 public class ArtistPartialDto {
     private Long id;
     private String name;
-    private byte[] image;
+    private String imageUrl;
     private String description;
 }
