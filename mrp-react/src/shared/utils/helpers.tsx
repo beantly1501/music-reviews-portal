@@ -150,3 +150,15 @@ export function extractErrorMessage(e: unknown): string {
 export function toDataUrl(base64: string, mimeType = "image/jpeg"): string {
   return `data:${mimeType};base64,${base64}`;
 }
+
+export const getToken = () => localStorage.getItem("jwt");
+
+export function parseIdList(input: string | undefined): number[] {
+  if (!input) return [];
+  return input
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s !== "")
+    .map(Number)
+    .filter((n) => !isNaN(n) && n > 0);
+}

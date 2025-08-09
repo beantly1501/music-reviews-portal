@@ -92,6 +92,7 @@ export type ReviewResponse = {
   grade: number;
   description: string;
   creationDate: string;
+  image: string;
 };
 
 export const songReviewSchema = z.object({
@@ -125,14 +126,3 @@ export const artistCreateSchema = z.object({
     }),
 });
 export type ArtistCreateForm = z.infer<typeof artistCreateSchema>;
-
-export type AlbumMultiselectType = {
-  id: number;
-  name: string;
-  year: number;
-};
-
-export type ArtistMultiselectType = {
-  id: number;
-  name: string;
-};

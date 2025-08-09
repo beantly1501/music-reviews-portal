@@ -9,5 +9,7 @@ public record SongReviewResponseDto(
         String username,
         Integer grade,
         String description,
-        LocalDate creationDate
-) implements ReviewResponseDto {}
+        LocalDate creationDate,
+        String image
+) implements ReviewResponseDto {
+}

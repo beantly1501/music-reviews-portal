@@ -48,7 +48,8 @@ public class ReviewService {
                         r.getUser().getUsername(),
                         r.getGrade(),
                         r.getDescription(),
-                        r.getCreationDate()
+                        r.getCreationDate(),
+                        "/images/song/" + r.getSong().getId()
                 ))
                 .toList());
 
@@ -60,7 +61,8 @@ public class ReviewService {
                         r.getUser().getUsername(),
                         r.getGrade(),
                         r.getDescription(),
-                        r.getCreationDate()
+                        r.getCreationDate(),
+                        "/images/album/" + r.getAlbum().getId()
                 ))
                 .toList());
 
@@ -104,7 +106,8 @@ public class ReviewService {
                         r.getUser().getUsername(),
                         r.getGrade(),
                         r.getDescription(),
-                        r.getCreationDate()
+                        r.getCreationDate(),
+                        "/images/song/" + r.getSong().getId()
                 )
         ));
 
@@ -116,7 +119,8 @@ public class ReviewService {
                         r.getUser().getUsername(),
                         r.getGrade(),
                         r.getDescription(),
-                        r.getCreationDate()
+                        r.getCreationDate(),
+                        "/images/album/" + r.getAlbum().getId()
                 )
         ));
 

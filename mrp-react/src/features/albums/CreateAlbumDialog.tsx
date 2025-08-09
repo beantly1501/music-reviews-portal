@@ -1,4 +1,6 @@
-import { Dispatch, useCallback } from "react";
+// src/features/albums/CreateAlbumDialog.tsx
+
+import { Dispatch, useCallback, useEffect, useMemo, useState } from "react";
 import { Dialog } from "primereact/dialog";
 import {
   Controller,
@@ -7,10 +9,24 @@ import {
   useForm,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlbumCreateForm, albumCreateSchema } from "@shared/utils";
+import { AlbumCreateForm, albumCreateSchema, parseIdList } from "@shared/utils";
 import { InputText } from "primereact/inputtext";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
+
+// hooks to fetch selectable options
+import { useGetArtists } from "../artists/hooks/useGetArtists.ts";
+
+// optional “limited create” dialogs (mirror of CreateSongDialog pattern)
+import CreateLimitedArtistDialog from "../../shared/components/CreateLimitedArtistDialog.tsx";
+import CreateLimitedSongDialog from "../../shared/components/CreateLimitedSongDialog.tsx";
+import ArtistMultiSelect, {
+  ArtistOption,
+} from "../../shared/components/ArtistMultiSelect.tsx";
+import SongMultiSelect, {
+  SongOption,
+} from "../../shared/components/SongMultiSelect.tsx";
+import { useGetSongs } from "../songs/hooks/useGetSongs.tsx";
 
 interface Props {
   visible: boolean;
@@ -18,21 +34,66 @@ interface Props {
   onCreated: () => void;
 }
 
-function parseIdList(input: string | undefined): number[] {
-  if (!input) return [];
-  return input
-    .split(",")
-    .map((s) => s.trim())
-    .filter((s) => s !== "")
-    .map(Number)
-    .filter((n) => !isNaN(n) && n > 0);
-}
-
 export default function CreateAlbumDialog({
   visible,
   setVisible,
   onCreated,
 }: Props) {
+  // fetch artists & songs
+  const {
+    artists,
+    loading: artistsLoading,
+    refetch: refetchArtists,
+  } = useGetArtists();
+
+  const { songs, loading: songsLoading, refetch: refetchSongs } = useGetSongs();
+
+  // selected ids managed locally; kept in sync with hidden inputs
+  const [selectedArtistIds, setSelectedArtistIds] = useState<number[]>([]);
+  const [selectedSongIds, setSelectedSongIds] = useState<number[]>([]);
+
+  // create dialog visibility
+  const [artistDialogVisible, setArtistDialogVisible] = useState(false);
+  const [songDialogVisible, setSongDialogVisible] = useState(false);
+
+  // keep hidden inputs (backward-compat with existing submit logic)
+  useEffect(() => {
+    const el = document.getElementById("artistIds") as HTMLInputElement | null;
+    if (el) el.value = selectedArtistIds.join(",");
+  }, [selectedArtistIds]);
+
+  useEffect(() => {
+    const el = document.getElementById("songIds") as HTMLInputElement | null;
+    if (el) el.value = selectedSongIds.join(",");
+  }, [selectedSongIds]);
+
+  // after creating inside child dialogs, refetch so new option appears
+  const handleArtistCreated = useCallback(() => {
+    refetchArtists?.();
+    setArtistDialogVisible(false);
+  }, [refetchArtists]);
+
+  const handleSongCreated = useCallback(() => {
+    refetchSongs?.();
+    setSongDialogVisible(false);
+  }, [refetchSongs]);
+
+  // map fetched data into options for the MultiSelects
+  const artistOptions: ArtistOption[] = useMemo(
+    () => (artists as ArtistOption[]) ?? [],
+    [artists],
+  );
+
+  const songOptions: SongOption[] = useMemo(
+    () =>
+      (songs as SongOption[])?.map((s) => ({
+        id: s.id,
+        name: s.name,
+        year: s.year,
+      })) ?? [],
+    [songs],
+  );
+
   const methods = useForm<AlbumCreateForm>({
     resolver: zodResolver(albumCreateSchema),
     defaultValues: {
@@ -49,6 +110,14 @@ export default function CreateAlbumDialog({
     formState: { errors },
   } = methods;
 
+  // when dialog opens, refresh lists
+  useEffect(() => {
+    if (visible) {
+      refetchArtists?.();
+      refetchSongs?.();
+    }
+  }, [visible, refetchArtists, refetchSongs]);
+
   const onSubmit: SubmitHandler<AlbumCreateForm> = useCallback(
     async (data) => {
       const formData = new FormData();
@@ -61,20 +130,21 @@ export default function CreateAlbumDialog({
         formData.append("cover", data.cover);
       }
 
+      // collect raw ids from hidden inputs (kept for API compatibility)
       const songIdsInput = (
         document.getElementById("songIds") as HTMLInputElement
       )?.value;
-      const authorIdsInput = (
-        document.getElementById("authorIds") as HTMLInputElement
+      const artistIdsInput = (
+        document.getElementById("artistIds") as HTMLInputElement
       )?.value;
       const songIds = parseIdList(songIdsInput);
-      const authorIds = parseIdList(authorIdsInput);
+      const artistIds = parseIdList(artistIdsInput);
 
       if (songIds.length > 0) {
         formData.append("songIds", JSON.stringify(songIds));
       }
-      if (authorIds.length > 0) {
-        formData.append("authorIds", JSON.stringify(authorIds));
+      if (artistIds.length > 0) {
+        formData.append("artistIds", JSON.stringify(artistIds));
       }
 
       const token = localStorage.getItem("jwt");
@@ -121,43 +191,45 @@ export default function CreateAlbumDialog({
             )}
           </div>
 
-          {/* COVER IMAGE */}
-          <div className="field">
-            <label htmlFor="cover">Cover Image</label>
-            <Controller
-              name="cover"
-              control={control}
-              render={({ field }) => (
-                <FileUpload
-                  name={field.name}
-                  mode="basic"
-                  customUpload
-                  accept="image/*"
-                  maxFileSize={5_000_000}
-                  onSelect={(event: FileUploadSelectEvent) => {
-                    if (event.files && event.files.length) {
-                      field.onChange(event.files[0]);
-                    }
-                  }}
-                />
+          <div className="flex justify-content-around gap-3">
+            {/* COVER IMAGE */}
+            <div className="field">
+              <label htmlFor="cover">Cover Image</label>
+              <Controller
+                name="cover"
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    name={field.name}
+                    mode="basic"
+                    customUpload
+                    accept="image/*"
+                    maxFileSize={5_000_000}
+                    onSelect={(event: FileUploadSelectEvent) => {
+                      if (event.files && event.files.length) {
+                        field.onChange(event.files[0]);
+                      }
+                    }}
+                  />
+                )}
+              />
+              {errors.cover && (
+                <small className="p-error">{errors.cover.message}</small>
               )}
-            />
-            {errors.cover && (
-              <small className="p-error">{errors.cover.message}</small>
-            )}
-          </div>
+            </div>
 
-          {/* LINK */}
-          <div className="field">
-            <label htmlFor="link">Link to Album</label>
-            <Controller
-              name="link"
-              control={control}
-              render={({ field }) => <InputText id="link" {...field} />}
-            />
-            {errors.link && (
-              <small className="p-error">{errors.link.message}</small>
-            )}
+            {/* LINK */}
+            <div className="field">
+              <label htmlFor="link">Link to Album</label>
+              <Controller
+                name="link"
+                control={control}
+                render={({ field }) => <InputText id="link" {...field} />}
+              />
+              {errors.link && (
+                <small className="p-error">{errors.link.message}</small>
+              )}
+            </div>
           </div>
 
           {/* YEAR */}
@@ -183,25 +255,57 @@ export default function CreateAlbumDialog({
             )}
           </div>
 
-          {/* SONG IDS */}
+          {/* SONGS MULTISELECT */}
           <div className="field">
-            <label htmlFor="songIds">
-              Song IDs (comma-separated, optional)
-            </label>
-            <InputText id="songIds" placeholder="e.g. 1,2,5" />
+            <label htmlFor="songIdsSelect">Songs (optional)</label>
+            <SongMultiSelect
+              value={selectedSongIds}
+              options={songOptions}
+              loading={songsLoading}
+              onChange={setSelectedSongIds}
+              onCreateNew={() => setSongDialogVisible(true)}
+              appendTo={
+                typeof document !== "undefined" ? document.body : undefined
+              }
+              className="w-full"
+            />
           </div>
 
-          {/* AUTHOR IDS */}
+          {/* ARTISTS MULTISELECT */}
           <div className="field">
-            <label htmlFor="authorIds">
-              Author IDs (comma-separated, optional)
-            </label>
-            <InputText id="authorIds" placeholder="e.g. 3,4" />
+            <label htmlFor="artistIdsSelect">Artists (optional)</label>
+            <ArtistMultiSelect
+              value={selectedArtistIds}
+              options={artistOptions}
+              loading={artistsLoading}
+              onChange={setSelectedArtistIds}
+              onCreateNew={() => setArtistDialogVisible(true)}
+              appendTo={
+                typeof document !== "undefined" ? document.body : undefined
+              }
+              className="w-full"
+            />
           </div>
+
+          {/* HIDDEN INPUTS kept for existing onSubmit logic (do not remove) */}
+          <input type="hidden" id="songIds" />
+          <input type="hidden" id="artistIds" />
 
           <Button type="submit" label="Submit" className="mt-3" />
         </form>
       </FormProvider>
+
+      {/* CREATE DIALOGS OVER THE TOP */}
+      <CreateLimitedSongDialog
+        visible={songDialogVisible}
+        setVisible={setSongDialogVisible}
+        onCreated={handleSongCreated}
+      />
+      <CreateLimitedArtistDialog
+        visible={artistDialogVisible}
+        setVisible={setArtistDialogVisible}
+        onCreated={handleArtistCreated}
+      />
     </Dialog>
   );
 }

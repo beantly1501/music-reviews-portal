@@ -22,7 +22,7 @@ public class AlbumReviewService {
 
     private final AlbumReviewRepository albumReviewRepository;
     private final AlbumRepository albumRepository;
-    private final AppUserService  appUserService;
+    private final AppUserService appUserService;
 
     public AlbumReviewResponseDto getById(Long id, Object principal) {
         AlbumReview review = albumReviewRepository.findById(id)
@@ -93,7 +93,8 @@ public class AlbumReviewService {
                 r.getUser().getUsername(),
                 r.getGrade(),
                 r.getDescription(),
-                r.getCreationDate()
+                r.getCreationDate(),
+                "/images/album/" + r.getAlbum().getId()
         );
     }
 }

@@ -23,7 +23,7 @@ interface Props {
   onCreated: () => void;
 }
 
-export default function CreateArtistDialog({
+export default function CreateLimitedArtistDialog({
   visible,
   setVisible,
   onCreated,
@@ -155,22 +155,6 @@ export default function CreateArtistDialog({
                 />
               )}
             />
-          </div>
-
-          {/* SONG IDS */}
-          <div className="field">
-            <label htmlFor="songIds">
-              Song IDs (comma-separated, optional)
-            </label>
-            <InputText id="songIds" placeholder="e.g. 1,2,5" />
-          </div>
-
-          {/* ALBUM IDS */}
-          <div className="field">
-            <label htmlFor="albumIds">
-              Album IDs (comma-separated, optional)
-            </label>
-            <InputText id="albumIds" placeholder="e.g. 3,4" />
           </div>
 
           <Button type="submit" label="Submit" className="mt-3" />

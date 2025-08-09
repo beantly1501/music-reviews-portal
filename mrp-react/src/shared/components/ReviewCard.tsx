@@ -1,17 +1,76 @@
+import { useEffect, useState } from "react";
 import { Card } from "primereact/card";
 import { Tag } from "primereact/tag";
 import { Rating } from "primereact/rating";
-import { ReviewResponse } from "@shared/utils";
+import { getToken, ReviewResponse } from "@shared/utils";
 
 interface ReviewCardProps {
   review: ReviewResponse;
 }
 
-export const ReviewCard = ({ review }: ReviewCardProps) => {
-  // Determine display title
-  const title = review.type === "SONG" ? review.songName : review.albumName;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-  // Footer: reviewer tag and creation date
+export const ReviewCard = ({ review }: ReviewCardProps) => {
+  const title =
+    review.type === "SONG"
+      ? (review.songName ?? "Song")
+      : (review.albumName ?? "Album");
+
+  const [imgUrl, setImgUrl] = useState<string | undefined>(undefined);
+  const token = getToken();
+
+  useEffect(() => {
+    let revoke: string | undefined;
+    const controller = new AbortController();
+
+    const imageUrl = `${BACKEND_URL}${review.image}`;
+
+    async function load() {
+      try {
+        const res = await fetch(imageUrl, {
+          method: "GET",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          signal: controller.signal,
+        });
+
+        if (!res.ok) {
+          setImgUrl(undefined);
+          return;
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        revoke = url;
+        setImgUrl(url);
+      } catch {
+        setImgUrl(undefined);
+      }
+    }
+
+    load();
+
+    return () => {
+      controller.abort();
+      if (revoke) URL.revokeObjectURL(revoke);
+    };
+  }, [review.image, token]);
+
+  const header = (
+    <img
+      src={imgUrl}
+      alt={title}
+      style={{
+        width: "100%",
+        height: 180,
+        objectFit: "cover",
+        borderTopLeftRadius: "0.5rem",
+        borderTopRightRadius: "0.5rem",
+        display: "block",
+      }}
+      loading="lazy"
+    />
+  );
+
   const footer = (
     <div
       style={{
@@ -35,22 +94,21 @@ export const ReviewCard = ({ review }: ReviewCardProps) => {
   return (
     <Card
       title={title}
+      header={header}
       footer={footer}
       style={{
-        width: "300px",
+        width: 300,
         borderRadius: "0.5rem",
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         margin: "1rem",
+        overflow: "hidden",
       }}
     >
-      <div className="flex flex-wrap justify-content-between">
-        <Rating
-          value={review.grade}
-          readOnly
-          cancel={false}
-          stars={5}
-          style={{ marginBottom: "0.5rem" }}
-        />
+      <div
+        className="flex flex-wrap justify-content-between"
+        style={{ marginBottom: "0.5rem" }}
+      >
+        <Rating value={review.grade} readOnly cancel={false} stars={5} />
         <Tag
           value={review.type === "SONG" ? "Song" : "Album"}
           severity={review.type === "SONG" ? "success" : "info"}

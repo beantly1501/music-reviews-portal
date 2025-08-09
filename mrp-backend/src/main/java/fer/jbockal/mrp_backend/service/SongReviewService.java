@@ -96,7 +96,8 @@ public class SongReviewService {
                 r.getUser().getUsername(),
                 r.getGrade(),
                 r.getDescription(),
-                r.getCreationDate()
+                r.getCreationDate(),
+                "/images/song/" + r.getSong().getId()
         );
     }
 }
