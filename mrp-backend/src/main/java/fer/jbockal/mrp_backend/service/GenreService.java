@@ -6,103 +6,135 @@ import fer.jbockal.mrp_backend.dto.partial.SongPartialDto;
 import fer.jbockal.mrp_backend.model.Genre;
 import fer.jbockal.mrp_backend.model.Song;
 import fer.jbockal.mrp_backend.repository.GenreRepository;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.AllArgsConstructor;
+import fer.jbockal.mrp_backend.repository.SongRepository;
+import fer.jbockal.mrp_backend.repository.projection.GenreBaseRow;
+import fer.jbockal.mrp_backend.repository.projection.GenreSongRow;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
+
+import static java.util.stream.Collectors.*;
 
 @Service
-@AllArgsConstructor
 public class GenreService {
 
     private final GenreRepository genreRepository;
+    private final SongRepository songRepository;
 
-    /**
-     * Find a genre by ID and map to DTO including its songs.
-     */
-    public GenreResponseDto findById(long id) {
-        Genre genre = genreRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Genre not found: " + id));
-        return toDto(genre);
+    public GenreService(GenreRepository genreRepository, SongRepository songRepository) {
+        this.genreRepository = genreRepository;
+        this.songRepository = songRepository;
     }
 
-    /**
-     * Search genres by name fragment (case-insensitive) and map to DTOs.
-     */
+    // -------- READ --------
+
+    @Transactional(readOnly = true)
+    public List<GenreResponseDto> getAllGenres() {
+        var base = genreRepository.findAllBase();
+        return assembleDtos(base);
+    }
+
+    @Transactional(readOnly = true)
     public List<GenreResponseDto> searchByNameFragment(String fragment) {
-        if (fragment == null || fragment.isBlank()) {
-            return List.of();
-        }
-        return genreRepository.findByNameContainingIgnoreCase(fragment)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+        if (fragment == null || fragment.isBlank()) return List.of();
+        var base = genreRepository.findBaseByNameFragment(fragment);
+        return assembleDtos(base);
     }
 
-    /**
-     * Retrieve all genres and map to DTOs.
-     */
-    public List<GenreResponseDto> findAll() {
-        return genreRepository.findAll()
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public GenreResponseDto findById(Long id) {
+        GenreBaseRow row = genreRepository.findBaseById(id);
+        if (row == null) throw new IllegalArgumentException("Genre not found: " + id);
+        return assembleDtos(List.of(row)).get(0);
     }
 
-    /**
-     * Create a new genre from the request DTO and map to response DTO.
-     */
-    public GenreResponseDto createGenre(GenreRequestDto dto) {
+    // -------- WRITE --------
+
+    @Transactional
+    public GenreResponseDto createGenre(GenreRequestDto req) {
         Genre g = new Genre();
-        g.setName(dto.getName());
+        g.setName(req.getName());
+
+        if (req.getSongIds() != null) {
+            for (Long sid : req.getSongIds()) {
+                Song s = songRepository.findById(sid)
+                        .orElseThrow(() -> new IllegalArgumentException("Song not found: " + sid));
+                g.getSongs().add(s);
+                s.getGenres().add(g);
+            }
+        }
+
         Genre saved = genreRepository.save(g);
-        return toDto(saved);
+        return findById(saved.getId());
     }
 
-    /**
-     * Delete a genre by ID, removing references from songs.
-     */
-    public void deleteGenre(Long id) {
-        Genre genre = genreRepository.findById(id)
+    @Transactional
+    public GenreResponseDto updateGenre(Long id, GenreRequestDto req) {
+        Genre existing = genreRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Genre not found: " + id));
 
-        // detach from songs
-        for (Song s : genre.getSongs()) {
-            s.getGenres().remove(genre);
-        }
-        genre.getSongs().clear();
+        if (req.getName() != null) existing.setName(req.getName());
 
-        genreRepository.deleteById(id);
+        if (req.getSongIds() != null) {
+            // reset associations
+            existing.getSongs().forEach(s -> s.getGenres().remove(existing));
+            existing.getSongs().clear();
+            for (Long sid : req.getSongIds()) {
+                Song s = songRepository.findById(sid)
+                        .orElseThrow(() -> new IllegalArgumentException("Song not found: " + sid));
+                existing.getSongs().add(s);
+                s.getGenres().add(existing);
+            }
+        }
+
+        genreRepository.save(existing);
+        return findById(existing.getId());
     }
 
-    /**
-     * Helper to map Genre entity to Response DTO, including nested SongPartialDto set.
-     */
+    @Transactional
+    public void deleteGenre(Long id) {
+        Genre g = genreRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Genre not found: " + id));
 
-    private GenreResponseDto toDto(Genre genre) {
-        Set<SongPartialDto> songs = genre.getSongs().stream()
-                .map(s -> {
-                    String imageUrl = "/images/song/" + s.getId();
-                    String fileUrl = "/song/audio-file/" + s.getId();
-                    return new SongPartialDto(
-                            s.getId(),
-                            s.getName(),
-                            imageUrl,
-                            s.getLink(),
-                            fileUrl,
-                            s.getYear()
-                    );
-                })
-                .collect(Collectors.toSet());
+        g.getSongs().forEach(s -> s.getGenres().remove(g));
+        g.getSongs().clear();
 
-        songs = songs.isEmpty() ? null : songs;
-        return new GenreResponseDto(
-                genre.getId(),
-                genre.getName(),
-                songs
-        );
+        genreRepository.delete(g);
+    }
+
+    // -------- DTO assembly (batched) --------
+
+    private List<GenreResponseDto> assembleDtos(List<GenreBaseRow> base) {
+        if (base == null || base.isEmpty()) return List.of();
+
+        var ids = base.stream().map(GenreBaseRow::getId).toList();
+
+        Map<Long, LinkedHashSet<SongPartialDto>> songsByGenre =
+                genreRepository.findSongsForGenres(ids).stream()
+                        .collect(groupingBy(GenreSongRow::getGenreId, mapping(sr ->
+                                new SongPartialDto(
+                                        sr.getId(),
+                                        sr.getName(),
+                                        "/images/song/" + sr.getId(),
+                                        "/song/audio-file/" + sr.getId(),
+                                        sr.getLink(),
+                                        sr.getYear()
+                                ), toCollection(LinkedHashSet::new))));
+
+        List<GenreResponseDto> out = new ArrayList<>(base.size());
+        for (var row : base) {
+            Long id = row.getId();
+            out.add(new GenreResponseDto(
+                    id,
+                    row.getName(),
+                    emptyToNull(songsByGenre.get(id))
+            ));
+        }
+        return out;
+    }
+
+    private static <T> Set<T> emptyToNull(Set<T> set) {
+        return (set == null || set.isEmpty()) ? null : set;
     }
 }

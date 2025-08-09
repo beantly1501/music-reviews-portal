@@ -1,5 +1,7 @@
 package fer.jbockal.mrp_backend.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fer.jbockal.mrp_backend.dto.album.AlbumRequestDto;
 import fer.jbockal.mrp_backend.dto.album.AlbumResponseDto;
 import fer.jbockal.mrp_backend.model.AppUser;
@@ -14,10 +16,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping({"/api/album", "/album"})
@@ -27,6 +31,9 @@ public class AlbumController {
 
     private final AlbumService albumService;
     private final AppUserService appUserService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // ---------- READ ----------
 
     @GetMapping("/all")
     public ResponseEntity<List<AlbumResponseDto>> all(@AuthenticationPrincipal Object principal) {
@@ -59,9 +66,11 @@ public class AlbumController {
                 .body(resource);
     }
 
-    @PostMapping
+    // ---------- WRITE: JSON ----------
+
+    @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
     @RolesAllowed({"ROLE_ADMIN"})
-    public ResponseEntity<AlbumResponseDto> create(
+    public ResponseEntity<AlbumResponseDto> createJson(
             @AuthenticationPrincipal Object principal,
             @RequestBody AlbumRequestDto body
     ) {
@@ -69,9 +78,9 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.createAlbum(body, user));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @RolesAllowed({"ROLE_ADMIN"})
-    public ResponseEntity<AlbumResponseDto> update(
+    public ResponseEntity<AlbumResponseDto> updateJson(
             @PathVariable Long id,
             @AuthenticationPrincipal Object principal,
             @RequestBody AlbumRequestDto body
@@ -80,10 +89,68 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.updateAlbum(id, body, user));
     }
 
+    // ---------- WRITE: MULTIPART ----------
+
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RolesAllowed({"ROLE_ADMIN"})
+    public ResponseEntity<AlbumResponseDto> createMultipart(
+            @AuthenticationPrincipal Object principal,
+            @RequestParam("name") String name,
+            @RequestParam(value = "year", required = false) Long year,
+            @RequestParam(value = "link", required = false) String link,
+            @RequestPart(value = "cover", required = false) MultipartFile cover,
+            @RequestParam(value = "songIds", required = false) String songIdsJson,
+            @RequestParam(value = "artistIds", required = false) String artistIdsJson
+    ) throws Exception {
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
+
+        AlbumRequestDto dto = new AlbumRequestDto();
+        dto.setName(name);
+        dto.setYear(year);
+        dto.setLink(link);
+        if (cover != null && !cover.isEmpty()) dto.setCover(cover.getBytes());
+        dto.setSongIds(parseIdSet(songIdsJson));
+        dto.setArtistIds(parseIdSet(artistIdsJson));
+
+        return ResponseEntity.ok(albumService.createAlbum(dto, user));
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RolesAllowed({"ROLE_ADMIN"})
+    public ResponseEntity<AlbumResponseDto> updateMultipart(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Object principal,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "year", required = false) Long year,
+            @RequestParam(value = "link", required = false) String link,
+            @RequestPart(value = "cover", required = false) MultipartFile cover,
+            @RequestParam(value = "songIds", required = false) String songIdsJson,
+            @RequestParam(value = "artistIds", required = false) String artistIdsJson
+    ) throws Exception {
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
+
+        AlbumRequestDto dto = new AlbumRequestDto();
+        dto.setName(name);
+        dto.setYear(year);
+        dto.setLink(link);
+        if (cover != null && !cover.isEmpty()) dto.setCover(cover.getBytes());
+        dto.setSongIds(parseIdSet(songIdsJson));
+        dto.setArtistIds(parseIdSet(artistIdsJson));
+
+        return ResponseEntity.ok(albumService.updateAlbum(id, dto, user));
+    }
+
     @DeleteMapping("/{id}")
     @RolesAllowed({"ROLE_ADMIN"})
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         albumService.deleteAlbum(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ---------- helper ----------
+    private Set<Long> parseIdSet(String json) throws Exception {
+        if (json == null || json.isBlank()) return null;
+        return objectMapper.readValue(json, new TypeReference<Set<Long>>() {
+        });
     }
 }
