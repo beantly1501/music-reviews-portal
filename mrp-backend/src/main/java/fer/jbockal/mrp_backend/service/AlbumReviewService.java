@@ -1,15 +1,13 @@
 package fer.jbockal.mrp_backend.service;
 
-import fer.jbockal.mrp_backend.dto.AlbumReviewRequestDto;
-import fer.jbockal.mrp_backend.dto.AlbumReviewResponseDto;
+import fer.jbockal.mrp_backend.dto.review.AlbumReviewRequestDto;
+import fer.jbockal.mrp_backend.dto.review.AlbumReviewResponseDto;
 import fer.jbockal.mrp_backend.model.Album;
 import fer.jbockal.mrp_backend.model.AlbumReview;
 import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.repository.AlbumReviewRepository;
 import fer.jbockal.mrp_backend.repository.AlbumRepository;
-import fer.jbockal.mrp_backend.repository.AppUserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;

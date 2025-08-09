@@ -1,9 +1,7 @@
-package fer.jbockal.mrp_backend.dto;
+package fer.jbockal.mrp_backend.dto.album;
 
 import fer.jbockal.mrp_backend.dto.partial.ArtistPartialDto;
 import fer.jbockal.mrp_backend.dto.partial.SongPartialDto;
-import fer.jbockal.mrp_backend.model.Artist;
-import fer.jbockal.mrp_backend.model.Song;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -19,5 +17,5 @@ public class AlbumResponseDto {
     private Long year;
     private Set<SongPartialDto> songs;
     private Set<ArtistPartialDto> artists;
-    private boolean reviewed;
+    private Integer grade;
 }

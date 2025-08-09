@@ -1,4 +1,4 @@
-package fer.jbockal.mrp_backend.dto;
+package fer.jbockal.mrp_backend.dto.artist;
 
 import fer.jbockal.mrp_backend.dto.partial.AlbumPartialDto;
 import fer.jbockal.mrp_backend.dto.partial.SongPartialDto;
@@ -14,6 +14,7 @@ public class ArtistResponseDto {
     private String name;
     private String imageUrl;
     private String description;
-    private Set<SongPartialDto> songs;
     private Set<AlbumPartialDto> albums;
+    private Set<SongPartialDto> songs;
+
 }

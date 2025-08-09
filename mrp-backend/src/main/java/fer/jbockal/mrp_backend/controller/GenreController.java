@@ -1,7 +1,7 @@
 package fer.jbockal.mrp_backend.controller;
 
-import fer.jbockal.mrp_backend.dto.GenreRequestDto;
-import fer.jbockal.mrp_backend.dto.GenreResponseDto;
+import fer.jbockal.mrp_backend.dto.genre.GenreRequestDto;
+import fer.jbockal.mrp_backend.dto.genre.GenreResponseDto;
 import fer.jbockal.mrp_backend.service.GenreService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

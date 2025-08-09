@@ -8,6 +8,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InputText } from "primereact/inputtext";
+import { RadioButton } from "primereact/radiobutton";
 import { Button } from "primereact/button";
 import { jwtDecode } from "jwt-decode";
 import {
@@ -39,6 +40,7 @@ export function RegisterPage() {
       username: "",
       password: "",
       email: "",
+      role: "USER", // default role
     },
   });
 
@@ -58,6 +60,7 @@ export function RegisterPage() {
           username: data.username,
           password: data.password,
           email: data.email,
+          role: data.role, // <-- include Role enum
         }),
       });
       if (!res.ok) {
@@ -69,7 +72,6 @@ export function RegisterPage() {
       if (!token || isTokenExpired(token)) throw new Error("Invalid token");
 
       localStorage.setItem("jwt", token);
-
       navigate("/");
     } catch (e: unknown) {
       setError(extractErrorMessage(e));
@@ -118,6 +120,42 @@ export function RegisterPage() {
             />
             {errors.email && (
               <small className="p-error">{errors.email.message}</small>
+            )}
+          </div>
+
+          {/* Role selector */}
+          <div className="field">
+            <label className="block mb-2">Role</label>
+            <div className="flex items-center gap-6">
+              <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <label className="flex items-center gap-2">
+                      <RadioButton
+                        inputId="role-user"
+                        value="USER"
+                        onChange={(e) => field.onChange(e.value)}
+                        checked={field.value === "USER"}
+                      />
+                      <span>USER</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <RadioButton
+                        inputId="role-admin"
+                        value="ADMIN"
+                        onChange={(e) => field.onChange(e.value)}
+                        checked={field.value === "ADMIN"}
+                      />
+                      <span>ADMIN</span>
+                    </label>
+                  </>
+                )}
+              />
+            </div>
+            {errors.role && (
+              <small className="p-error">{errors.role.message}</small>
             )}
           </div>
 

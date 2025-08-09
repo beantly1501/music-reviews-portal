@@ -1,4 +1,4 @@
-package fer.jbockal.mrp_backend.dto;
+package fer.jbockal.mrp_backend.dto.genre;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

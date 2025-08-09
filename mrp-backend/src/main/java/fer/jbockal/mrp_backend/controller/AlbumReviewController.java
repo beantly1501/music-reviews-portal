@@ -1,7 +1,7 @@
 package fer.jbockal.mrp_backend.controller;
 
-import fer.jbockal.mrp_backend.dto.AlbumReviewRequestDto;
-import fer.jbockal.mrp_backend.dto.AlbumReviewResponseDto;
+import fer.jbockal.mrp_backend.dto.review.AlbumReviewRequestDto;
+import fer.jbockal.mrp_backend.dto.review.AlbumReviewResponseDto;
 import fer.jbockal.mrp_backend.service.AlbumReviewService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

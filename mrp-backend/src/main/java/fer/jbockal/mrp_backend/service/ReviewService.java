@@ -1,13 +1,12 @@
 package fer.jbockal.mrp_backend.service;
 
-import fer.jbockal.mrp_backend.dto.AlbumReviewResponseDto;
-import fer.jbockal.mrp_backend.dto.ReviewResponseDto;
-import fer.jbockal.mrp_backend.dto.SongReviewResponseDto;
+import fer.jbockal.mrp_backend.dto.review.AlbumReviewResponseDto;
+import fer.jbockal.mrp_backend.dto.review.ReviewResponseDto;
+import fer.jbockal.mrp_backend.dto.review.SongReviewResponseDto;
 import fer.jbockal.mrp_backend.model.AlbumReview;
 import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.model.SongReview;
 import fer.jbockal.mrp_backend.repository.AlbumReviewRepository;
-import fer.jbockal.mrp_backend.repository.AppUserRepository;
 import fer.jbockal.mrp_backend.repository.SongReviewRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
