@@ -1,6 +1,6 @@
 package fer.jbockal.mrp_backend.controller;
 
-import fer.jbockal.mrp_backend.dto.ReviewResponseDto;
+import fer.jbockal.mrp_backend.dto.review.ReviewResponseDto;
 import fer.jbockal.mrp_backend.service.ReviewService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,7 +1,7 @@
 package fer.jbockal.mrp_backend.service;
 
-import fer.jbockal.mrp_backend.dto.GenreRequestDto;
-import fer.jbockal.mrp_backend.dto.GenreResponseDto;
+import fer.jbockal.mrp_backend.dto.genre.GenreRequestDto;
+import fer.jbockal.mrp_backend.dto.genre.GenreResponseDto;
 import fer.jbockal.mrp_backend.dto.partial.SongPartialDto;
 import fer.jbockal.mrp_backend.model.Genre;
 import fer.jbockal.mrp_backend.model.Song;

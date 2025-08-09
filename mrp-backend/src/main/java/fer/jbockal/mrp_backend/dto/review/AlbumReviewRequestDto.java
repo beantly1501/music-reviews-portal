@@ -1,4 +1,4 @@
-package fer.jbockal.mrp_backend.dto;
+package fer.jbockal.mrp_backend.dto.review;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
