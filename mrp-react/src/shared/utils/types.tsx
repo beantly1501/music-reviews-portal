@@ -8,17 +8,16 @@ export type SongType = {
   fileUrl?: string;
   genres?: GenreType[];
   year: number;
-  reviewed: boolean;
   grade?: number;
 };
 
 export type AlbumType = {
   id: number;
   name: string;
-  cover?: string;
+  imageUrl?: string;
   link?: string;
   year: number;
-  reviewed: boolean;
+  grade?: number;
 };
 
 export type ArtistType = {

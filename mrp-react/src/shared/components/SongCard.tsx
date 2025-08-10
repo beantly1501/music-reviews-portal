@@ -1,4 +1,3 @@
-// src/features/songs/SongCard.tsx
 import { useRef, useState } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
@@ -10,8 +9,8 @@ import "primeflex/primeflex.css";
 
 import { SongReviewFormData, SongType } from "@shared/utils";
 import noImageAvailable from "../../assets/images/no-image-available.jpg";
-import { useGetImage } from "../hooks/useGetImage.ts";
-import { useSongAudio } from "../hooks/useSongAudio.ts";
+import { useGetImage } from "../hooks/useGetImage";
+import { useSongAudio } from "../hooks/useSongAudio";
 import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts";
 import { CreateSongReview } from "../../features/songs/CreateSongReview.tsx";
 
@@ -24,14 +23,20 @@ export default function SongCard({ song, refetch }: Props) {
   const [visibleDialog, setVisibleDialog] = useState(false);
   const toastRef = useRef<Toast | null>(null);
 
-  // Image (works for song/album/artist endpoints passed as a URL string)
+  // Allow both "imageUrl" already starting with /api or a relative path we prefix
+  const srcPath = song.imageUrl;
+  const requestUrl = srcPath
+    ? srcPath.startsWith("/api")
+      ? srcPath
+      : `/api/${srcPath}`
+    : undefined;
+
   const {
     loading: loadingImage,
     exists: imageExists,
     url: imageUrl,
-  } = useGetImage(`/api/${song.imageUrl}`);
+  } = useGetImage(requestUrl);
 
-  // Audio (deduped/cached fetch by song id + fileUrl)
   const {
     loading: loadingAudio,
     exists: audioExists,
@@ -56,24 +61,25 @@ export default function SongCard({ song, refetch }: Props) {
     }
   };
 
+  const header = (
+    <div className="song-card__img-wrap">
+      {loadingImage ? (
+        <div className="song-card__img placeholder flex align-items-center justify-content-center">
+          <i className="pi pi-spin pi-spinner" />
+        </div>
+      ) : (
+        <img
+          src={imageExists && imageUrl ? imageUrl : noImageAvailable}
+          alt={song.name}
+          className="song-card__img"
+        />
+      )}
+    </div>
+  );
+
   return (
     <>
-      <Card className="song-card p-shadow-2">
-        {/* Artwork */}
-        <div className="song-card__img-wrapper">
-          {loadingImage ? (
-            <div className="song-card__img placeholder flex align-items-center justify-content-center">
-              <i className="pi pi-spin pi-spinner" />
-            </div>
-          ) : (
-            <img
-              src={imageExists && imageUrl ? imageUrl : noImageAvailable}
-              alt={song.name}
-              className="song-card__img"
-            />
-          )}
-        </div>
-
+      <Card className="song-card p-shadow-2" header={header}>
         {/* Body */}
         <div className="song-card__content">
           {/* Title row */}
@@ -82,25 +88,21 @@ export default function SongCard({ song, refetch }: Props) {
             <Tag
               value="Reviewed"
               severity="success"
-              style={{ visibility: song.reviewed ? "visible" : "hidden" }}
+              style={{ visibility: song.grade ? "visible" : "hidden" }}
             />
           </div>
 
           <div className="song-card__subtitle">Released {song.year}</div>
 
-          {/* Genres */}
           <div className="song-card__chips">
             {song.genres?.map((g) => (
               <Chip key={g.id} label={g.name} className="h-2rem" />
             ))}
           </div>
 
-          {/* Spacer pushes controls to bottom */}
           <div className="song-card__spacer" />
 
-          {/* Controls */}
           <div className="song-card__controls">
-            {/* Audio */}
             <div className="song-card__audio">
               {loadingAudio ? (
                 <i className="pi pi-spin pi-spinner" />

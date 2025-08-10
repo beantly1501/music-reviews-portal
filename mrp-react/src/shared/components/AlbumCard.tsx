@@ -1,22 +1,47 @@
+// src/features/albums/AlbumCard.tsx
 import { useRef, useState } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
+import { Rating } from "primereact/rating";
+import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
 import "primeflex/primeflex.css";
-import { submitAlbumReview } from "../../features/albums/hooks/submitAlbumReview";
-import { AlbumReviewFormData, AlbumType, toDataUrl } from "@shared/utils";
-import { CreateAlbumReview } from "../../features/albums/CreateAlbumReview.tsx";
 
+import { AlbumType, AlbumReviewFormData } from "@shared/utils";
+import noImageAvailable from "../../assets/images/no-image-available.jpg";
+import { useGetImage } from "../hooks/useGetImage";
+import { submitAlbumReview } from "../../features/albums/hooks/submitAlbumReview.ts";
+import { CreateAlbumReview } from "../../features/albums/CreateAlbumReview.tsx";
 interface Props {
   album: AlbumType;
-  refetch: () => void;
+  refetch?: () => void;
 }
 
 export default function AlbumCard({ album, refetch }: Props) {
   const [visibleDialog, setVisibleDialog] = useState(false);
   const toastRef = useRef<Toast | null>(null);
 
-  const coverUrl = album.cover ? toDataUrl(album.cover) : null;
+  const {
+    loading: loadingImage,
+    exists: imageExists,
+    url: imageUrl,
+  } = useGetImage(`/api/${album.imageUrl}`);
+
+  const header = (
+    <div className="album-card__img-wrap">
+      {loadingImage ? (
+        <div className="album-card__img placeholder flex align-items-center justify-content-center">
+          <i className="pi pi-spin pi-spinner" />
+        </div>
+      ) : (
+        <img
+          src={imageExists && imageUrl ? imageUrl : noImageAvailable}
+          alt={album.name}
+          className="album-card__img"
+        />
+      )}
+    </div>
+  );
 
   const handleSubmit = async (formData: AlbumReviewFormData) => {
     try {
@@ -26,8 +51,7 @@ export default function AlbumCard({ album, refetch }: Props) {
         summary: `Reviewed ${album.name}`,
         life: 3000,
       });
-
-      refetch();
+      refetch?.();
     } catch {
       toastRef.current?.show({
         severity: "error",
@@ -37,53 +61,58 @@ export default function AlbumCard({ album, refetch }: Props) {
     }
   };
 
-  const header = coverUrl ? (
-    <img
-      src={coverUrl}
-      alt={album.name}
-      className="img-fluid"
-      style={{ maxHeight: "200px", objectFit: "cover", borderRadius: "0.5rem" }}
-    />
-  ) : null;
-
-  const footer = (
-    <div className="flex flex-column align-items-center justify-content-center gap-2">
-      {album.link && (
-        <Button
-          label="Open Album Link"
-          icon="pi pi-external-link"
-          className="w-14rem"
-          onClick={() => window.open(album.link, "_blank")}
-        />
-      )}
-      {!album.reviewed && (
-        <Button
-          label="Review Album"
-          icon="pi pi-star"
-          className="w-12rem"
-          onClick={() => setVisibleDialog(true)}
-        />
-      )}
-    </div>
-  );
-
   return (
     <>
-      <Card
-        title={album.name}
-        subTitle={`Released ${album.year ?? "N/A"}`}
-        header={header}
-        footer={footer}
-        className="p-shadow-2 p-mb-4"
-        style={{ width: "300px" }}
-      />
-      <CreateAlbumReview
-        visible={visibleDialog}
-        albumId={album.id}
-        name={album.name}
-        onHide={() => setVisibleDialog(false)}
-        onSubmit={handleSubmit}
-      />
+      <Card className="album-card p-shadow-2" header={header}>
+        <div className="album-card__body">
+          <div className="album-card__title-row">
+            <h3 className="album-card__title">{album.name}</h3>
+            <Tag
+              value="Reviewed"
+              severity="success"
+              style={{ visibility: album.grade ? "visible" : "hidden" }}
+            />
+          </div>
+
+          <div className="album-card__subtitle">Released {album.year}</div>
+
+          <div className="flex flex-column align-items-center gap-4 mb-2">
+            {album.link && (
+              <div className="album-card__actions">
+                <Button
+                  label="Open Album Link"
+                  icon="pi pi-external-link"
+                  onClick={() => window.open(album.link!, "_blank")}
+                />
+              </div>
+            )}
+
+            {/* Review section */}
+            <div className="album-card__rating">
+              {typeof album.grade === "number" ? (
+                <Rating value={album.grade} cancel={false} />
+              ) : (
+                <Button
+                  label="Review Album"
+                  icon="pi pi-star"
+                  onClick={() => setVisibleDialog(true)}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {visibleDialog && (
+        <CreateAlbumReview
+          visible={visibleDialog}
+          name={album.name}
+          albumId={album.id}
+          onHide={() => setVisibleDialog(false)}
+          onSubmit={handleSubmit}
+        />
+      )}
+
       <Toast ref={toastRef} />
     </>
   );

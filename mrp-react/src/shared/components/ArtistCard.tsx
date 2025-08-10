@@ -1,6 +1,6 @@
 import { Card } from "primereact/card";
 import { ArtistType } from "@shared/utils";
-import { useGetImage } from "../hooks/useGetImage.ts";
+import { useGetImage } from "../hooks/useGetImage";
 import noImageAvailable from "../../assets/images/no-image-available.jpg";
 
 interface Props {
@@ -8,35 +8,34 @@ interface Props {
 }
 
 export default function ArtistCard({ artist }: Props) {
-  const {
-    loading: loadingImage,
-    exists: imageExists,
-    url: imageUrl,
-  } = useGetImage(`/api/${artist.imageUrl}`);
+  const { loading, exists, url } = useGetImage(
+    artist.imageUrl ? `/api/${artist.imageUrl}` : undefined,
+  );
 
-  const header = loadingImage ? (
-    <div className="song-card__img placeholder flex align-items-center justify-content-center">
-      <i className="pi pi-spin pi-spinner" />
+  const header = (
+    <div className="artist-card__img-wrap">
+      {loading ? (
+        <div className="artist-card__spinner">
+          <i className="pi pi-spin pi-spinner" />
+        </div>
+      ) : (
+        <img
+          src={exists && url ? url : noImageAvailable}
+          alt={artist.name}
+          className="artist-card__img"
+        />
+      )}
     </div>
-  ) : (
-    <img
-      src={imageExists && imageUrl ? imageUrl : noImageAvailable}
-      alt={artist.name}
-      className="song-card__img"
-    />
   );
 
   return (
     <Card
-      title={artist.name}
       header={header}
-      className="p-shadow-2 p-mb-4"
-      style={{ width: "300px" }}
+      title={artist.name}
+      className="artist-card p-shadow-2"
     >
       {artist.description && (
-        <div className="mt-2">
-          <p>{artist.description}</p>
-        </div>
+        <p className="artist-card__desc">{artist.description}</p>
       )}
     </Card>
   );

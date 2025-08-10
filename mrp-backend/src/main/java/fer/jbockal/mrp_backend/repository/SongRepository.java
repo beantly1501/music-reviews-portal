@@ -15,7 +15,6 @@ import java.util.List;
 @Repository
 public interface SongRepository extends JpaRepository<Song, Long> {
 
-    // Existing convenience finder you had:
     List<Song> findByNameContainingIgnoreCase(String fragment);
 
     // --- Fast, blob-free base rows (list & single) ---
