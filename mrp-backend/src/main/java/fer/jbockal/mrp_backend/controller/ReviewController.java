@@ -43,8 +43,8 @@ public class ReviewController {
 
     // ==== SONG REVIEW endpoints ====
     @GetMapping("/song/{songId}")
-    public ResponseEntity<List<SongReviewResponseDto>> getSongReviews(@PathVariable Long songId) {
-        return ResponseEntity.ok(reviewService.getSongReviews(songId));
+    public ResponseEntity<SongReviewResponseDto> getSongReviews(@PathVariable Long songId) {
+        return ResponseEntity.ok(reviewService.getSongReviews(songId).get(0));
     }
 
     @PostMapping("/song/create")
@@ -75,8 +75,8 @@ public class ReviewController {
 
     // ==== ALBUM REVIEW endpoints ====
     @GetMapping("/album/{albumId}")
-    public ResponseEntity<List<AlbumReviewResponseDto>> getAlbumReviews(@PathVariable Long albumId) {
-        return ResponseEntity.ok(reviewService.getAlbumReviews(albumId));
+    public ResponseEntity<AlbumReviewResponseDto> getAlbumReviews(@PathVariable Long albumId) {
+        return ResponseEntity.ok(reviewService.getAlbumReviews(albumId).get(0));
     }
 
     @PostMapping("/album/create")

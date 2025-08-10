@@ -1,18 +1,17 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Chip } from "primereact/chip";
 import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
-import { Toast } from "primereact/toast";
 import { Image } from "primereact/image";
-import "primeflex/primeflex.css";
 
 import { SongReviewFormData, SongType } from "@shared/utils";
 import { useGetImage } from "../hooks/useGetImage";
 import { useSongAudio } from "../hooks/useSongAudio";
 import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts";
 import { CreateSongReview } from "../../features/songs/CreateSongReview.tsx";
+import { toast } from "./ToastContext.tsx";
 
 interface Props {
   song: SongType;
@@ -21,12 +20,11 @@ interface Props {
 
 export default function SongCard({ song, refetch }: Props) {
   const [visibleDialog, setVisibleDialog] = useState(false);
-  const toastRef = useRef<Toast | null>(null);
 
   const {
     loading: loadingImage,
     exists: imageExists,
-    url: imageUrl,
+    image: image,
   } = useGetImage(`/api${song.imageUrl}`);
 
   const {
@@ -38,18 +36,10 @@ export default function SongCard({ song, refetch }: Props) {
   const handleSubmit = async (formData: SongReviewFormData) => {
     try {
       await submitSongReview(formData);
-      toastRef.current?.show({
-        severity: "success",
-        summary: `Reviewed ${song.name}`,
-        life: 3000,
-      });
+      toast.success(`Successfully reviewed ${song.name}`);
       refetch();
     } catch {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error creating review",
-        life: 3000,
-      });
+      toast.error("Something went wrong");
     }
   };
 
@@ -61,7 +51,7 @@ export default function SongCard({ song, refetch }: Props) {
         </div>
       ) : (
         <Image
-          src={imageExists && imageUrl ? imageUrl : undefined}
+          src={imageExists && image ? image : undefined}
           imageStyle={{ width: "100%", height: 180, objectFit: "cover" }}
         />
       )}
@@ -81,7 +71,7 @@ export default function SongCard({ song, refetch }: Props) {
             />
           </div>
 
-          <div className="song-card__subtitle">Released {song.year}</div>
+          <div className="song-card__subtitle">Released {song.year}.</div>
 
           <div className="song-card__chips">
             {song.genres?.map((g) => (
@@ -135,7 +125,6 @@ export default function SongCard({ song, refetch }: Props) {
         onHide={() => setVisibleDialog(false)}
         onSubmit={handleSubmit}
       />
-      <Toast ref={toastRef} />
     </>
   );
 }

@@ -8,7 +8,7 @@ interface Props {
 }
 
 export default function ArtistCard({ artist }: Props) {
-  const { loading, exists, url } = useGetImage(
+  const { loading, exists, image } = useGetImage(
     artist.imageUrl ? `/api${artist.imageUrl}` : undefined,
   );
 
@@ -20,7 +20,7 @@ export default function ArtistCard({ artist }: Props) {
         </div>
       ) : (
         <Image
-          src={exists && url ? url : undefined}
+          src={exists && image ? image : undefined}
           imageClassName="artist-card__img"
           className="artist-card__img-container"
         />

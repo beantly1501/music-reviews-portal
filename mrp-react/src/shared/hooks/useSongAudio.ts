@@ -1,95 +1,77 @@
-// hooks/useSongAudio.ts
-import { useEffect, useRef, useState, useCallback } from "react";
+// src/features/songs/hooks/useSongAudio.ts
+import { useEffect, useRef, useState } from "react";
 import { getToken } from "@shared/utils";
-
-// Module-level cache for object URLs
-const audioUrlCache = new Map<string, string>();
 
 export function useSongAudio(songId: number, fileUrl?: string) {
   const [loading, setLoading] = useState(false);
   const [exists, setExists] = useState(false);
   const [url, setUrl] = useState<string | null>(null);
-  const mountedRef = useRef(false);
-  const [nonce, setNonce] = useState(0); // bump to force refetch on refresh()
-
-  // same key as before; keeps behavior identical
-  const key = `${songId}-${fileUrl ?? ""}`;
-
-  const refresh = useCallback(() => {
-    // revoke old cached URL (avoid memory leaks) and delete cache entry
-    const old = audioUrlCache.get(key);
-    if (old) {
-      URL.revokeObjectURL(old);
-      audioUrlCache.delete(key);
-    }
-    setNonce((n) => n + 1); // trigger effect to refetch
-  }, [key]);
+  const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
-    mountedRef.current = true;
+    let mounted = true;
 
-    if (!fileUrl) {
+    // revoke previous object URL
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+
+    // nothing to fetch
+    if (!songId && !fileUrl) {
+      setLoading(false);
       setExists(false);
       setUrl(null);
-      return () => {
-        mountedRef.current = false;
-      };
+      return;
     }
 
     const token = getToken();
     if (!token) {
+      setLoading(false);
       setExists(false);
       setUrl(null);
-      return () => {
-        mountedRef.current = false;
-      };
+      return;
     }
 
-    // Serve from cache if present
-    const cached = audioUrlCache.get(key);
-    if (cached) {
-      setUrl(cached);
-      setExists(true);
-      return () => {
-        mountedRef.current = false;
-      };
-    }
-
-    // Fetch and cache
-    (async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/song/audio-file/${songId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error(`Fetch audio failed: ${res.status}`);
-
-        const blob = await res.blob();
-        const objectUrl = URL.createObjectURL(blob);
-
-        // Replace any previously cached URL for this key (safety)
-        const prev = audioUrlCache.get(key);
-        if (prev) URL.revokeObjectURL(prev);
-        audioUrlCache.set(key, objectUrl);
-
-        if (mountedRef.current) {
-          setUrl(objectUrl);
-          setExists(true);
+    setLoading(true);
+    fetch(`/api${fileUrl}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then((blob) => {
+        if (!mounted) return;
+        // guard against empty/unknown blobs
+        if (!blob || blob.size === 0) {
+          setExists(false);
+          setUrl(null);
+          return;
         }
-      } catch {
-        if (mountedRef.current) {
+        const objectUrl = URL.createObjectURL(blob);
+        objectUrlRef.current = objectUrl;
+        setUrl(objectUrl);
+        setExists(true);
+      })
+      .catch(() => {
+        if (mounted) {
           setExists(false);
           setUrl(null);
         }
-      } finally {
-        if (mountedRef.current) setLoading(false);
-      }
-    })();
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
 
     return () => {
-      mountedRef.current = false;
+      mounted = false;
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
     };
-  }, [songId, fileUrl, key, nonce]);
+  }, [songId, fileUrl]);
 
-  return { loading, exists, url, refresh };
+  return { loading, exists, url };
 }

@@ -1,25 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { getToken } from "@shared/utils";
 
 export function useGetImage(requestUrl?: string) {
   const [loading, setLoading] = useState(false);
   const [exists, setExists] = useState(false);
-  const [url, setUrl] = useState<string | null>(null);
-  const objectUrlRef = useRef<string | null>(null);
+  const [image, setImage] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
-
-    // revoke previous blob url
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current);
-      objectUrlRef.current = null;
-    }
-
     if (!requestUrl) {
       setLoading(false);
       setExists(false);
-      setUrl(null);
+      setImage(null);
       return;
     }
 
@@ -27,41 +18,36 @@ export function useGetImage(requestUrl?: string) {
     if (!token) {
       setLoading(false);
       setExists(false);
-      setUrl(null);
+      setImage(null);
       return;
     }
 
-    setLoading(true);
-    fetch(requestUrl, { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => {
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(requestUrl, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.blob();
-      })
-      .then((blob) => {
-        if (!mounted) return;
-        const objectUrl = URL.createObjectURL(blob);
-        objectUrlRef.current = objectUrl;
-        setUrl(objectUrl);
-        setExists(true);
-      })
-      .catch(() => {
-        if (mounted) {
-          setExists(false);
-          setUrl(null);
-        }
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
+        const blob = await res.blob();
 
-    return () => {
-      mounted = false;
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-        objectUrlRef.current = null;
+        if (!blob || blob.size === 0) {
+          setExists(false);
+          setImage(null);
+          return;
+        }
+
+        const objectUrl = URL.createObjectURL(blob);
+        setImage(objectUrl);
+        setExists(true);
+      } catch {
+        setExists(false);
+        setImage(null);
+      } finally {
+        setLoading(false);
       }
-    };
+    })();
   }, [requestUrl]);
 
-  return { loading, exists, url };
+  return { loading, exists, image };
 }

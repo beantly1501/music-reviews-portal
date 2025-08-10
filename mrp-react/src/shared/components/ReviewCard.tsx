@@ -1,74 +1,45 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card } from "primereact/card";
 import { Tag } from "primereact/tag";
 import { Rating } from "primereact/rating";
-import { getToken, ReviewResponse } from "@shared/utils";
+import { Image } from "primereact/image";
+import { ReviewResponse } from "@shared/utils";
+import { useGetImage } from "../hooks/useGetImage";
+import ReviewDialog from "../../features/review/ReviewDialog.tsx";
 
 interface ReviewCardProps {
   review: ReviewResponse;
 }
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
 export const ReviewCard = ({ review }: ReviewCardProps) => {
+  const [visible, setVisible] = useState(false);
+
   const title =
     review.type === "SONG"
       ? (review.songName ?? "Song")
       : (review.albumName ?? "Album");
 
-  const [imgUrl, setImgUrl] = useState<string | undefined>(undefined);
-  const token = getToken();
-
-  useEffect(() => {
-    let revoke: string | undefined;
-    const controller = new AbortController();
-
-    const imageUrl = `${BACKEND_URL}${review.image}`;
-
-    async function load() {
-      try {
-        const res = await fetch(imageUrl, {
-          method: "GET",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          signal: controller.signal,
-        });
-
-        if (!res.ok) {
-          setImgUrl(undefined);
-          return;
-        }
-
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        revoke = url;
-        setImgUrl(url);
-      } catch {
-        setImgUrl(undefined);
-      }
-    }
-
-    load();
-
-    return () => {
-      controller.abort();
-      if (revoke) URL.revokeObjectURL(revoke);
-    };
-  }, [review.image, token]);
+  const { loading, exists, image } = useGetImage(
+    review.image
+      ? review.image.startsWith("/api")
+        ? review.image
+        : `/api${review.image}`
+      : undefined,
+  );
 
   const header = (
-    <img
-      src={imgUrl}
-      alt={title}
-      style={{
-        width: "100%",
-        height: 180,
-        objectFit: "cover",
-        borderTopLeftRadius: "0.5rem",
-        borderTopRightRadius: "0.5rem",
-        display: "block",
-      }}
-      loading="lazy"
-    />
+    <div className="song-card__img-wrap">
+      {loading ? (
+        <div className="song-card__img placeholder flex align-items-center justify-content-center">
+          <i className="pi pi-spin pi-spinner" />
+        </div>
+      ) : (
+        <Image
+          src={exists && image ? image : undefined}
+          imageStyle={{ width: "100%", height: 180, objectFit: "cover" }}
+        />
+      )}
+    </div>
   );
 
   const footer = (
@@ -92,32 +63,45 @@ export const ReviewCard = ({ review }: ReviewCardProps) => {
   );
 
   return (
-    <Card
-      title={title}
-      header={header}
-      footer={footer}
-      style={{
-        width: 300,
-        borderRadius: "0.5rem",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        margin: "1rem",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        className="flex flex-wrap justify-content-between"
-        style={{ marginBottom: "0.5rem" }}
+    <>
+      <Card
+        title={title}
+        header={header}
+        footer={footer}
+        style={{
+          width: 300,
+          borderRadius: "0.5rem",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          margin: "1rem",
+          overflow: "hidden",
+          cursor: "pointer",
+        }}
+        onClick={() => setVisible(true)}
       >
-        <Rating value={review.grade} readOnly cancel={false} stars={5} />
-        <Tag
-          value={review.type === "SONG" ? "Song" : "Album"}
-          severity={review.type === "SONG" ? "success" : "info"}
-          style={{ fontWeight: 600, padding: "0.25rem 0.75rem" }}
+        <div
+          className="flex flex-wrap justify-content-between"
+          style={{ marginBottom: "0.5rem" }}
+        >
+          <Rating value={review.grade} readOnly cancel={false} stars={5} />
+          <Tag
+            value={review.type === "SONG" ? "Song" : "Album"}
+            severity={review.type === "SONG" ? "success" : "info"}
+            style={{ fontWeight: 600, padding: "0.25rem 0.75rem" }}
+          />
+        </div>
+        <p style={{ fontSize: "0.875rem", lineHeight: 1.5 }}>
+          {review.description}
+        </p>
+      </Card>
+
+      {visible && (
+        <ReviewDialog
+          visible={visible}
+          onHide={() => setVisible(false)}
+          reviewId={review.id}
+          reviewType={review.type}
         />
-      </div>
-      <p style={{ fontSize: "0.875rem", lineHeight: 1.5 }}>
-        {review.description}
-      </p>
-    </Card>
+      )}
+    </>
   );
 };

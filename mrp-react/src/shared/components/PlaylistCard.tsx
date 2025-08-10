@@ -11,7 +11,7 @@ export default function PlaylistCard({ p }: { p: PlaylistType }) {
   const {
     loading: loadingImage,
     exists: imageExists,
-    url: imageUrl,
+    image: image,
   } = useGetImage(`/api${p.image}`);
 
   const songsCount = Array.isArray(p.songs) ? p.songs.length : 0;
@@ -28,7 +28,7 @@ export default function PlaylistCard({ p }: { p: PlaylistType }) {
         </div>
       ) : (
         <Image
-          src={imageExists && imageUrl ? imageUrl : undefined}
+          src={imageExists && image ? image : undefined}
           alt={`${p.name} cover`}
           imageClassName="media-img"
           className="media-img-container"
@@ -52,7 +52,7 @@ export default function PlaylistCard({ p }: { p: PlaylistType }) {
         {p.description && <p className="card-desc">{p.description}</p>}
 
         <div className="card-meta-row">
-          <span className="card-owner">{p.ownerUsername}</span>
+          <Tag value={p.ownerUsername} severity="warning" />
           <div className="card-stats">
             <span className="card-stat">
               <i className="pi pi-headphones" />

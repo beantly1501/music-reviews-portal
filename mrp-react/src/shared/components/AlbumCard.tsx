@@ -24,7 +24,7 @@ export default function AlbumCard({ album, refetch }: Props) {
   const {
     loading: loadingImage,
     exists: imageExists,
-    url: imageUrl,
+    image: image,
   } = useGetImage(album.imageUrl ? `/api${album.imageUrl}` : undefined);
 
   const header = (
@@ -35,7 +35,7 @@ export default function AlbumCard({ album, refetch }: Props) {
         </div>
       ) : (
         <Image
-          src={imageExists && imageUrl ? imageUrl : undefined}
+          src={imageExists && image ? image : undefined}
           imageClassName="album-card__img"
           className="album-card__img-container"
         />
@@ -74,7 +74,7 @@ export default function AlbumCard({ album, refetch }: Props) {
             />
           </div>
 
-          <div className="album-card__subtitle">Released {album.year}</div>
+          <div className="album-card__subtitle">Released {album.year}.</div>
 
           <div className="flex flex-column align-items-center gap-4 mb-2">
             {album.link && (

@@ -1,33 +1,57 @@
 import { useGetSongs } from "./hooks/useGetSongs.tsx";
 import { Button } from "primereact/button";
+import { ProgressSpinner } from "primereact/progressspinner";
+import { Message } from "primereact/message";
 import CreateSongDialog from "./CreateSongDialog.tsx";
 import { useState } from "react";
 import SongCard from "../../shared/components/SongCard.tsx";
 
 export default function SongsPage() {
   const { songs, loading, error, refetch } = useGetSongs();
-
   const [visibleDialog, setVisibleDialog] = useState<boolean>(false);
 
-  if (loading) return <p>Loading…</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (loading) {
+    return (
+      <div className="page-status">
+        <ProgressSpinner />
+        <div className="page-status__text">Loading…</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page-status">
+        <Message severity="error" text={`Error: ${error}`} />
+        <Button
+          label="Retry"
+          icon="pi pi-refresh"
+          onClick={refetch}
+          className="page-status__action"
+        />
+      </div>
+    );
+  }
 
   return (
     <>
       <div className="flex flex-column justify-content-center align-items-center gap-4">
         <Button
           label="Add New Song"
-          className="w-10rem"
+          icon="pi pi-plus"
+          className="w-15rem"
           onClick={() => setVisibleDialog(true)}
         />
         <div className="flex flex flex-wrap gap-4 justify-content-center">
           {songs.map((song) => (
-            <SongCard song={song} refetch={refetch} />
+            <SongCard key={`song${song.id}`} song={song} refetch={refetch} />
           ))}
         </div>
       </div>
 
-      {!loading && !error && songs.length === 0 && <div>No songs found.</div>}
+      {!loading && !error && songs.length === 0 && (
+        <div className="text-empty">No songs found.</div>
+      )}
 
       {visibleDialog && (
         <CreateSongDialog

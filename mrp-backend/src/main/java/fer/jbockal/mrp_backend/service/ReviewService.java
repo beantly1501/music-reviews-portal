@@ -120,8 +120,9 @@ public class ReviewService {
                         r.getCreationDate(),
                         "/images/song/" + r.getSong().getId()
                 ))
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
     }
+
 
     public SongReviewResponseDto createSongReview(
             Object principal,

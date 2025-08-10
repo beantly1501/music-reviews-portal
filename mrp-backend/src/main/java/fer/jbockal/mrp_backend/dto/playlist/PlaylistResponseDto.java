@@ -14,6 +14,7 @@ public record PlaylistResponseDto(
         boolean isPrivate,
         String ownerUsername,
         LocalDate creationDate,
+        UserPartialDto lastEditedBy,
         Set<SongPartialDto> songs,
         Set<UserPartialDto> collaborators
 ) {

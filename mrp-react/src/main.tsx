@@ -9,14 +9,17 @@ import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./shared/components/Auth.tsx";
+import { ToastProvider } from "./shared/components/ToastContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <PrimeReactProvider>
       <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </ToastProvider>
       </BrowserRouter>
     </PrimeReactProvider>
   </StrictMode>,

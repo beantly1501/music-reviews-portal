@@ -53,7 +53,7 @@ public class SongController {
         byte[] bytes = songService.getSongFile(id);
 
         if (bytes == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.noContent().build();
         }
 
         var resource = new ByteArrayResource(bytes);

@@ -32,13 +32,13 @@ public class PlaylistService {
     private final AppUserRepository appUserRepository;
     private final AppUserService appUserService;
 
-    // CREATE: supports initial songs/collaborators in one request
+    // CREATE
     public PlaylistResponseDto create(Object principal, PlaylistRequestDto dto) {
         AppUser owner = appUserService.resolveAppUserFromPrincipal(principal);
 
         Playlist p = new Playlist();
         p.setName(dto.getName());
-        p.setImage(dto.getImage()); // harmless if you only serve URL /images/playlist/{id}
+        p.setImage(dto.getImage());
         p.setDescription(dto.getDescription());
         p.setPrivate(Boolean.TRUE.equals(dto.getIsPrivate()));
         p.setOwner(owner);
@@ -49,7 +49,7 @@ public class PlaylistService {
         }
         if (dto.getCollaboratorIds() != null) {
             Set<AppUser> collabs = fetchUsers(dto.getCollaboratorIds());
-            collabs.removeIf(u -> Objects.equals(u.getId(), owner.getId())); // owner can't be collaborator
+            collabs.removeIf(u -> Objects.equals(u.getId(), owner.getId()));
             p.setCollaborators(collabs);
         }
 
@@ -57,7 +57,7 @@ public class PlaylistService {
         return toDto(p);
     }
 
-    // UPDATE: replace fields and (when provided) replace songs/collaborators in one call
+    // UPDATE
     public PlaylistResponseDto update(Object principal, Long id, PlaylistRequestDto dto) {
         Playlist p = checkIsOwnerOrAdmin(principal, id);
 
@@ -65,10 +65,7 @@ public class PlaylistService {
         if (dto.getImage() != null) p.setImage(dto.getImage());
         if (dto.getDescription() != null) p.setDescription(dto.getDescription());
         if (dto.getIsPrivate() != null) p.setPrivate(dto.getIsPrivate());
-
-        if (dto.getSongIds() != null) {
-            p.setSongs(fetchSongs(dto.getSongIds()));
-        }
+        if (dto.getSongIds() != null) p.setSongs(fetchSongs(dto.getSongIds()));
 
         if (dto.getCollaboratorIds() != null) {
             Set<AppUser> collabs = fetchUsers(dto.getCollaboratorIds());
@@ -87,7 +84,7 @@ public class PlaylistService {
         playlistRepository.delete(p);
     }
 
-    // BULK add/remove songs
+    // SONGS
     public PlaylistResponseDto addSongs(Object principal, Long playlistId, List<Long> songIds) {
         Playlist p = checkCanEdit(principal, playlistId);
         if (songIds != null && !songIds.isEmpty()) {
@@ -109,7 +106,7 @@ public class PlaylistService {
         return toDto(p);
     }
 
-    // BULK add/remove collaborators
+    // COLLABORATORS
     public PlaylistResponseDto addCollaborators(Object principal, Long playlistId, List<Long> userIds) {
         Playlist p = checkIsOwnerOrAdmin(principal, playlistId);
         if (userIds != null && !userIds.isEmpty()) {
@@ -134,8 +131,7 @@ public class PlaylistService {
         return toDto(p);
     }
 
-    // ====== LISTS -> PlaylistResponseDto (FAST via projections) ======
-
+    // LISTS -> DTOs
     public List<PlaylistResponseDto> listMine(Object principal, int page, int size) {
         AppUser u = appUserService.resolveAppUserFromPrincipal(principal);
         List<PlaylistRow> rows = playlistRepository.findRowsForUser(u, PageRequest.of(page, size));
@@ -185,19 +181,23 @@ public class PlaylistService {
         throw new SecurityException("Only owner or admin can perform this action");
     }
 
-    // Single playlist -> DTO (uses projections, but scoped to one id)
+    // ----- DTO assembly -----
+
     private PlaylistResponseDto toDto(Playlist p) {
         Long pid = p.getId();
 
-        LinkedHashSet<SongPartialDto> songs =
-                playlistRepository.findSongsForPlaylists(List.of(pid)).stream()
-                        .map(this::toPartialSong)
-                        .collect(Collectors.toCollection(LinkedHashSet::new));
+        var songs = playlistRepository.findSongsForPlaylists(List.of(pid)).stream()
+                .map(this::toPartialSong)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        LinkedHashSet<UserPartialDto> collabs =
-                playlistRepository.findCollaboratorsForPlaylists(List.of(pid)).stream()
-                        .map(this::toPartialUser)
-                        .collect(Collectors.toCollection(LinkedHashSet::new));
+        var collabs = playlistRepository.findCollaboratorsForPlaylists(List.of(pid)).stream()
+                .map(this::toPartialUser)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        UserPartialDto lastEdited = null;
+        if (p.getLastEditedBy() != null) {
+            lastEdited = new UserPartialDto(p.getLastEditedBy().getId(), p.getLastEditedBy().getUsername());
+        }
 
         return new PlaylistResponseDto(
                 pid,
@@ -207,18 +207,17 @@ public class PlaylistService {
                 p.isPrivate(),
                 p.getOwner() != null ? p.getOwner().getUsername() : null,
                 p.getCreationDate(),
+                lastEdited,
                 songs,
                 collabs
         );
     }
 
-    // Batch rows -> DTOs (keeps DB roundtrips low)
     private List<PlaylistResponseDto> toDtosFromRows(List<PlaylistRow> rows) {
         if (rows == null || rows.isEmpty()) return List.of();
 
         List<Long> ids = rows.stream().map(PlaylistRow::getId).toList();
 
-        // Batch fetch relations
         Map<Long, LinkedHashSet<SongPartialDto>> songsByPlaylist =
                 playlistRepository.findSongsForPlaylists(ids).stream()
                         .collect(groupingBy(
@@ -233,12 +232,18 @@ public class PlaylistService {
                                 mapping(this::toPartialUser, toCollection(LinkedHashSet::new))
                         ));
 
-        // creationDate via one IN query
         Map<Long, java.time.LocalDate> createdById =
                 playlistRepository.findAllById(ids).stream()
                         .collect(toMap(Playlist::getId, Playlist::getCreationDate));
 
-        // Assemble DTOs in the same order as incoming rows
+        // Reuse PlaylistCollaboratorRow projection to fetch lastEditedBy in batch
+        Map<Long, UserPartialDto> editorByPlaylist =
+                playlistRepository.findEditorsForPlaylists(ids).stream()
+                        .collect(toMap(
+                                PlaylistCollaboratorRow::getPlaylistId,
+                                r -> new UserPartialDto(r.getId(), r.getUsername())
+                        ));
+
         return rows.stream().map(r -> new PlaylistResponseDto(
                 r.getId(),
                 r.getName(),
@@ -247,6 +252,7 @@ public class PlaylistService {
                 r.getIsPrivate(),
                 r.getOwnerUsername(),
                 createdById.get(r.getId()),
+                editorByPlaylist.get(r.getId()),
                 songsByPlaylist.getOrDefault(r.getId(), new LinkedHashSet<>()),
                 collabsByPlaylist.getOrDefault(r.getId(), new LinkedHashSet<>())
         )).toList();
@@ -257,18 +263,14 @@ public class PlaylistService {
         return new SongPartialDto(
                 id,
                 r.getName(),
-                "/images/song/" + id,         // image URL
-                "/song/audio-file/" + id,     // file URL
+                "/images/song/" + id,
+                "/song/audio-file/" + id,
                 r.getLink(),
                 r.getYear()
         );
     }
 
     private UserPartialDto toPartialUser(PlaylistCollaboratorRow r) {
-        Long id = r.getId();
-        return new UserPartialDto(
-                id,
-                r.getUsername()
-        );
+        return new UserPartialDto(r.getId(), r.getUsername());
     }
 }
