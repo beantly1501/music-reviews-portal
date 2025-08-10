@@ -1,7 +1,7 @@
 import { Card } from "primereact/card";
+import { Image } from "primereact/image";
 import { ArtistType } from "@shared/utils";
 import { useGetImage } from "../hooks/useGetImage";
-import noImageAvailable from "../../assets/images/no-image-available.jpg";
 
 interface Props {
   artist: ArtistType;
@@ -9,7 +9,7 @@ interface Props {
 
 export default function ArtistCard({ artist }: Props) {
   const { loading, exists, url } = useGetImage(
-    artist.imageUrl ? `/api/${artist.imageUrl}` : undefined,
+    artist.imageUrl ? `/api${artist.imageUrl}` : undefined,
   );
 
   const header = (
@@ -19,10 +19,10 @@ export default function ArtistCard({ artist }: Props) {
           <i className="pi pi-spin pi-spinner" />
         </div>
       ) : (
-        <img
-          src={exists && url ? url : noImageAvailable}
-          alt={artist.name}
-          className="artist-card__img"
+        <Image
+          src={exists && url ? url : undefined}
+          imageClassName="artist-card__img"
+          className="artist-card__img-container"
         />
       )}
     </div>

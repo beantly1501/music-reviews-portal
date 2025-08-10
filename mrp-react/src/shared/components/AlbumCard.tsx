@@ -1,17 +1,17 @@
-// src/features/albums/AlbumCard.tsx
 import { useRef, useState } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
+import { Image } from "primereact/image";
 import "primeflex/primeflex.css";
 
 import { AlbumType, AlbumReviewFormData } from "@shared/utils";
-import noImageAvailable from "../../assets/images/no-image-available.jpg";
 import { useGetImage } from "../hooks/useGetImage";
 import { submitAlbumReview } from "../../features/albums/hooks/submitAlbumReview.ts";
 import { CreateAlbumReview } from "../../features/albums/CreateAlbumReview.tsx";
+
 interface Props {
   album: AlbumType;
   refetch?: () => void;
@@ -25,7 +25,7 @@ export default function AlbumCard({ album, refetch }: Props) {
     loading: loadingImage,
     exists: imageExists,
     url: imageUrl,
-  } = useGetImage(`/api/${album.imageUrl}`);
+  } = useGetImage(album.imageUrl ? `/api${album.imageUrl}` : undefined);
 
   const header = (
     <div className="album-card__img-wrap">
@@ -34,10 +34,10 @@ export default function AlbumCard({ album, refetch }: Props) {
           <i className="pi pi-spin pi-spinner" />
         </div>
       ) : (
-        <img
-          src={imageExists && imageUrl ? imageUrl : noImageAvailable}
-          alt={album.name}
-          className="album-card__img"
+        <Image
+          src={imageExists && imageUrl ? imageUrl : undefined}
+          imageClassName="album-card__img"
+          className="album-card__img-container"
         />
       )}
     </div>
@@ -87,7 +87,6 @@ export default function AlbumCard({ album, refetch }: Props) {
               </div>
             )}
 
-            {/* Review section */}
             <div className="album-card__rating">
               {typeof album.grade === "number" ? (
                 <Rating value={album.grade} cancel={false} />
