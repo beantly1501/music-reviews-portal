@@ -11,7 +11,15 @@ export default function Layout() {
 
   // order must match
   const TAB_PATHS = useMemo(
-    () => ["/", "/all-reviews", "/songs", "/albums", "/artists", "/profile"],
+    () => [
+      "/",
+      "/all-reviews",
+      "/songs",
+      "/albums",
+      "/artists",
+      "/playlists",
+      "/profile",
+    ],
     [],
   );
 

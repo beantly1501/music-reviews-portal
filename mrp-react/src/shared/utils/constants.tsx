@@ -9,6 +9,7 @@ export const TABS_MENU: MenuItem[] = [
   { label: "Songs", icon: "pi pi-headphones" },
   { label: "Albums", icon: "pi pi-book" },
   { label: "Artists", icon: "pi pi-star-fill" },
+  { label: "Playlists", icon: "pi pi-folder-open" },
   { label: "Profile", icon: "pi pi-user" },
 ];
 

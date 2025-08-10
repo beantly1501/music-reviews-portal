@@ -11,6 +11,7 @@ import { ProtectedRoute } from "./shared/components/ProtectedRoute.tsx";
 import { RegisterPage } from "./features/login-register/Register.page.tsx";
 import AllReviewsPage from "./features/all-reviews/AllReviews.page.tsx";
 import ArtistsPage from "./features/artists/Artists.page.tsx";
+import PlaylistPage from "./features/playlists/Playlists.page.tsx";
 
 export default function App() {
   return (
@@ -53,6 +54,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ArtistsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="playlists"
+          element={
+            <ProtectedRoute>
+              <PlaylistPage />
             </ProtectedRoute>
           }
         />

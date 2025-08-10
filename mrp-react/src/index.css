@@ -195,3 +195,74 @@
   font-size: 14px;
   color: #374151; /* slate-700-ish */
 }
+
+.playlist-card.p-card .p-card-header { padding: 0; }
+.playlist-card.p-card .p-card-body { padding: 0; }
+.playlist-card .p-card-content { padding: 0; }
+.playlist-card {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* misc */
+.chip { height: 2rem; }
+
+.media-img-wrap {
+  width: 100%;
+  height: 180px;
+  background: #f5f5f5;
+  overflow: hidden;
+  position: relative;
+}
+.media-img-container { display: block; width: 100%; height: 100%; }
+.media-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.media-spinner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* base card bodies (used by both SongCard & PlaylistCard) */
+.card-body {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 8px;
+}
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  margin-bottom: 4px;
+}
+.card-title {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-subtitle { color: #6b6b6b; min-height: 22px; }
+.card-desc { color: #374151; line-height: 1.5; }
+.card-chips { min-height: 44px; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.card-spacer { flex: 1; }
+.card-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+}
+.card-owner { color: #6b7280; }
+.card-stats { display: flex; gap: 12px; }
+.card-stat { display: inline-flex; align-items: center; gap: 6px; }

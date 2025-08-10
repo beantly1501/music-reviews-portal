@@ -1,89 +1,67 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getToken } from "@shared/utils";
-
-// Cache for blob URLs by original request URL
-const imageUrlCache = new Map<string, string>();
 
 export function useGetImage(requestUrl?: string) {
   const [loading, setLoading] = useState(false);
   const [exists, setExists] = useState(false);
   const [url, setUrl] = useState<string | null>(null);
-  const mountedRef = useRef(false);
-  const [nonce, setNonce] = useState(0); // bump to force refetch
-
-  const refresh = useCallback(() => {
-    if (!requestUrl) return;
-    const old = imageUrlCache.get(requestUrl);
-    if (old) {
-      URL.revokeObjectURL(old);
-      imageUrlCache.delete(requestUrl);
-    }
-    setNonce((n) => n + 1); // trigger a re-run of the effect
-  }, [requestUrl]);
+  const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
-    mountedRef.current = true;
+    let mounted = true;
+
+    // revoke previous blob url
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
 
     if (!requestUrl) {
+      setLoading(false);
       setExists(false);
       setUrl(null);
-      return () => {
-        mountedRef.current = false;
-      };
+      return;
     }
 
     const token = getToken();
     if (!token) {
+      setLoading(false);
       setExists(false);
       setUrl(null);
-      return () => {
-        mountedRef.current = false;
-      };
+      return;
     }
 
-    // check cache first
-    const cached = imageUrlCache.get(requestUrl);
-    if (cached) {
-      setUrl(cached);
-      setExists(true);
-      return () => {
-        mountedRef.current = false;
-      };
-    }
-
-    (async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(requestUrl, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error(`Fetch image failed: ${res.status}`);
-        const blob = await res.blob();
+    setLoading(true);
+    fetch(requestUrl, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then((blob) => {
+        if (!mounted) return;
         const objectUrl = URL.createObjectURL(blob);
-
-        // revoke any existing object URL for this key
-        const prev = imageUrlCache.get(requestUrl);
-        if (prev) URL.revokeObjectURL(prev);
-        imageUrlCache.set(requestUrl, objectUrl);
-
-        if (mountedRef.current) {
-          setUrl(objectUrl);
-          setExists(true);
-        }
-      } catch {
-        if (mountedRef.current) {
+        objectUrlRef.current = objectUrl;
+        setUrl(objectUrl);
+        setExists(true);
+      })
+      .catch(() => {
+        if (mounted) {
           setExists(false);
           setUrl(null);
         }
-      } finally {
-        if (mountedRef.current) setLoading(false);
-      }
-    })();
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
 
     return () => {
-      mountedRef.current = false;
+      mounted = false;
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
     };
-  }, [requestUrl, nonce]);
+  }, [requestUrl]);
 
-  return { loading, exists, url, refresh };
+  return { loading, exists, url };
 }

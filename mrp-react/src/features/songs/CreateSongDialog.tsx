@@ -124,6 +124,7 @@ export default function CreateSongDialog({
 
   const {
     handleSubmit,
+    reset,
     control,
     formState: { errors },
   } = methods;
@@ -173,6 +174,7 @@ export default function CreateSongDialog({
         throw new Error(`Create failed: ${res.status} ${text}`);
       }
 
+      reset();
       onCreated();
       setVisible(false);
     },
@@ -183,7 +185,10 @@ export default function CreateSongDialog({
     <Dialog
       visible={visible}
       header={() => <div>Add a song</div>}
-      onHide={() => setVisible(false)}
+      onHide={() => {
+        reset();
+        setVisible(false);
+      }}
       resizable={false}
       draggable={false}
     >

@@ -3,6 +3,7 @@ package fer.jbockal.mrp_backend.service;
 import fer.jbockal.mrp_backend.dto.ImageDataDto;
 import fer.jbockal.mrp_backend.repository.AlbumRepository;
 import fer.jbockal.mrp_backend.repository.ArtistRepository;
+import fer.jbockal.mrp_backend.repository.PlaylistRepository;
 import fer.jbockal.mrp_backend.repository.SongRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
@@ -20,39 +21,31 @@ public class ImageService {
     private final SongRepository songRepository;
     private final AlbumRepository albumRepository;
     private final ArtistRepository artistRepository;
-
-    // Set true to return a placeholder image instead of 404 when missing.
-    private static final String PLACEHOLDER_PATH = "static/cover-placeholder.png";
+    private final PlaylistRepository playlistRepository;
 
     public Optional<ImageDataDto> getSongImage(Long songId) {
         return songRepository.findById(songId)
-                .flatMap(song -> coverFromBytes(song.getCover()))
-                .or(this::placeholderIfEnabled);
+                .flatMap(song -> coverFromBytes(song.getCover()));
     }
 
     public Optional<ImageDataDto> getAlbumImage(Long albumId) {
         return albumRepository.findById(albumId)
-                .flatMap(album -> coverFromBytes(album.getCover()))
-                .or(this::placeholderIfEnabled);
+                .flatMap(album -> coverFromBytes(album.getCover()));
     }
 
     public Optional<ImageDataDto> getArtistImage(Long artistId) {
         return artistRepository.findById(artistId)
-                .flatMap(album -> coverFromBytes(album.getImage()))
-                .or(this::placeholderIfEnabled);
+                .flatMap(artist -> coverFromBytes(artist.getImage()));
+    }
+
+    public Optional<ImageDataDto> getPlaylistImage(Long playlistId) {
+        return playlistRepository.findById(playlistId)
+                .flatMap(playlist -> coverFromBytes(playlist.getImage()));
     }
 
     private Optional<ImageDataDto> coverFromBytes(byte[] bytes) {
         if (bytes == null || bytes.length == 0) return Optional.empty();
         return Optional.of(new ImageDataDto(bytes, detectMediaType(bytes)));
-    }
-
-    private Optional<ImageDataDto> placeholderIfEnabled() {
-        try (InputStream in = new ClassPathResource(PLACEHOLDER_PATH).getInputStream()) {
-            return Optional.of(new ImageDataDto(in.readAllBytes(), MediaType.IMAGE_PNG));
-        } catch (IOException e) {
-            return Optional.empty();
-        }
     }
 
     /**

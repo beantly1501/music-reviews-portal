@@ -5,10 +5,10 @@ import { Chip } from "primereact/chip";
 import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
+import { Image } from "primereact/image";
 import "primeflex/primeflex.css";
 
 import { SongReviewFormData, SongType } from "@shared/utils";
-import noImageAvailable from "../../assets/images/no-image-available.jpg";
 import { useGetImage } from "../hooks/useGetImage";
 import { useSongAudio } from "../hooks/useSongAudio";
 import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts";
@@ -23,19 +23,11 @@ export default function SongCard({ song, refetch }: Props) {
   const [visibleDialog, setVisibleDialog] = useState(false);
   const toastRef = useRef<Toast | null>(null);
 
-  // Allow both "imageUrl" already starting with /api or a relative path we prefix
-  const srcPath = song.imageUrl;
-  const requestUrl = srcPath
-    ? srcPath.startsWith("/api")
-      ? srcPath
-      : `/api/${srcPath}`
-    : undefined;
-
   const {
     loading: loadingImage,
     exists: imageExists,
     url: imageUrl,
-  } = useGetImage(requestUrl);
+  } = useGetImage(`/api${song.imageUrl}`);
 
   const {
     loading: loadingAudio,
@@ -68,10 +60,9 @@ export default function SongCard({ song, refetch }: Props) {
           <i className="pi pi-spin pi-spinner" />
         </div>
       ) : (
-        <img
-          src={imageExists && imageUrl ? imageUrl : noImageAvailable}
-          alt={song.name}
-          className="song-card__img"
+        <Image
+          src={imageExists && imageUrl ? imageUrl : undefined}
+          imageStyle={{ width: "100%", height: 180, objectFit: "cover" }}
         />
       )}
     </div>
@@ -79,10 +70,8 @@ export default function SongCard({ song, refetch }: Props) {
 
   return (
     <>
-      <Card className="song-card p-shadow-2" header={header}>
-        {/* Body */}
+      <Card className="song-card p-card p-shadow-2" header={header}>
         <div className="song-card__content">
-          {/* Title row */}
           <div className="song-card__title-row">
             <h3 className="song-card__title">{song.name}</h3>
             <Tag
@@ -109,11 +98,12 @@ export default function SongCard({ song, refetch }: Props) {
               ) : audioExists && audioUrl ? (
                 <audio controls src={audioUrl} />
               ) : (
-                <div className="song-card__placeholder" />
+                <div className="song-card__placeholder">
+                  No audio file available.
+                </div>
               )}
             </div>
 
-            {/* External link */}
             <div className="song-card__link">
               <Button
                 label="Open Spotify / Youtube link"
@@ -123,7 +113,6 @@ export default function SongCard({ song, refetch }: Props) {
               />
             </div>
 
-            {/* Review */}
             <div className="song-card__review">
               {song.grade ? (
                 <Rating value={song.grade} cancel={false} />

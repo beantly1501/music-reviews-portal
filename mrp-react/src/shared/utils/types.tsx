@@ -126,3 +126,16 @@ export const artistCreateSchema = z.object({
     }),
 });
 export type ArtistCreateForm = z.infer<typeof artistCreateSchema>;
+
+export type PlaylistType = {
+  id: number;
+  name: string;
+  image: string | null;
+  description: string | null;
+  isPrivate: boolean;
+  ownerUsername: string;
+  songs: SongType[];
+  collaborators: UserOption[];
+};
+
+export type UserOption = { id: number; username: string };

@@ -23,7 +23,7 @@ public class ImageController {
                         .contentType(data.mediaType())
                         .cacheControl(CacheControl.maxAge(Duration.ofHours(24)).cachePublic())
                         .body(data.bytes()))
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.noContent().build());
     }
 
     @GetMapping("/album/{id}")
@@ -33,7 +33,7 @@ public class ImageController {
                         .contentType(data.mediaType())
                         .cacheControl(CacheControl.maxAge(Duration.ofHours(24)).cachePublic())
                         .body(data.bytes()))
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.noContent().build());
     }
 
     @GetMapping("/artist/{id}")
@@ -43,6 +43,16 @@ public class ImageController {
                         .contentType(data.mediaType())
                         .cacheControl(CacheControl.maxAge(Duration.ofHours(24)).cachePublic())
                         .body(data.bytes()))
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.noContent().build());
+    }
+
+    @GetMapping("/playlist/{id}")
+    public ResponseEntity<byte[]> getPlaylistImage(@PathVariable Long id) {
+        return imageService.getPlaylistImage(id)
+                .map(data -> ResponseEntity.ok()
+                        .contentType(data.mediaType())
+                        .cacheControl(CacheControl.maxAge(Duration.ofHours(24)).cachePublic())
+                        .body(data.bytes()))
+                .orElse(ResponseEntity.noContent().build());
     }
 }
