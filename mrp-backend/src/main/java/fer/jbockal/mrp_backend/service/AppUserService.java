@@ -4,6 +4,7 @@ import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.repository.AppUserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -25,7 +26,7 @@ public class AppUserService {
         String username;
         if (principalObj instanceof User userDetails) {
             username = userDetails.getUsername();
-        } else if (principalObj instanceof org.springframework.security.core.userdetails.UserDetails ud) {
+        } else if (principalObj instanceof UserDetails ud) {
             username = ud.getUsername();
         } else if (principalObj instanceof String) {
             username = (String) principalObj;

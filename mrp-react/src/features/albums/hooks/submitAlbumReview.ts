@@ -4,7 +4,7 @@ export async function submitAlbumReview(data: AlbumReviewFormData) {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
 
-  const res = await fetch("/api/album-review/create", {
+  const res = await fetch("/api/reviews/album/create", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
