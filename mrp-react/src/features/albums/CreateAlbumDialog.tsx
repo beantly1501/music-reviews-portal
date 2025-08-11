@@ -44,7 +44,6 @@ export default function CreateAlbumDialog({
   setVisible,
   onCreated,
 }: Props) {
-  // fetch artists & songs
   const {
     artists,
     loading: artistsLoading,

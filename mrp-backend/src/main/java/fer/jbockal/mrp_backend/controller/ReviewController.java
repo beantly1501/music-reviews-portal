@@ -4,6 +4,10 @@ import fer.jbockal.mrp_backend.dto.review.*;
 import fer.jbockal.mrp_backend.service.ReviewService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -42,9 +46,18 @@ public class ReviewController {
     }
 
     // ==== SONG REVIEW endpoints ====
-    @GetMapping("/song/{songId}")
-    public ResponseEntity<SongReviewResponseDto> getSongReviews(@PathVariable Long songId) {
-        return ResponseEntity.ok(reviewService.getSongReviews(songId).get(0));
+    @GetMapping("/song/{id}")
+    public ResponseEntity<SongReviewResponseDto> getSongReview(@PathVariable Long id) {
+        return ResponseEntity.ok(reviewService.getSongReview(id));
+    }
+
+    @GetMapping("/song/all/{songId}")
+    public ResponseEntity<Page<SongReviewResponseDto>> getAllSongReviews(
+            @PathVariable Long songId,
+            @PageableDefault(size = 20, sort = "creationDate", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        return ResponseEntity.ok(reviewService.getSongReviewsBySong(songId, pageable));
     }
 
     @PostMapping("/song/create")
@@ -74,9 +87,18 @@ public class ReviewController {
     }
 
     // ==== ALBUM REVIEW endpoints ====
-    @GetMapping("/album/{albumId}")
-    public ResponseEntity<AlbumReviewResponseDto> getAlbumReviews(@PathVariable Long albumId) {
-        return ResponseEntity.ok(reviewService.getAlbumReviews(albumId).get(0));
+    @GetMapping("/album/{id}")
+    public ResponseEntity<AlbumReviewResponseDto> getAlbumReview(@PathVariable Long id) {
+        return ResponseEntity.ok(reviewService.getAlbumReview(id));
+    }
+
+    @GetMapping("/album/all/{albumId}")
+    public ResponseEntity<Page<AlbumReviewResponseDto>> getAllAlbumReviews(
+            @PathVariable Long albumId,
+            @PageableDefault(size = 20, sort = "creationDate", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        return ResponseEntity.ok(reviewService.getAlbumReviewsByAlbum(albumId, pageable));
     }
 
     @PostMapping("/album/create")

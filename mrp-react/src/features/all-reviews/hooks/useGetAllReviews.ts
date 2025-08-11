@@ -5,7 +5,7 @@ interface UseGetAllReviewsResult {
   reviews: ReviewResponse[];
   loading: boolean;
   error: string | null;
-  refresh: () => void;
+  refetch: () => Promise<void>;
 }
 
 export function useGetAllReviews(): UseGetAllReviewsResult {
@@ -47,8 +47,8 @@ export function useGetAllReviews(): UseGetAllReviewsResult {
   }, []);
 
   useEffect(() => {
-    fetchAll();
+    fetchAll?.();
   }, [fetchAll]);
 
-  return { reviews, loading, error, refresh: fetchAll };
+  return { reviews, loading, error, refetch: fetchAll };
 }

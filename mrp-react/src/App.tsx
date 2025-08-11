@@ -12,7 +12,8 @@ import { RegisterPage } from "./features/login-register/Register.page.tsx";
 import AllReviewsPage from "./features/all-reviews/AllReviews.page.tsx";
 import ArtistsPage from "./features/artists/Artists.page.tsx";
 import PlaylistPage from "./features/playlists/Playlists.page.tsx";
-import ReviewPage from "./features/review/ReviewDialog.tsx";
+import SongDetailsPage from "./features/songs/SongDetails.page.tsx";
+import AlbumDetailsPage from "./features/albums/AlbumDetails.page.tsx";
 
 export default function App() {
   return (
@@ -76,7 +77,8 @@ export default function App() {
         />
       </Route>
 
-      <Route path="/review/:id" element={<ReviewPage />} />
+      <Route path="/song/:id" element={<SongDetailsPage />} />
+      <Route path="/album/:id" element={<AlbumDetailsPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 

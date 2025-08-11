@@ -5,7 +5,7 @@ interface UseGetMyReviewsResult {
   reviews: ReviewResponse[];
   loading: boolean;
   error: string | null;
-  refresh: () => void;
+  refresh: () => Promise<void>;
 }
 
 export function useGetMyReviews(count?: number): UseGetMyReviewsResult {

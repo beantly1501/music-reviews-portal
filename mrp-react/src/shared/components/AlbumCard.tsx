@@ -11,6 +11,8 @@ import { AlbumType, AlbumReviewFormData } from "@shared/utils";
 import { useGetImage } from "../hooks/useGetImage";
 import { submitAlbumReview } from "../../features/albums/hooks/submitAlbumReview.ts";
 import { CreateAlbumReview } from "../../features/albums/CreateAlbumReview.tsx";
+import { toast } from "./ToastContext.tsx";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   album: AlbumType;
@@ -19,6 +21,7 @@ interface Props {
 
 export default function AlbumCard({ album, refetch }: Props) {
   const [visibleDialog, setVisibleDialog] = useState(false);
+  const navigate = useNavigate();
   const toastRef = useRef<Toast | null>(null);
 
   const {
@@ -46,24 +49,20 @@ export default function AlbumCard({ album, refetch }: Props) {
   const handleSubmit = async (formData: AlbumReviewFormData) => {
     try {
       await submitAlbumReview(formData);
-      toastRef.current?.show({
-        severity: "success",
-        summary: `Reviewed ${album.name}`,
-        life: 3000,
-      });
+      toast.success("Successfully reviewed!");
       refetch?.();
     } catch {
-      toastRef.current?.show({
-        severity: "error",
-        summary: "Error creating review",
-        life: 3000,
-      });
+      toast.error("Something went wrong.");
     }
   };
 
   return (
     <>
-      <Card className="album-card p-shadow-2" header={header}>
+      <Card
+        className="album-card p-shadow-2"
+        header={header}
+        onClick={() => navigate(`/album/${album.id}`)}
+      >
         <div className="album-card__body">
           <div className="album-card__title-row">
             <h3 className="album-card__title">{album.name}</h3>
@@ -82,7 +81,10 @@ export default function AlbumCard({ album, refetch }: Props) {
                 <Button
                   label="Open Album Link"
                   icon="pi pi-external-link"
-                  onClick={() => window.open(album.link!, "_blank")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(album.link!, "_blank");
+                  }}
                 />
               </div>
             )}
@@ -94,7 +96,10 @@ export default function AlbumCard({ album, refetch }: Props) {
                 <Button
                   label="Review Album"
                   icon="pi pi-star"
-                  onClick={() => setVisibleDialog(true)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setVisibleDialog(true);
+                  }}
                 />
               )}
             </div>

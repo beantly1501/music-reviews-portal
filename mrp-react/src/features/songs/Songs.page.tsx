@@ -46,12 +46,12 @@ export default function SongsPage() {
           {songs.map((song) => (
             <SongCard key={`song${song.id}`} song={song} refetch={refetch} />
           ))}
+
+          {!loading && !error && songs.length === 0 && (
+            <div className="text-empty">No songs found.</div>
+          )}
         </div>
       </div>
-
-      {!loading && !error && songs.length === 0 && (
-        <div className="text-empty">No songs found.</div>
-      )}
 
       {visibleDialog && (
         <CreateSongDialog

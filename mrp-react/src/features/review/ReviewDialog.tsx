@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState } from "react";
 import { Dialog } from "primereact/dialog";
 import { Card } from "primereact/card";
 import { Image } from "primereact/image";
@@ -9,17 +9,34 @@ import { Button } from "primereact/button";
 import { Message } from "primereact/message";
 import { ProgressSpinner } from "primereact/progressspinner";
 
-import { AlbumType, SongType } from "@shared/utils";
+import {
+  AlbumReviewFormData,
+  AlbumType,
+  deleteAlbumReview,
+  deleteSongReview,
+  SongReviewFormData,
+  SongType,
+  UserRoleEnum,
+} from "@shared/utils";
 import { useGetReview } from "../../shared/hooks/useGetReview.ts";
 import { useGetImage } from "../../shared/hooks/useGetImage.ts";
-import { useGetSong } from "../../shared/hooks/useGetSong.ts";
 import { useGetAlbum } from "../../shared/hooks/useGetAlbum.ts";
+import { Chip } from "primereact/chip";
+import { useGetSongFull } from "../../shared/hooks/useGetSongFull.ts";
+import { CreateSongReview } from "../songs/CreateSongReview.tsx";
+import { toast } from "../../shared/components/ToastContext.tsx";
+import { CreateAlbumReview } from "../albums/CreateAlbumReview.tsx";
+import { updateSongReview } from "../songs/hooks/updateAlbumReview.ts";
+import { updateAlbumReview } from "../albums/hooks/updateAlbumReview.ts";
+import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 type Props = {
   visible: boolean;
   onHide: () => void;
   reviewId: number | undefined;
-  reviewType?: "SONG" | "ALBUM"; // optional hint
+  reviewType?: "SONG" | "ALBUM";
+  refetch: () => Promise<void>;
 };
 
 export default function ReviewDialog({
@@ -27,51 +44,43 @@ export default function ReviewDialog({
   onHide,
   reviewId,
   reviewType,
+  refetch,
 }: Props) {
-  // fetch the review (always call the hook)
+  const [visibleUpdateReview, setVisibleUpdateReview] =
+    useState<boolean>(false);
+  const [deleting, setDeleting] = useState<boolean>(false);
+
+  const { user } = useCurrentUser();
+
   const { review, loading, error } = useGetReview(reviewId, reviewType);
-
-  // review image path
-  const reviewImgPath = useMemo(() => {
-    const path = review?.image;
-    if (!path) return undefined;
-    return path.startsWith("/api") ? path : `/api${path}`;
-  }, [review?.image]);
-
   const {
     loading: loadingReviewImg,
     exists: reviewImgExists,
     image: reviewImg,
-  } = useGetImage(reviewImgPath);
+  } = useGetImage(review?.image ? `/api${review?.image}` : undefined);
 
   const songId = review?.type === "SONG" ? review.songId : undefined;
   const albumId = review?.type === "ALBUM" ? review.albumId : undefined;
 
-  const { song, loading: loadingSong, error: songError } = useGetSong(songId);
+  const {
+    song,
+    songAudio,
+    songAudioExists,
+    loading: loadingSong,
+    loadingSongAudio,
+    error: songError,
+  } = useGetSongFull(songId ?? undefined);
+
   const {
     album,
     loading: loadingAlbum,
     error: albumError,
-  } = useGetAlbum(albumId);
+  } = useGetAlbum(albumId ?? undefined);
 
   const entity = (review?.type === "SONG" ? song : album) as
     | SongType
     | AlbumType
     | undefined;
-
-  const entityImgPath = useMemo(() => {
-    const path = (
-      review?.type === "SONG" ? song?.imageUrl : album?.imageUrl
-    ) as string | undefined;
-    if (!path) return undefined;
-    return path.startsWith("/api") ? path : `/api${path}`;
-  }, [review?.type, song, album]);
-
-  const {
-    loading: loadingEntityImg,
-    exists: entityImgExists,
-    image: entityImg,
-  } = useGetImage(entityImgPath);
 
   const createdAt = review
     ? new Date(review.creationDate).toLocaleDateString("hr-HR", {
@@ -79,7 +88,61 @@ export default function ReviewDialog({
       })
     : "";
 
-  const header = (
+  const canEdit = !!user && !!review && user.username === review.username;
+
+  const canDelete =
+    !!user &&
+    !!review &&
+    (user.username === review.username || user?.role === UserRoleEnum.ADMIN);
+
+  const handleSubmit = async (
+    formData: SongReviewFormData | AlbumReviewFormData,
+  ) => {
+    try {
+      if (review?.type === "SONG") {
+        await updateSongReview(reviewId!, formData as SongReviewFormData);
+      } else if (review?.type === "ALBUM") {
+        await updateAlbumReview(reviewId!, formData as AlbumReviewFormData);
+      }
+      onHide();
+      toast.success(`Successfully updated review!`);
+      refetch?.();
+    } catch {
+      toast.error("Something went wrong");
+    }
+  };
+
+  const handleDelete = () => {
+    if (!review || !reviewId) return;
+
+    confirmDialog({
+      header: "Confirm Delete",
+      message: "Delete this review permanently?",
+      icon: "pi pi-exclamation-triangle",
+      acceptLabel: "Delete",
+      rejectLabel: "Cancel",
+      acceptClassName: "p-button-danger",
+      accept: async () => {
+        try {
+          setDeleting(true);
+          if (review.type === "SONG") {
+            await deleteSongReview(reviewId);
+          } else {
+            await deleteAlbumReview(reviewId);
+          }
+          toast.success("Review deleted.");
+          onHide();
+          await refetch?.();
+        } catch {
+          toast.error("Failed to delete review.");
+        } finally {
+          setDeleting(false);
+        }
+      },
+    });
+  };
+
+  const header = review && !loading && (
     <div className="rdialog__header">
       <div className="rdialog__header-left">
         <span className="rdialog__title">
@@ -88,15 +151,28 @@ export default function ReviewDialog({
             : (review?.albumName ?? "Album")}
         </span>
       </div>
-      <div className="rdialog__header-right">
-        <Button
-          label="Edit"
-          icon="pi pi-pencil"
-          onClick={() => {}}
-          severity="secondary"
-          outlined
-          size="small"
-        />
+      <div className="rdialog__header-right flex gap-2">
+        {canEdit && (
+          <Button
+            label="Edit review"
+            icon="pi pi-pencil"
+            onClick={() => setVisibleUpdateReview(true)}
+            severity="secondary"
+            outlined
+            size="small"
+          />
+        )}
+        {canDelete && (
+          <Button
+            label="Delete"
+            icon={deleting ? "pi pi-spin pi-spinner" : "pi pi-trash"}
+            severity="danger"
+            outlined
+            size="small"
+            onClick={handleDelete}
+            disabled={deleting}
+          />
+        )}
         <Tag
           value={review?.type === "SONG" ? "Song Review" : "Album Review"}
           severity={review?.type === "SONG" ? "success" : "info"}
@@ -180,27 +256,7 @@ export default function ReviewDialog({
 
           {/* Entity details */}
           <div className="rdialog__section">
-            <h3 className="rdialog__section-title">
-              {review.type === "SONG" ? "Song" : "Album"} details
-            </h3>
-
             <div className="rdialog__entity">
-              <div className="rdialog__entity-media">
-                <Image
-                  src={
-                    !loadingEntityImg && entityImgExists
-                      ? (entityImg ?? undefined)
-                      : undefined
-                  }
-                  alt={
-                    review.type === "SONG"
-                      ? (review.songName ?? "Song")
-                      : (review.albumName ?? "Album")
-                  }
-                  imageClassName="rdialog__entity-img"
-                />
-              </div>
-
               <div className="rdialog__entity-body">
                 {review.type === "SONG" && entity && (
                   <>
@@ -215,9 +271,9 @@ export default function ReviewDialog({
 
                     <div className="rdialog__entity-tags">
                       {(entity as SongType).genres?.map((g) => (
-                        <Tag
+                        <Chip
                           key={g.id}
-                          value={g.name}
+                          label={g.name}
                           className="rdialog__tag"
                         />
                       ))}
@@ -274,10 +330,53 @@ export default function ReviewDialog({
                   </div>
                 )}
               </div>
+              {review.type === "SONG" && (
+                <div className="my-auto">
+                  {loadingSongAudio ? (
+                    <i className="pi pi-spin pi-spinner" />
+                  ) : songAudioExists && songAudio ? (
+                    <audio controls src={songAudio} className="w-full" />
+                  ) : (
+                    <div className="song-card__placeholder">
+                      No audio file available.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </Card>
       )}
+
+      {visibleUpdateReview && review && review.songId && !loading && (
+        <CreateSongReview
+          visible={visibleUpdateReview}
+          name={review?.songName ?? ""}
+          songId={review.songId}
+          onHide={() => setVisibleUpdateReview(false)}
+          onSubmit={handleSubmit}
+          existingFormData={{
+            songId: review.songId,
+            grade: review?.grade,
+            description: review?.description,
+          }}
+        />
+      )}
+      {visibleUpdateReview && review && review.albumId && !loading && (
+        <CreateAlbumReview
+          visible={visibleUpdateReview}
+          name={review?.albumName ?? ""}
+          albumId={review.albumId}
+          onHide={() => setVisibleUpdateReview(false)}
+          onSubmit={handleSubmit}
+          existingFormData={{
+            albumId: review.albumId,
+            grade: review?.grade,
+            description: review?.description,
+          }}
+        />
+      )}
+      <ConfirmDialog />
     </Dialog>
   );
 }

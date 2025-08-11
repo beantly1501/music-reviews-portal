@@ -4,6 +4,7 @@ import fer.jbockal.mrp_backend.model.SongReview;
 import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.model.Song;
 import fer.jbockal.mrp_backend.repository.projection.SongReviewRow;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -82,4 +83,26 @@ public interface SongReviewRepository extends JpaRepository<SongReview, Long> {
             order by sr.creationDate desc
             """)
     List<SongReviewRow> findRowsByUser(@Param("user") AppUser user, Pageable pageable);
+
+    @Query(value = """
+            select sr.id as id,
+                   s.id as songId,
+                   s.name as songName,
+                   u.username as username,
+                   sr.grade as grade,
+                   sr.description as description,
+                   sr.creationDate as creationDate
+            from SongReview sr
+            join sr.song s
+            join sr.user u
+            where s.id = :songId
+            """,
+            countQuery = """
+                    select count(sr)
+                    from SongReview sr
+                    join sr.song s
+                    where s.id = :songId
+                    """)
+    Page<SongReviewRow> findRowsBySongId(@Param("songId") Long songId, Pageable pageable);
+
 }

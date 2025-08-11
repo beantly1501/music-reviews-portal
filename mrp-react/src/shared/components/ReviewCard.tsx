@@ -9,9 +9,10 @@ import ReviewDialog from "../../features/review/ReviewDialog.tsx";
 
 interface ReviewCardProps {
   review: ReviewResponse;
+  refetch: () => Promise<void>;
 }
 
-export const ReviewCard = ({ review }: ReviewCardProps) => {
+export const ReviewCard = ({ review, refetch }: ReviewCardProps) => {
   const [visible, setVisible] = useState(false);
 
   const title =
@@ -100,6 +101,7 @@ export const ReviewCard = ({ review }: ReviewCardProps) => {
           onHide={() => setVisible(false)}
           reviewId={review.id}
           reviewType={review.type}
+          refetch={refetch}
         />
       )}
     </>

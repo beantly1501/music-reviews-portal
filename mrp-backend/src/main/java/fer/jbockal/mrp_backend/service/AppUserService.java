@@ -30,7 +30,7 @@ public class AppUserService {
         return appUserRepository.findAllUsers();
     }
 
-    public List<String> getAllUsernamesExceptMe(Object principal) {
+    public List<UserRow> getAllUsernamesExceptMe(Object principal) {
         AppUser me = resolveAppUserFromPrincipal(principal);
         return appUserRepository.findAllUsernamesExcept(me.getId());
     }

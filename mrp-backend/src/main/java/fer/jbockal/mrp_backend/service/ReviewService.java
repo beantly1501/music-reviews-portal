@@ -9,10 +9,14 @@ import fer.jbockal.mrp_backend.repository.SongReviewRepository;
 import fer.jbockal.mrp_backend.repository.projection.AlbumReviewRow;
 import fer.jbockal.mrp_backend.repository.projection.SongReviewRow;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -106,21 +110,43 @@ public class ReviewService {
     }
 
     // === SONG REVIEWS ===
-    public List<SongReviewResponseDto> getSongReviews(Long songId) {
-        Song song = songRepository.findById(songId)
-                .orElseThrow(() -> new IllegalArgumentException("Song not found: " + songId));
-        return songReviewRepository.findBySong(song).stream()
+    public SongReviewResponseDto getSongReview(Long reviewId) {
+        var r = songReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Review not found: " + reviewId));
+
+        return new SongReviewResponseDto(
+                r.getId(),
+                r.getSong().getId(),
+                r.getSong().getName(),
+                r.getUser().getUsername(),
+                r.getGrade(),
+                r.getDescription(),
+                r.getCreationDate(),
+                "/images/song/" + r.getSong().getId()
+        );
+    }
+
+    public Page<SongReviewResponseDto> getSongReviewsBySong(Long songId, Pageable pageable) {
+        if (!songRepository.existsById(songId)) {
+            throw new IllegalArgumentException("Song not found: " + songId);
+        }
+
+        Pageable effective = pageable.getSort().isUnsorted()
+                ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "creationDate"))
+                : pageable;
+
+        return songReviewRepository.findRowsBySongId(songId, effective)
                 .map(r -> new SongReviewResponseDto(
                         r.getId(),
-                        r.getSong().getId(),
-                        r.getSong().getName(),
-                        r.getUser().getUsername(),
+                        r.getSongId(),
+                        r.getSongName(),
+                        r.getUsername(),
                         r.getGrade(),
                         r.getDescription(),
                         r.getCreationDate(),
-                        "/images/song/" + r.getSong().getId()
-                ))
-                .collect(Collectors.toList());
+                        "/images/song/" + r.getSongId()
+                ));
     }
 
 
@@ -155,33 +181,63 @@ public class ReviewService {
         Song song = rev.getSong();
         return new SongReviewResponseDto(
                 rev.getId(), song.getId(), song.getName(), user.getUsername(), rev.getGrade(),
-                rev.getDescription(), rev.getCreationDate(), "/images/song/" + song.getId()
+                rev.getDescription(), LocalDate.now(), "/images/song/" + song.getId()
         );
     }
 
     public void deleteSongReview(Object principal, Long reviewId) {
         AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
-        SongReview rev = songReviewRepository.findByIdAndUser(reviewId, user)
-                .orElseThrow(() -> new IllegalArgumentException("Song review not found or not owned: " + reviewId));
-        songReviewRepository.delete(rev);
+
+        if (user.getRole() == Role.ADMIN) {
+            songReviewRepository.deleteById(reviewId);
+        } else {
+            SongReview rev = songReviewRepository.findByIdAndUser(reviewId, user)
+                    .orElseThrow(() -> new IllegalArgumentException("Song review not found or not owned: " + reviewId));
+
+            songReviewRepository.delete(rev);
+        }
+
+
     }
 
     // === ALBUM REVIEWS ===
-    public List<AlbumReviewResponseDto> getAlbumReviews(Long albumId) {
-        Album album = albumRepository.findById(albumId)
-                .orElseThrow(() -> new IllegalArgumentException("Album not found: " + albumId));
-        return albumReviewRepository.findByAlbum(album).stream()
+    public AlbumReviewResponseDto getAlbumReview(Long reviewId) {
+        var r = albumReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Album review not found: " + reviewId));
+
+        return new AlbumReviewResponseDto(
+                r.getId(),
+                r.getAlbum().getId(),
+                r.getAlbum().getName(),
+                r.getUser().getUsername(),
+                r.getGrade(),
+                r.getDescription(),
+                r.getCreationDate(),
+                "/images/album/" + r.getAlbum().getId()
+        );
+    }
+
+    public Page<AlbumReviewResponseDto> getAlbumReviewsByAlbum(Long albumId, Pageable pageable) {
+        if (!albumRepository.existsById(albumId)) {
+            throw new IllegalArgumentException("Song not found: " + albumId);
+        }
+
+        Pageable effective = pageable.getSort().isUnsorted()
+                ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "creationDate"))
+                : pageable;
+
+        return albumReviewRepository.findRowsByAlbumId(albumId, effective)
                 .map(r -> new AlbumReviewResponseDto(
                         r.getId(),
-                        r.getAlbum().getId(),
-                        r.getAlbum().getName(),
-                        r.getUser().getUsername(),
+                        r.getAlbumId(),
+                        r.getAlbumName(),
+                        r.getUsername(),
                         r.getGrade(),
                         r.getDescription(),
                         r.getCreationDate(),
-                        "/images/album/" + r.getAlbum().getId()
-                ))
-                .collect(Collectors.toList());
+                        "/images/album/" + r.getAlbumId()
+                ));
     }
 
     public AlbumReviewResponseDto createAlbumReview(
@@ -215,14 +271,19 @@ public class ReviewService {
         Album album = rev.getAlbum();
         return new AlbumReviewResponseDto(
                 rev.getId(), album.getId(), album.getName(), user.getUsername(), rev.getGrade(),
-                rev.getDescription(), rev.getCreationDate(), "/images/album/" + album.getId()
+                rev.getDescription(), LocalDate.now(), "/images/album/" + album.getId()
         );
     }
 
     public void deleteAlbumReview(Object principal, Long reviewId) {
         AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
-        AlbumReview rev = albumReviewRepository.findByIdAndUser(reviewId, user)
-                .orElseThrow(() -> new IllegalArgumentException("Album review not found or not owned: " + reviewId));
-        albumReviewRepository.delete(rev);
+
+        if (user.getRole() == Role.ADMIN) {
+            albumReviewRepository.deleteById(reviewId);
+        } else {
+            AlbumReview rev = albumReviewRepository.findByIdAndUser(reviewId, user)
+                    .orElseThrow(() -> new IllegalArgumentException("Album review not found or not owned: " + reviewId));
+            albumReviewRepository.delete(rev);
+        }
     }
 }

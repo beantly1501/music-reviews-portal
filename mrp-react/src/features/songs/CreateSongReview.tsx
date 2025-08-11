@@ -13,6 +13,7 @@ export interface SongReviewModalProps {
   songId: number;
   onHide: () => void;
   onSubmit: (data: SongReviewFormData) => Promise<void>;
+  existingFormData?: SongReviewFormData;
 }
 
 export const CreateSongReview = ({
@@ -21,10 +22,11 @@ export const CreateSongReview = ({
   songId,
   onHide,
   onSubmit,
+  existingFormData,
 }: SongReviewModalProps) => {
   const methods = useForm<SongReviewFormData>({
     resolver: zodResolver(songReviewSchema),
-    defaultValues: { songId, grade: 0, description: "" },
+    defaultValues: existingFormData ?? { songId, grade: 0, description: "" },
   });
   const {
     handleSubmit,
@@ -35,7 +37,7 @@ export const CreateSongReview = ({
 
   // Reset form when dialog opens/closes
   useEffect(() => {
-    if (visible) {
+    if (!existingFormData && visible) {
       reset({ songId, grade: 0, description: "" });
     }
   }, [visible, songId, reset]);
@@ -63,7 +65,7 @@ export const CreateSongReview = ({
 
   return (
     <Dialog
-      header={name}
+      header={existingFormData ? `Update ${name}` : name}
       visible={visible}
       modal
       footer={footer}

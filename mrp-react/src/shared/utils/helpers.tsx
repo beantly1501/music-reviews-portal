@@ -1,7 +1,5 @@
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
-import { UserInfo } from "./types.tsx";
-import { useCallback, useEffect, useState } from "react";
 
 export function formatDate(input: string): string {
   const [d, M, y] = input.split("-").map(Number);
@@ -70,72 +68,6 @@ export function useLogout() {
   };
 }
 
-export function useCurrentUser() {
-  const [state, setState] = useState<{
-    user: UserInfo | null;
-    loading: boolean;
-    error: string | null;
-  }>({
-    user: null,
-    loading: true,
-    error: null,
-  });
-
-  const fetchUser = useCallback(async () => {
-    setState({ user: null, loading: true, error: null });
-
-    const token = getToken();
-    if (!token) {
-      setState({ user: null, loading: false, error: "No auth token" });
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/user/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        if (res.status === 401) {
-          setState({ user: null, loading: false, error: "Unauthorized" });
-        } else if (res.status === 404) {
-          setState({ user: null, loading: false, error: "User not found" });
-        } else {
-          const text = await res.text();
-          setState({
-            user: null,
-            loading: false,
-            error: text || `Request failed: ${res.status}`,
-          });
-        }
-        return;
-      }
-
-      const user: UserInfo = await res.json();
-      setState({ user, loading: false, error: null });
-    } catch (e: unknown) {
-      setState({
-        user: null,
-        loading: false,
-        error: extractErrorMessage(e),
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
-
-  return {
-    user: state.user,
-    loading: state.loading,
-    error: state.error,
-    refresh: fetchUser,
-  };
-}
-
 export function extractErrorMessage(e: unknown): string {
   if (e instanceof Error) return e.message;
   try {
@@ -161,4 +93,30 @@ export function parseIdList(input: string | undefined): number[] {
     .filter((s) => s !== "")
     .map(Number)
     .filter((n) => !isNaN(n) && n > 0);
+}
+
+export async function deleteSongReview(reviewId: number): Promise<void> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+  const res = await fetch(`/api/reviews/song/delete/${reviewId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`Failed to delete song review: ${res.status} ${t}`);
+  }
+}
+
+export async function deleteAlbumReview(reviewId: number): Promise<void> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+  const res = await fetch(`/api/reviews/album/delete/${reviewId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`Failed to delete album review: ${res.status} ${t}`);
+  }
 }

@@ -38,9 +38,10 @@ public class AppUserController {
     }
 
     @GetMapping("/all-but-me")
-    public ResponseEntity<List<String>> getOtherUsernames(
+    public ResponseEntity<List<UserResponseDto>> getOtherUsernames(
             @AuthenticationPrincipal Object principal
     ) {
-        return ResponseEntity.ok(appUserService.getAllUsernamesExceptMe(principal));
+        List<UserRow> list = appUserService.getAllUsernamesExceptMe(principal);
+        return ResponseEntity.ok(list.stream().map(u -> new UserResponseDto(u.getId(), u.getUsername())).toList());
     }
 }

@@ -18,6 +18,6 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     @Query("select u.id as id, u.username as username from AppUser u order by u.username asc")
     List<UserRow> findAllUsers();
 
-    @Query("select u.username from AppUser u where u.id <> :me order by u.username asc")
-    List<String> findAllUsernamesExcept(@Param("me") Long me);
+    @Query("select u.id as id, u.username as username from AppUser u where u.id <> :me order by u.username asc")
+    List<UserRow> findAllUsernamesExcept(@Param("me") Long me);
 }

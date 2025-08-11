@@ -14,7 +14,7 @@ export function useGetUsernames() {
       const headers: Record<string, string> = { Accept: "application/json" };
       if (token) headers.Authorization = `Bearer ${token}`;
 
-      const res = await fetch(`/api/user/all`, { headers });
+      const res = await fetch(`/api/user/all-but-me`, { headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as UserOption[];
       setUsers(json);

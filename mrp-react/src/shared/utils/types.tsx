@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { UserRoleEnum } from "./enums.tsx";
 
 export type SongType = {
   id: number;
@@ -62,8 +63,11 @@ export const albumCreateSchema = z.object({
 export type AlbumCreateForm = z.infer<typeof albumCreateSchema>;
 
 export type UserInfo = {
+  id: number;
   username: string;
+  password: string;
   email: string;
+  role: UserRoleEnum;
 };
 
 // --- auth-related schemas & types ---

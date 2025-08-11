@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useForm, FormProvider, Controller } from "react-hook-form";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog } from "primereact/dialog";
 import { InputTextarea } from "primereact/inputtextarea";
@@ -13,6 +13,7 @@ export interface CreateAlbumReviewProps {
   albumId: number;
   onHide: () => void;
   onSubmit: (data: AlbumReviewFormData) => Promise<void>;
+  existingFormData?: AlbumReviewFormData;
 }
 
 export const CreateAlbumReview = ({
@@ -21,10 +22,11 @@ export const CreateAlbumReview = ({
   albumId,
   onHide,
   onSubmit,
+  existingFormData,
 }: CreateAlbumReviewProps) => {
   const methods = useForm<AlbumReviewFormData>({
     resolver: zodResolver(albumReviewSchema),
-    defaultValues: { albumId, grade: 0, description: "" },
+    defaultValues: existingFormData ?? { albumId, grade: 0, description: "" },
   });
 
   const {
@@ -35,7 +37,7 @@ export const CreateAlbumReview = ({
   } = methods;
 
   useEffect(() => {
-    if (visible) {
+    if (!existingFormData && visible) {
       reset({ albumId, grade: 0, description: "" });
     }
   }, [visible, albumId, reset]);
@@ -63,7 +65,7 @@ export const CreateAlbumReview = ({
 
   return (
     <Dialog
-      header={name}
+      header={existingFormData ? `Update ${name}` : name}
       visible={visible}
       modal
       footer={footer}

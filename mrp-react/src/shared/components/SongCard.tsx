@@ -12,6 +12,7 @@ import { useSongAudio } from "../hooks/useSongAudio";
 import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts";
 import { CreateSongReview } from "../../features/songs/CreateSongReview.tsx";
 import { toast } from "./ToastContext.tsx";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   song: SongType;
@@ -20,6 +21,7 @@ interface Props {
 
 export default function SongCard({ song, refetch }: Props) {
   const [visibleDialog, setVisibleDialog] = useState(false);
+  const navigate = useNavigate();
 
   const {
     loading: loadingImage,
@@ -60,7 +62,11 @@ export default function SongCard({ song, refetch }: Props) {
 
   return (
     <>
-      <Card className="song-card p-card p-shadow-2" header={header}>
+      <Card
+        className="song-card p-card p-shadow-2"
+        header={header}
+        onClick={() => navigate(`/song/${song.id}`)}
+      >
         <div className="song-card__content">
           <div className="song-card__title-row">
             <h3 className="song-card__title">{song.name}</h3>
@@ -98,7 +104,10 @@ export default function SongCard({ song, refetch }: Props) {
               <Button
                 label="Open Spotify / Youtube link"
                 icon="pi pi-external-link"
-                onClick={() => song.link && window.open(song.link, "_blank")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (song.link) window.open(song.link, "_blank");
+                }}
                 style={{ visibility: song.link ? "visible" : "hidden" }}
               />
             </div>
@@ -110,7 +119,10 @@ export default function SongCard({ song, refetch }: Props) {
                 <Button
                   label="Review Song"
                   icon="pi pi-star"
-                  onClick={() => setVisibleDialog(true)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setVisibleDialog(true);
+                  }}
                 />
               )}
             </div>
