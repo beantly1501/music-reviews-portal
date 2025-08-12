@@ -34,9 +34,9 @@ export default function SongDetailsPage() {
 
   // Song cover
   const {
-    loading: loadingCover,
-    exists: coverExists,
-    image: coverSrc,
+    loading: loadingImage,
+    exists: imageExists,
+    image: imageSrc,
   } = useGetImage(songId ? `/api/images/song/${songId}` : undefined);
 
   // Pageable/Sortable song reviews
@@ -118,17 +118,20 @@ export default function SongDetailsPage() {
         style={{ overflow: "hidden", borderRadius: 12 }}
       >
         <div className="flex gap-4 flex-column md:flex-row">
-          <div style={{ width: 300, maxWidth: "100%" }}>
-            <Image
-              src={
-                !loadingCover && coverExists
-                  ? (coverSrc ?? undefined)
-                  : undefined
-              }
-              alt={song.name}
-              imageClassName="w-full"
-              imageStyle={{ height: 280, objectFit: "cover" }}
-            />
+          <div
+            style={{ width: 300, maxWidth: "100%" }}
+            className="song-card__img-wrap"
+          >
+            {loadingImage ? (
+              <div className="song-card__img placeholder flex align-items-center justify-content-center">
+                <i className="pi pi-spin pi-spinner" />
+              </div>
+            ) : (
+              <Image
+                src={imageExists && imageSrc ? imageSrc : undefined}
+                imageStyle={{ width: "100%", height: 180, objectFit: "cover" }}
+              />
+            )}
           </div>
 
           <div className="flex-1">

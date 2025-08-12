@@ -6,7 +6,7 @@ import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
 import { Image } from "primereact/image";
 
-import { SongReviewFormData, SongType } from "@shared/utils";
+import { MAX_GENRES, SongReviewFormData, SongType } from "@shared/utils";
 import { useGetImage } from "../hooks/useGetImage";
 import { useSongAudio } from "../hooks/useSongAudio";
 import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts";
@@ -22,6 +22,14 @@ interface Props {
 export default function SongCard({ song, refetch }: Props) {
   const [visibleDialog, setVisibleDialog] = useState(false);
   const navigate = useNavigate();
+
+  const genres = song.genres ?? [];
+  const visibleGenres = genres.slice(0, MAX_GENRES);
+  const hasMoreGenres = genres.length > MAX_GENRES;
+  const hiddenGenresTitle = genres
+    .slice(MAX_GENRES)
+    .map((g) => g.name)
+    .join(", ");
 
   const {
     loading: loadingImage,
@@ -63,7 +71,7 @@ export default function SongCard({ song, refetch }: Props) {
   return (
     <>
       <Card
-        className="song-card p-card p-shadow-2"
+        className="song-card p-card p-shadow-2 select-none cursor-pointer"
         header={header}
         onClick={() => navigate(`/song/${song.id}`)}
       >
@@ -80,9 +88,18 @@ export default function SongCard({ song, refetch }: Props) {
           <div className="song-card__subtitle">Released {song.year}.</div>
 
           <div className="song-card__chips">
-            {song.genres?.map((g) => (
+            {visibleGenres.map((g) => (
               <Chip key={g.id} label={g.name} className="h-2rem" />
             ))}
+            {hasMoreGenres && (
+              <span
+                className="song-card__chips-more"
+                title={hiddenGenresTitle}
+                aria-label={`and ${genres.length - MAX_GENRES} more genres`}
+              >
+                …
+              </span>
+            )}
           </div>
 
           <div className="song-card__spacer" />

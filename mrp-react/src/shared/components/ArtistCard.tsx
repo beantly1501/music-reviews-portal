@@ -32,7 +32,7 @@ export default function ArtistCard({ artist }: Props) {
     <Card
       header={header}
       title={artist.name}
-      className="artist-card p-shadow-2"
+      className="artist-card p-shadow-2 cursor-pointer select-none"
     >
       {artist.description && (
         <p className="artist-card__desc">{artist.description}</p>
