@@ -3,12 +3,11 @@ package fer.jbockal.mrp_backend.service;
 import fer.jbockal.mrp_backend.dto.album.AlbumRequestDto;
 import fer.jbockal.mrp_backend.dto.album.AlbumResponseDto;
 import fer.jbockal.mrp_backend.dto.partial.ArtistPartialDto;
+import fer.jbockal.mrp_backend.dto.partial.GenrePartialDto;
 import fer.jbockal.mrp_backend.dto.partial.SongPartialDto;
-import fer.jbockal.mrp_backend.model.Album;
-import fer.jbockal.mrp_backend.model.AppUser;
-import fer.jbockal.mrp_backend.model.Artist;
-import fer.jbockal.mrp_backend.model.Song;
+import fer.jbockal.mrp_backend.model.*;
 import fer.jbockal.mrp_backend.repository.*;
+import fer.jbockal.mrp_backend.repository.projection.AlbumGenreRow;
 import fer.jbockal.mrp_backend.repository.projection.AlbumRow;
 import fer.jbockal.mrp_backend.repository.projection.AlbumSongRow;
 import fer.jbockal.mrp_backend.repository.projection.AlbumArtistRow;
@@ -178,10 +177,16 @@ public class AlbumService {
                                         ar.getDescription()
                                 ), toCollection(LinkedHashSet::new))));
 
+        Map<Long, LinkedHashSet<GenrePartialDto>> genresByAlbum =
+                albumRepository.findGenresForAlbums(ids).stream()
+                        .collect(groupingBy(AlbumGenreRow::getAlbumId, mapping(gr ->
+                                        new GenrePartialDto(gr.getId(), gr.getName()),
+                                toCollection(LinkedHashSet::new))));
+
         Map<Long, Integer> gradesByAlbumId = Collections.emptyMap();
         if (user != null) {
             gradesByAlbumId = albumReviewRepository.findByUser(user).stream()
-                    .collect(toMap(ar -> ar.getAlbum().getId(), ar -> ar.getGrade()));
+                    .collect(toMap(ar -> ar.getAlbum().getId(), AlbumReview::getGrade));
         }
 
         List<AlbumResponseDto> out = new ArrayList<>(base.size());
@@ -195,6 +200,7 @@ public class AlbumService {
                     row.getYear(),
                     emptyToNull(songsByAlbum.get(id)),
                     emptyToNull(artistsByAlbum.get(id)),
+                    emptyToNull(genresByAlbum.get(id)),
                     gradesByAlbumId.get(id)
             ));
         }

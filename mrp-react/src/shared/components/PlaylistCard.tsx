@@ -38,7 +38,7 @@ export default function PlaylistCard({ p }: { p: PlaylistType }) {
   );
 
   return (
-    <Card className="playlist-card" header={header}>
+    <Card className="playlist-card select-none cursor-pointer" header={header}>
       <div className="card-body">
         <div className="card-title-row">
           <h3 className="card-title">{p.name}</h3>

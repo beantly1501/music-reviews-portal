@@ -59,7 +59,7 @@ export default function AlbumCard({ album, refetch }: Props) {
   return (
     <>
       <Card
-        className="album-card p-shadow-2"
+        className="album-card p-shadow-2 select-none cursor-pointer"
         header={header}
         onClick={() => navigate(`/album/${album.id}`)}
       >

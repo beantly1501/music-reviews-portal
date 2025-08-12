@@ -2,6 +2,7 @@ package fer.jbockal.mrp_backend.repository;
 
 import fer.jbockal.mrp_backend.model.Album;
 import fer.jbockal.mrp_backend.repository.projection.AlbumArtistRow;
+import fer.jbockal.mrp_backend.repository.projection.AlbumGenreRow;
 import fer.jbockal.mrp_backend.repository.projection.AlbumRow;
 import fer.jbockal.mrp_backend.repository.projection.AlbumSongRow;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -62,4 +63,16 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     @Query("select a.cover from Album a where a.id = :id")
     byte[] findCoverById(@Param("id") Long id);
+
+    @Query(value = """
+            select sa.album_id as albumId, g.id as id, g.name as name
+            from song_album sa
+            join song_genre sg on sg.song_id = sa.song_id
+            join genre g on g.id = sg.genre_id
+            where sa.album_id in (:ids)
+            group by sa.album_id, g.id, g.name
+            order by sa.album_id, g.id
+            """, nativeQuery = true)
+    List<AlbumGenreRow> findGenresForAlbums(@Param("ids") List<Long> albumIds);
+
 }
