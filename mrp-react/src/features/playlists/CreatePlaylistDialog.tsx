@@ -1,4 +1,11 @@
-import { Dispatch, useCallback, useMemo, useState } from "react";
+import {
+  Dispatch,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Dialog } from "primereact/dialog";
 import {
   Controller,
@@ -6,13 +13,23 @@ import {
   SubmitHandler,
   useForm,
 } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { InputSwitch } from "primereact/inputswitch";
 import { Button } from "primereact/button";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 
-import { getToken, UserOption } from "@shared/utils";
+import {
+  parseIdList,
+  PlaylistCreateForm,
+  playlistCreateSchema,
+  PlaylistRequestData,
+  truncate,
+  UserOption,
+} from "@shared/utils";
+
 import CreateLimitedSongDialog from "../../shared/components/CreateLimitedSongDialog";
 import { useGetSongs } from "../songs/hooks/useGetSongs.tsx";
 import SongMultiSelect, {
@@ -20,29 +37,32 @@ import SongMultiSelect, {
 } from "../../shared/components/SongMultiSelect.tsx";
 import { useGetUsernames } from "../../shared/hooks/useGetUsers.ts";
 import UserMultiSelect from "../../shared/components/UserMultiSelect.tsx";
-
-type PlaylistCreateForm = {
-  name: string;
-  image?: File | null; // CHANGED: file instead of string
-  description?: string | null;
-  isPrivate: boolean;
-  songIds: number[];
-  collaboratorIds: number[]; // CHANGED: selected IDs from MultiSelect
-};
+import { createPlaylist, updatePlaylist } from "./utils/helpers.tsx";
 
 interface Props {
   visible: boolean;
   setVisible: Dispatch<boolean>;
   onCreated: () => void;
+  existingPlaylistData?: PlaylistRequestData;
 }
 
 export default function CreatePlaylistDialog({
   visible,
   setVisible,
   onCreated,
+  existingPlaylistData,
 }: Props) {
   const { songs, loading: songsLoading, refetch: refetchSongs } = useGetSongs();
   const { users, loading: usersLoading } = useGetUsernames();
+
+  const [selectedSongIds, setSelectedSongIds] = useState<number[]>([]);
+  const [selectedCollaboratorIds, setSelectedCollaboratorIds] = useState<
+    number[]
+  >([]);
+  const [songDialogVisible, setSongDialogVisible] = useState(false);
+
+  const coverUploadRef = useRef<FileUpload>(null);
+  const [coverName, setCoverName] = useState<string>("Choose image");
 
   const songOptions: SongOption[] = useMemo(
     () =>
@@ -59,16 +79,13 @@ export default function CreatePlaylistDialog({
     [users],
   );
 
-  const [songDialogVisible, setSongDialogVisible] = useState(false);
-
   const methods = useForm<PlaylistCreateForm>({
-    defaultValues: {
+    resolver: zodResolver(playlistCreateSchema),
+    defaultValues: existingPlaylistData?.formData ?? {
       name: "",
       image: null,
       description: "",
       isPrivate: false,
-      songIds: [],
-      collaboratorIds: [],
     },
   });
 
@@ -77,51 +94,75 @@ export default function CreatePlaylistDialog({
     control,
     formState: { errors, isSubmitting },
     reset,
-    setValue,
   } = methods;
+
+  useEffect(() => {
+    const el = document.getElementById("songIds") as HTMLInputElement | null;
+    if (el) el.value = selectedSongIds.join(",");
+  }, [selectedSongIds]);
+
+  useEffect(() => {
+    const el = document.getElementById(
+      "collaboratorIds",
+    ) as HTMLInputElement | null;
+    if (el) el.value = selectedCollaboratorIds.join(",");
+  }, [selectedCollaboratorIds]);
 
   const onSubmit: SubmitHandler<PlaylistCreateForm> = useCallback(
     async (data) => {
-      const form = new FormData();
-      form.append("name", data.name);
-      if (data.description != null)
-        form.append("description", data.description);
-      form.append("isPrivate", String(!!data.isPrivate));
-      if (data.songIds?.length)
-        form.append("songIds", JSON.stringify(data.songIds));
-      if (data.collaboratorIds?.length)
-        form.append("collaboratorIds", JSON.stringify(data.collaboratorIds));
-      if (data.image) form.append("image", data.image); // let browser set Content-Type + boundary
+      const songIdsInput = (
+        document.getElementById("songIds") as HTMLInputElement | null
+      )?.value;
+      const collaboratorIdsInput = (
+        document.getElementById("collaboratorIds") as HTMLInputElement | null
+      )?.value;
 
-      const token = getToken();
-      const headers: Record<string, string> = {};
-      if (token) headers.Authorization = `Bearer ${token}`;
+      const songIds = parseIdList(songIdsInput);
+      const collaboratorIds = parseIdList(collaboratorIdsInput);
 
-      const res = await fetch(`/api/playlists/create`, {
-        method: "POST",
-        headers,
-        body: form,
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Create failed: ${res.status} ${text}`);
+      if (existingPlaylistData) {
+        await updatePlaylist({
+          playlistId: existingPlaylistData.playlistId,
+          formData: data,
+          songIds,
+          collaboratorIds,
+        });
+      } else {
+        await createPlaylist({
+          formData: data,
+          songIds,
+          collaboratorIds,
+        });
       }
 
       onCreated?.();
-      reset();
       setVisible(false);
     },
-    [onCreated, reset, setVisible],
+    [onCreated, setVisible, existingPlaylistData],
   );
 
-  const header = <div>Create a playlist</div>;
+  useEffect(() => {
+    setSelectedSongIds(existingPlaylistData?.songIds ?? []);
+    setSelectedCollaboratorIds(existingPlaylistData?.collaboratorIds ?? []);
+    setCoverName(
+      existingPlaylistData?.formData.image ? `Change Existing` : "Choose",
+    );
+  }, [existingPlaylistData]);
 
   return (
     <Dialog
       visible={visible}
-      header={header}
-      onHide={() => setVisible(false)}
+      header={
+        existingPlaylistData ? (
+          <div>Edit playlist</div>
+        ) : (
+          <div>Create a playlist</div>
+        )
+      }
+      onHide={() => {
+        reset();
+        setVisible(false);
+      }}
       resizable={false}
       draggable={false}
       className="w-30rem"
@@ -129,13 +170,11 @@ export default function CreatePlaylistDialog({
     >
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
-          {/* NAME */}
           <div className="field">
             <label htmlFor="name">Name</label>
             <Controller
               name="name"
               control={control}
-              rules={{ required: "Name is required" }}
               render={({ field }) => <InputText id="name" {...field} />}
             />
             {errors.name && (
@@ -150,23 +189,31 @@ export default function CreatePlaylistDialog({
               control={control}
               render={({ field }) => (
                 <FileUpload
+                  ref={coverUploadRef}
                   name={field.name}
                   mode="basic"
                   customUpload
                   accept="image/*"
                   maxFileSize={5_000_000}
-                  chooseLabel={field.value ? "Replace image" : "Choose image"}
-                  onSelect={(event: FileUploadSelectEvent) => {
-                    const file = event.files?.[0] ?? null;
-                    setValue("image", file);
+                  chooseLabel={coverName}
+                  chooseOptions={{
+                    icon: existingPlaylistData?.formData.image
+                      ? "pi pi-sync"
+                      : "pi pi-plus",
                   }}
-                  onClear={() => setValue("image", null)}
+                  onSelect={(event: FileUploadSelectEvent) => {
+                    if (event.files && event.files.length) {
+                      const f = event.files[0];
+                      field.onChange(f);
+                      setCoverName(truncate(f.name));
+                      coverUploadRef.current?.clear();
+                    }
+                  }}
                 />
               )}
             />
           </div>
 
-          {/* DESCRIPTION */}
           <div className="field">
             <label htmlFor="description">Description</label>
             <Controller
@@ -185,9 +232,11 @@ export default function CreatePlaylistDialog({
                 />
               )}
             />
+            {errors.description && (
+              <small className="p-error">{errors.description.message}</small>
+            )}
           </div>
 
-          {/* PRIVACY */}
           <div className="field flex align-items-center gap-2">
             <Controller
               name="isPrivate"
@@ -206,58 +255,43 @@ export default function CreatePlaylistDialog({
             />
           </div>
 
-          {/* SONGS */}
           <div className="field">
-            <div className="flex align-items-center justify-content-between mb-2">
-              <label htmlFor="songIdsSelect" className="m-0">
-                Songs
-              </label>
-            </div>
-
-            <Controller
-              name="songIds"
-              control={control}
-              render={({ field }) => (
-                <SongMultiSelect
-                  id="songIdsSelect"
-                  value={field.value ?? []}
-                  options={songOptions}
-                  loading={songsLoading}
-                  onChange={field.onChange}
-                  onCreateNew={() => setSongDialogVisible(true)}
-                  appendTo={
-                    typeof document !== "undefined" ? document.body : undefined
-                  }
-                  className="w-full"
-                />
-              )}
+            <label htmlFor="songIdsSelect">Songs</label>
+            <SongMultiSelect
+              id="songIdsSelect"
+              value={selectedSongIds}
+              options={songOptions}
+              loading={songsLoading}
+              onChange={setSelectedSongIds}
+              onCreateNew={() => setSongDialogVisible(true)}
+              appendTo={
+                typeof document !== "undefined" ? document.body : undefined
+              }
+              className="w-full"
             />
           </div>
 
-          {/* COLLABORATORS (usernames) */}
           <div className="field">
             <label htmlFor="collaboratorIdsSelect">
               Collaborators (Optional)
             </label>
-            <Controller
-              name="collaboratorIds"
-              control={control}
-              render={({ field }) => (
-                <UserMultiSelect
-                  id="collaboratorIdsSelect"
-                  value={field.value ?? []}
-                  options={collaboratorOptions}
-                  loading={usersLoading}
-                  onChange={field.onChange}
-                  appendTo={
-                    typeof document !== "undefined" ? document.body : undefined
-                  }
-                  className="w-full"
-                  placeholder="Choose collaborators"
-                />
-              )}
+            <UserMultiSelect
+              id="collaboratorIdsSelect"
+              value={selectedCollaboratorIds}
+              options={collaboratorOptions}
+              loading={usersLoading}
+              onChange={setSelectedCollaboratorIds}
+              appendTo={
+                typeof document !== "undefined" ? document.body : undefined
+              }
+              className="w-full"
+              placeholder="Choose collaborators"
             />
           </div>
+
+          {/* HIDDEN INPUTS kept for existing onSubmit logic */}
+          <input type="hidden" id="songIds" />
+          <input type="hidden" id="collaboratorIds" />
 
           <div className="flex justify-content-end gap-2 mt-3">
             <Button type="submit" label="Create" loading={isSubmitting} />
