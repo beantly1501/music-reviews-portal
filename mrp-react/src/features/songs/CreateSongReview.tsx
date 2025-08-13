@@ -35,7 +35,6 @@ export const CreateSongReview = ({
     control,
   } = methods;
 
-  // Reset form when dialog opens/closes
   useEffect(() => {
     if (!existingFormData && visible) {
       reset({ songId, grade: 0, description: "" });

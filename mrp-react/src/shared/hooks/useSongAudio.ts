@@ -1,4 +1,3 @@
-// src/features/songs/hooks/useSongAudio.ts
 import { useEffect, useRef, useState } from "react";
 import { getToken } from "@shared/utils";
 
@@ -6,6 +5,7 @@ export function useSongAudio(songId: number, fileUrl?: string) {
   const [loading, setLoading] = useState(false);
   const [exists, setExists] = useState(false);
   const [url, setUrl] = useState<string | null>(null);
+  const [audioAsJsFile, setAudioAsJsFile] = useState<File | null>(null);
   const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -22,6 +22,7 @@ export function useSongAudio(songId: number, fileUrl?: string) {
       setLoading(false);
       setExists(false);
       setUrl(null);
+      setAudioAsJsFile(null);
       return;
     }
 
@@ -30,6 +31,7 @@ export function useSongAudio(songId: number, fileUrl?: string) {
       setLoading(false);
       setExists(false);
       setUrl(null);
+      setAudioAsJsFile(null);
       return;
     }
 
@@ -47,17 +49,26 @@ export function useSongAudio(songId: number, fileUrl?: string) {
         if (!blob || blob.size === 0) {
           setExists(false);
           setUrl(null);
+          setAudioAsJsFile(null);
           return;
         }
         const objectUrl = URL.createObjectURL(blob);
         objectUrlRef.current = objectUrl;
         setUrl(objectUrl);
+
+        setAudioAsJsFile(
+          new File([blob], "audio", {
+            type: blob.type || "application/octet-stream",
+            lastModified: Date.now(),
+          }),
+        );
         setExists(true);
       })
       .catch(() => {
         if (mounted) {
           setExists(false);
           setUrl(null);
+          setAudioAsJsFile(null);
         }
       })
       .finally(() => {
@@ -73,5 +84,5 @@ export function useSongAudio(songId: number, fileUrl?: string) {
     };
   }, [songId, fileUrl]);
 
-  return { loading, exists, url };
+  return { loading, exists, url, audioAsJsFile };
 }

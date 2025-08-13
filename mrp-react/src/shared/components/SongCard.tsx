@@ -6,7 +6,12 @@ import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
 import { Image } from "primereact/image";
 
-import { MAX_GENRES, SongReviewFormData, SongType } from "@shared/utils";
+import {
+  MAX_GENRES,
+  SongReviewFormData,
+  SongType,
+  truncate,
+} from "@shared/utils";
 import { useGetImage } from "../hooks/useGetImage";
 import { useSongAudio } from "../hooks/useSongAudio";
 import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts";
@@ -89,7 +94,11 @@ export default function SongCard({ song, refetch }: Props) {
 
           <div className="song-card__chips">
             {visibleGenres.map((g) => (
-              <Chip key={g.id} label={g.name} className="h-2rem" />
+              <Chip
+                key={g.id}
+                label={truncate(g.name, 10)}
+                className="h-2rem"
+              />
             ))}
             {hasMoreGenres && (
               <span

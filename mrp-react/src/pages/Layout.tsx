@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 import { TabMenu, TabMenuTabChangeEvent } from "primereact/tabmenu";
 import { MOBILE_TABS_MENU, TABS_MENU } from "@shared/utils";
@@ -18,7 +18,7 @@ export default function Layout() {
       "/albums",
       "/artists",
       "/playlists",
-      "/profile",
+      `/profile`,
     ],
     [],
   );
@@ -27,7 +27,7 @@ export default function Layout() {
 
   // derive active tab from URL on every render/refresh
   const activeIndex = useMemo(() => {
-    const i = TAB_PATHS.findIndex((p) => p === location.pathname);
+    const i = TAB_PATHS.findIndex((playlist) => playlist === location.pathname);
     return i >= 0 ? i : 0;
   }, [location.pathname, TAB_PATHS]);
 

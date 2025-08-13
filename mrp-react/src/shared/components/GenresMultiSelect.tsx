@@ -19,7 +19,7 @@ type Props = {
 };
 
 export default function GenresMultiSelect({
-  id = "genreIds",
+  id = "genreIdsSelect",
   value,
   options,
   loading,

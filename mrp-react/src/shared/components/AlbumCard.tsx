@@ -2,17 +2,23 @@ import { useRef, useState } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Rating } from "primereact/rating";
-import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
 import { Image } from "primereact/image";
 import "primeflex/primeflex.css";
 
-import { AlbumType, AlbumReviewFormData } from "@shared/utils";
+import {
+  AlbumReviewFormData,
+  AlbumType,
+  MAX_GENRES,
+  truncate,
+} from "@shared/utils";
 import { useGetImage } from "../hooks/useGetImage";
 import { submitAlbumReview } from "../../features/albums/hooks/submitAlbumReview.ts";
 import { CreateAlbumReview } from "../../features/albums/CreateAlbumReview.tsx";
 import { toast } from "./ToastContext.tsx";
 import { useNavigate } from "react-router-dom";
+import { Chip } from "primereact/chip";
+import { Badge } from "primereact/badge";
 
 interface Props {
   album: AlbumType;
@@ -29,6 +35,16 @@ export default function AlbumCard({ album, refetch }: Props) {
     exists: imageExists,
     image: image,
   } = useGetImage(album.imageUrl ? `/api${album.imageUrl}` : undefined);
+
+  const genres = album.genres ?? [];
+  const visibleGenres = genres.slice(0, MAX_GENRES);
+  const hasMoreGenres = genres.length > MAX_GENRES;
+  const hiddenGenresTitle = genres
+    .slice(MAX_GENRES)
+    .map((g) => g.name)
+    .join(", ");
+
+  const songsCount = album.songs?.length ?? 0;
 
   const header = (
     <div className="album-card__img-wrap">
@@ -66,14 +82,32 @@ export default function AlbumCard({ album, refetch }: Props) {
         <div className="album-card__body">
           <div className="album-card__title-row">
             <h3 className="album-card__title">{album.name}</h3>
-            <Tag
-              value="Reviewed"
-              severity="success"
-              style={{ visibility: album.grade ? "visible" : "hidden" }}
-            />
+            <span className="card-stat">
+              <i className="pi pi-headphones" />
+              <Badge value={songsCount} />
+            </span>
           </div>
 
           <div className="album-card__subtitle">Released {album.year}.</div>
+
+          <div className="song-card__chips">
+            {visibleGenres.map((g) => (
+              <Chip
+                key={g.id}
+                label={truncate(g.name, 10)}
+                className="h-2rem"
+              />
+            ))}
+            {hasMoreGenres && (
+              <span
+                className="song-card__chips-more"
+                title={hiddenGenresTitle}
+                aria-label={`and ${genres.length - MAX_GENRES} more genres`}
+              >
+                …
+              </span>
+            )}
+          </div>
 
           <div className="flex flex-column align-items-center gap-4 mb-2">
             {album.link && (

@@ -115,7 +115,7 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.createAlbum(dto, user));
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RolesAllowed({"ROLE_ADMIN"})
     public ResponseEntity<AlbumResponseDto> updateMultipart(
             @PathVariable Long id,

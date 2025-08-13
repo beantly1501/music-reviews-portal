@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getToken, SongType } from "@shared/utils";
 
 export function useGetSong(id?: number) {
@@ -6,30 +6,42 @@ export function useGetSong(id?: number) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!id) {
-      setSong(undefined);
-      setLoading(false);
-      setError(null);
-      return;
-    }
+  const refetch = useCallback(
+    async (overrideId?: number): Promise<void> => {
+      const effectiveId = overrideId ?? id;
 
-    const token = getToken();
-    const headers: Record<string, string> = { Accept: "application/json" };
-    if (token) headers.Authorization = `Bearer ${token}`;
+      if (!effectiveId) {
+        setSong(undefined);
+        setLoading(false);
+        setError(null);
+        return;
+      }
 
-    setLoading(true);
-    setError(null);
+      const token = getToken();
+      const headers: Record<string, string> = { Accept: "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
 
-    fetch(`/api/song/${id}`, { headers })
-      .then((res) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await fetch(`/api/song/${effectiveId}`, { headers });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((json: SongType) => setSong(json))
-      .catch((e: any) => setError(e?.message ?? "Failed to load song."))
-      .finally(() => setLoading(false));
-  }, [id]);
 
-  return { song, loading, error };
+        const json: SongType = await res.json();
+        setSong(json);
+      } catch (e: any) {
+        setError(e?.message ?? "Failed to load song.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [id],
+  );
+
+  useEffect(() => {
+    void refetch();
+  }, [refetch]);
+
+  return { song, loading, error, refetch };
 }

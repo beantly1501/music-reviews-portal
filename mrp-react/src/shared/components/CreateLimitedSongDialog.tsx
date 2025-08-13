@@ -33,7 +33,6 @@ export default function CreateSongDialog({
       year: undefined,
       file: undefined,
       cover: undefined,
-      genreIds: [],
     },
   });
 

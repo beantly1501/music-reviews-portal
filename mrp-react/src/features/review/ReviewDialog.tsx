@@ -12,8 +12,6 @@ import { ProgressSpinner } from "primereact/progressspinner";
 import {
   AlbumReviewFormData,
   AlbumType,
-  deleteAlbumReview,
-  deleteSongReview,
   SongReviewFormData,
   SongType,
   UserRoleEnum,
@@ -30,6 +28,7 @@ import { updateSongReview } from "../songs/hooks/updateAlbumReview.ts";
 import { updateAlbumReview } from "../albums/hooks/updateAlbumReview.ts";
 import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { deleteAlbumReview, deleteSongReview } from "./utils/helpers.tsx";
 
 type Props = {
   visible: boolean;
@@ -154,10 +153,10 @@ export default function ReviewDialog({
       <div className="rdialog__header-right flex gap-2">
         {canEdit && (
           <Button
-            label="Edit review"
+            label="Edit"
             icon="pi pi-pencil"
             onClick={() => setVisibleUpdateReview(true)}
-            severity="secondary"
+            severity="info"
             outlined
             size="small"
           />

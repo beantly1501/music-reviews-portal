@@ -1,6 +1,11 @@
-// src/features/albums/CreateAlbumDialog.tsx
-
-import { Dispatch, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Dispatch,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Dialog } from "primereact/dialog";
 import {
   Controller,
@@ -12,17 +17,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlbumCreateForm,
   albumCreateSchema,
-  getToken,
+  AlbumRequestData,
   parseIdList,
+  truncate,
 } from "@shared/utils";
 import { InputText } from "primereact/inputtext";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
 
-// hooks to fetch selectable options
 import { useGetArtists } from "../artists/hooks/useGetArtists.ts";
 
-// optional “limited create” dialogs (mirror of CreateSongDialog pattern)
 import CreateLimitedArtistDialog from "../../shared/components/CreateLimitedArtistDialog.tsx";
 import CreateLimitedSongDialog from "../../shared/components/CreateLimitedSongDialog.tsx";
 import ArtistMultiSelect, {
@@ -32,24 +36,26 @@ import SongMultiSelect, {
   SongOption,
 } from "../../shared/components/SongMultiSelect.tsx";
 import { useGetSongs } from "../songs/hooks/useGetSongs.tsx";
+import { createAlbum, updateAlbum } from "./utils/helpers.tsx";
 
 interface Props {
   visible: boolean;
   setVisible: Dispatch<boolean>;
   onCreated: () => void;
+  existingAlbumData?: AlbumRequestData;
 }
 
 export default function CreateAlbumDialog({
   visible,
   setVisible,
   onCreated,
+  existingAlbumData,
 }: Props) {
   const {
     artists,
     loading: artistsLoading,
     refetch: refetchArtists,
   } = useGetArtists();
-
   const { songs, loading: songsLoading, refetch: refetchSongs } = useGetSongs();
 
   // selected ids managed locally; kept in sync with hidden inputs
@@ -59,6 +65,9 @@ export default function CreateAlbumDialog({
   // create dialog visibility
   const [artistDialogVisible, setArtistDialogVisible] = useState(false);
   const [songDialogVisible, setSongDialogVisible] = useState(false);
+
+  const coverUploadRef = useRef<FileUpload>(null);
+  const [coverName, setCoverName] = useState<string>("");
 
   // keep hidden inputs (backward-compat with existing submit logic)
   useEffect(() => {
@@ -100,7 +109,8 @@ export default function CreateAlbumDialog({
 
   const methods = useForm<AlbumCreateForm>({
     resolver: zodResolver(albumCreateSchema),
-    defaultValues: {
+    // fills everything but multiselects if existing album data exists
+    defaultValues: existingAlbumData?.formData ?? {
       name: "",
       link: "",
       year: undefined,
@@ -110,65 +120,63 @@ export default function CreateAlbumDialog({
 
   const {
     handleSubmit,
+    reset,
     control,
     formState: { errors },
   } = methods;
 
   const onSubmit: SubmitHandler<AlbumCreateForm> = useCallback(
     async (data) => {
-      const formData = new FormData();
-      formData.append("name", data.name);
-      if (data.link) formData.append("link", data.link);
-      if (data.year !== undefined && data.year !== null) {
-        formData.append("year", String(data.year));
-      }
-      if (data.cover) {
-        formData.append("cover", data.cover);
-      }
-
-      // collect raw ids from hidden inputs (kept for API compatibility)
       const songIdsInput = (
-        document.getElementById("songIds") as HTMLInputElement
+        document.getElementById("songIds") as HTMLInputElement | null
       )?.value;
       const artistIdsInput = (
-        document.getElementById("artistIds") as HTMLInputElement
+        document.getElementById("artistIds") as HTMLInputElement | null
       )?.value;
+
       const songIds = parseIdList(songIdsInput);
       const artistIds = parseIdList(artistIdsInput);
 
-      if (songIds.length > 0) {
-        formData.append("songIds", JSON.stringify(songIds));
-      }
-      if (artistIds.length > 0) {
-        formData.append("artistIds", JSON.stringify(artistIds));
-      }
-
-      const token = getToken();
-      const headers: Record<string, string> = {};
-      if (token) headers.Authorization = `Bearer ${token}`;
-
-      const res = await fetch("/api/album/create", {
-        method: "POST",
-        headers,
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Create album failed: ${res.status} ${text}`);
+      if (existingAlbumData) {
+        await updateAlbum({
+          albumId: existingAlbumData.albumId,
+          formData: data,
+          songIds,
+          artistIds,
+        });
+      } else {
+        await createAlbum({
+          formData: data,
+          songIds,
+          artistIds,
+        });
       }
 
+      reset?.();
       onCreated();
       setVisible(false);
     },
-    [onCreated, setVisible],
+    [onCreated, reset, setVisible, existingAlbumData],
   );
+
+  useEffect(() => {
+    setSelectedSongIds(existingAlbumData?.songIds ?? []);
+    setSelectedArtistIds(existingAlbumData?.artistIds ?? []);
+    setCoverName(
+      existingAlbumData?.formData.cover ? `Change Existing` : "Choose",
+    );
+  }, [existingAlbumData]);
 
   return (
     <Dialog
       visible={visible}
-      header={() => <div>Add an Album</div>}
-      onHide={() => setVisible(false)}
+      header={() =>
+        existingAlbumData ? <div>Edit Album</div> : <div>Add an Album</div>
+      }
+      onHide={() => {
+        reset();
+        setVisible(false);
+      }}
       resizable={false}
       draggable={false}
     >
@@ -196,14 +204,24 @@ export default function CreateAlbumDialog({
                 control={control}
                 render={({ field }) => (
                   <FileUpload
+                    ref={coverUploadRef}
                     name={field.name}
                     mode="basic"
                     customUpload
                     accept="image/*"
                     maxFileSize={5_000_000}
+                    chooseLabel={coverName}
+                    chooseOptions={{
+                      icon: existingAlbumData?.formData.cover
+                        ? "pi pi-sync"
+                        : "pi pi-plus",
+                    }}
                     onSelect={(event: FileUploadSelectEvent) => {
                       if (event.files && event.files.length) {
-                        field.onChange(event.files[0]);
+                        const f = event.files[0];
+                        field.onChange(f);
+                        setCoverName(truncate(f.name));
+                        coverUploadRef.current?.clear();
                       }
                     }}
                   />

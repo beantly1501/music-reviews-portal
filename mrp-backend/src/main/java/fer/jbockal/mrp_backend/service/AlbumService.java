@@ -139,6 +139,8 @@ public class AlbumService {
         Album a = albumRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Album not found: " + id));
 
+        albumReviewRepository.deleteReviewsBecauseOfDeletedAlbum(id);
+
         a.getSongs().forEach(s -> s.getAlbums().remove(a));
         a.getSongs().clear();
 

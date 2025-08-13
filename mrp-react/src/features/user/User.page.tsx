@@ -10,10 +10,13 @@ import { ProfileInfo } from "./ProfileInfo";
 import { useGetMyReviews } from "./hooks/useGetMyReviews.ts";
 import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
 import ReviewDialog from "../../features/review/ReviewDialog.tsx";
+import { useParams } from "react-router-dom";
 
 type Row = ReviewResponse & { name: string };
 
-export default function ProfilePage() {
+export default function UserPage() {
+  const { id: idParam } = useParams();
+
   const logout = useLogout();
 
   const {
@@ -84,9 +87,11 @@ export default function ProfilePage() {
   return (
     <div>
       <ProfileInfo user={user} logout={logout} />
-
-      <h1>My reviews</h1>
-
+      {user.id === Number(idParam) ? (
+        <h1>My reviews</h1>
+      ) : (
+        <h1>{user.username} reviews</h1>
+      )}
       <DataTable
         value={tableData}
         rowHover
@@ -131,7 +136,6 @@ export default function ProfilePage() {
           sortable
         />
       </DataTable>
-
       {dialogVisible && selectedReviewId !== undefined && (
         <ReviewDialog
           key={selectedReviewId} // force remount when a different row is clicked

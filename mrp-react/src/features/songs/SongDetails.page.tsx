@@ -1,4 +1,3 @@
-// src/pages/songs/SongDetailsPage.tsx
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -22,24 +21,37 @@ import ReviewDialog from "../../features/review/ReviewDialog.tsx";
 import { useGetSong } from "../../shared/hooks/useGetSong.ts";
 import { useGetImage } from "../../shared/hooks/useGetImage.ts";
 import { useGetSongReviews } from "../../shared/hooks/useGetSongReviews.ts";
-import { GenreType, ReviewResponse } from "@shared/utils";
+import { GenreType, ReviewResponse, UserRoleEnum } from "@shared/utils";
+import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
+import { deleteSong } from "./utils/helpers.tsx";
+import CreateSongDialog from "./CreateSongDialog.tsx";
+import { useSongAudio } from "../../shared/hooks/useSongAudio.ts";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { toast } from "../../shared/components/ToastContext.tsx";
 
 export default function SongDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const songId = useMemo(() => (id ? Number(id) : undefined), [id]);
-
-  // Song details
-  const { song, loading: loadingSong, error: songError } = useGetSong(songId);
-
-  // Song cover
+  const {
+    song,
+    loading: loadingSong,
+    error: songError,
+    refetch: songRefetch,
+  } = useGetSong(songId);
+  const {
+    exists: audioExists,
+    loading: loadingAudio,
+    url: audioUrl,
+    audioAsJsFile,
+  } = useSongAudio(song?.id ?? -1, song?.fileUrl);
   const {
     loading: loadingImage,
     exists: imageExists,
     image: imageSrc,
+    imageAsJsFile,
+    refetch: refetchImage,
   } = useGetImage(songId ? `/api/images/song/${songId}` : undefined);
-
-  // Pageable/Sortable song reviews
   const {
     reviews,
     total,
@@ -53,12 +65,15 @@ export default function SongDetailsPage() {
     onSort,
     refresh,
   } = useGetSongReviews(songId);
+  const { user } = useCurrentUser();
 
-  // Review dialog state
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [deleting, setDeleting] = useState<boolean>(false);
   const [selectedReviewId, setSelectedReviewId] = useState<
     number | undefined
   >();
+  const [editSongDialogVisible, setEditSongDialogVisible] =
+    useState<boolean>(false);
 
   const openDialog = (row: ReviewResponse) => {
     setSelectedReviewId(row.id);
@@ -66,13 +81,11 @@ export default function SongDetailsPage() {
   };
   const closeDialog = () => setDialogVisible(false);
 
-  // ---- Adapters to satisfy PrimeReact types (fixes TS2322) ----
   const handlePage = (e: DataTablePageEvent) => {
     onPage({ first: e.first, rows: e.rows, page: e.page });
   };
 
   const handleSort = (e: DataTableStateEvent) => {
-    // PrimeReact can emit sortOrder as 1 | 0 | -1 | null | undefined
     const normalized: 1 | -1 | undefined =
       e.sortOrder === 1 ? 1 : e.sortOrder === -1 ? -1 : undefined;
 
@@ -81,7 +94,28 @@ export default function SongDetailsPage() {
       sortOrder: normalized,
     });
   };
-  // -------------------------------------------------------------
+
+  const handleDelete = () => {
+    confirmDialog({
+      header: "Confirm Delete",
+      message: "Delete this song permanently?",
+      icon: "pi pi-exclamation-triangle",
+      acceptLabel: "Delete",
+      rejectLabel: "Cancel",
+      acceptClassName: "p-button-danger",
+      accept: async () => {
+        try {
+          setDeleting(true);
+          await deleteSong(song?.id ?? -1).then(() => navigate("/songs"));
+          toast.success("Song deleted.");
+        } catch {
+          toast.error("Failed to delete song.");
+        } finally {
+          setDeleting(false);
+        }
+      },
+    });
+  };
 
   if (!songId) {
     return <Message severity="error" text="Invalid song id." />;
@@ -100,16 +134,52 @@ export default function SongDetailsPage() {
     return <Message severity="error" text={songError ?? "Song not found."} />;
   }
 
+  const canModify = !!user && user?.role === UserRoleEnum.ADMIN;
+
+  const handleRefetch = () => {
+    refetchImage?.();
+    songRefetch?.();
+  };
+
   return (
     <div className="song-details-page p-3">
-      <div className="flex justify-content-end mb-3">
-        <Button
-          label="Back"
-          icon="pi pi-arrow-left"
-          onClick={() => navigate(-1)}
-          severity="secondary"
-          outlined
-        />
+      <div className="flex justify-content-between">
+        <div>
+          <Button
+            label="Home"
+            icon="pi pi-home"
+            onClick={() => navigate("/")}
+            severity="secondary"
+            outlined
+          />
+        </div>
+        <div className="flex justify-content-end mb-3 gap-3">
+          {canModify && (
+            <div className="flex gap-3">
+              <Button
+                label="Edit"
+                icon="pi pi-pencil"
+                onClick={() => setEditSongDialogVisible(true)}
+                severity="info"
+                outlined
+              />
+              <Button
+                label="Delete"
+                icon={deleting ? "pi pi-spin pi-spinner" : "pi pi-trash"}
+                onClick={handleDelete}
+                severity="danger"
+                outlined
+              />
+            </div>
+          )}
+          <Button
+            label="Back"
+            icon="pi pi-arrow-left"
+            onClick={() => navigate(-1)}
+            severity="secondary"
+            outlined
+          />
+        </div>
       </div>
 
       {/* Song Card */}
@@ -118,10 +188,7 @@ export default function SongDetailsPage() {
         style={{ overflow: "hidden", borderRadius: 12 }}
       >
         <div className="flex gap-4 flex-column md:flex-row">
-          <div
-            style={{ width: 300, maxWidth: "100%" }}
-            className="song-card__img-wrap"
-          >
+          <div style={{ width: 300, maxWidth: "100%" }}>
             {loadingImage ? (
               <div className="song-card__img placeholder flex align-items-center justify-content-center">
                 <i className="pi pi-spin pi-spinner" />
@@ -129,7 +196,7 @@ export default function SongDetailsPage() {
             ) : (
               <Image
                 src={imageExists && imageSrc ? imageSrc : undefined}
-                imageStyle={{ width: "100%", height: 180, objectFit: "cover" }}
+                imageStyle={{ width: "100%", objectFit: "cover" }}
               />
             )}
           </div>
@@ -143,7 +210,6 @@ export default function SongDetailsPage() {
               </div>
             ) : null}
 
-            {/* Genres */}
             {Array.isArray(song.genres) && song.genres.length > 0 && (
               <div className="flex gap-2 flex-wrap mb-3">
                 {song.genres.map((g: GenreType) => (
@@ -157,7 +223,7 @@ export default function SongDetailsPage() {
             )}
 
             {/* Actions */}
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-5 flex-wrap">
               {song.link && (
                 <Button
                   label="Open Song Link"
@@ -165,9 +231,41 @@ export default function SongDetailsPage() {
                   onClick={() => window.open(song.link, "_blank")}
                 />
               )}
+              <div className="flex">
+                {loadingAudio ? (
+                  <i className="pi pi-spin pi-spinner" />
+                ) : audioExists && audioUrl ? (
+                  <audio controls src={audioUrl} className="my-auto" />
+                ) : (
+                  <div className="song-card__placeholder my-auto">
+                    <p>No audio file available.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
+      </Card>
+
+      <Divider />
+
+      <Card>
+        <div className="flex align-items-center justify-content-between mb-2">
+          <h2 className="m-0">Albums</h2>
+        </div>
+
+        <DataTable
+          value={song.albums ?? []}
+          rowHover
+          stripedRows
+          removableSort
+          paginator
+          rows={10}
+          emptyMessage="No albums for this song."
+        >
+          <Column field="name" header="Name" sortable />
+          <Column field="year" header="Year" sortable />
+        </DataTable>
       </Card>
 
       <Divider />
@@ -232,14 +330,36 @@ export default function SongDetailsPage() {
       {/* Review dialog */}
       {dialogVisible && selectedReviewId !== undefined && (
         <ReviewDialog
-          key={selectedReviewId} // force remount per selection
+          key={selectedReviewId}
           visible={dialogVisible}
           onHide={closeDialog}
           reviewId={selectedReviewId}
           reviewType="SONG"
-          refetch={refresh} // refresh current page after edit/delete
+          refetch={refresh}
         />
       )}
+
+      {editSongDialogVisible && (
+        <CreateSongDialog
+          visible={editSongDialogVisible}
+          setVisible={setEditSongDialogVisible}
+          onCreated={handleRefetch}
+          existingSongData={{
+            songId: songId,
+            formData: {
+              name: song.name,
+              cover: imageExists ? imageAsJsFile! : undefined,
+              file: audioExists ? audioAsJsFile! : undefined,
+              year: song.year,
+              link: song.link,
+            },
+            albumIds: song.albums?.map((g) => g.id) ?? [],
+            artistIds: song.artists?.map((ar) => ar.id) ?? [],
+            genreIds: song.genres?.map((al) => al.id) ?? [],
+          }}
+        />
+      )}
+      <ConfirmDialog />
     </div>
   );
 }

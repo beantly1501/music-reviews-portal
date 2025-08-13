@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping({"/api/song", "/song"})
+@RequestMapping({"/song"})
 @AllArgsConstructor
 @Slf4j
 public class SongController {
@@ -100,7 +100,6 @@ public class SongController {
     }
 
     // -------- WRITE: MULTIPART (new) --------
-    // Hit this with POST /api/song/create (or /song/create) and FormData
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RolesAllowed({"ROLE_ADMIN"})

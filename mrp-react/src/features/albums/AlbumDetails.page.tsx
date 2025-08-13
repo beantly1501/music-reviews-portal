@@ -1,4 +1,3 @@
-// src/pages/albums/AlbumDetailsPage.tsx
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -21,28 +20,36 @@ import ReviewDialog from "../../features/review/ReviewDialog.tsx";
 import { useGetAlbum } from "../../shared/hooks/useGetAlbum.ts";
 import { useGetImage } from "../../shared/hooks/useGetImage.ts";
 import { useGetAlbumReviews } from "../../shared/hooks/useGetAlbumReviews.ts";
-import { ReviewResponse } from "@shared/utils";
+import {
+  GenreType,
+  ReviewResponse,
+  SongType,
+  UserRoleEnum,
+} from "@shared/utils";
+import { Chip } from "primereact/chip";
+import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { toast } from "../../shared/components/ToastContext.tsx";
+import CreateAlbumDialog from "./CreateAlbumDialog.tsx";
+import { deleteAlbum } from "./utils/helpers.tsx";
 
 export default function AlbumDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const albumId = useMemo(() => (id ? Number(id) : undefined), [id]);
-
-  // Album details
   const {
     album,
     loading: loadingAlbum,
     error: albumError,
+    refetch: albumRefetch,
   } = useGetAlbum(albumId);
-
-  // Album cover
   const {
     loading: loadingCover,
     exists: coverExists,
     image: coverSrc,
+    imageAsJsFile,
+    refetch: refetchImage,
   } = useGetImage(albumId ? `/api/images/album/${albumId}` : undefined);
-
-  // Pageable/Sortable album reviews
   const {
     reviews,
     total,
@@ -56,12 +63,17 @@ export default function AlbumDetailsPage() {
     onSort,
     refresh,
   } = useGetAlbumReviews(albumId);
+  const { user } = useCurrentUser();
 
-  // Review dialog state
   const [dialogVisible, setDialogVisible] = useState(false);
   const [selectedReviewId, setSelectedReviewId] = useState<
     number | undefined
   >();
+
+  const [editAlbumDialogVisible, setEditAlbumDialogVisible] =
+    useState<boolean>(false);
+
+  const [deleting, setDeleting] = useState<boolean>(false);
 
   const openDialog = (row: ReviewResponse) => {
     setSelectedReviewId(row.id);
@@ -69,19 +81,39 @@ export default function AlbumDetailsPage() {
   };
   const closeDialog = () => setDialogVisible(false);
 
-  // ---- Adapters to satisfy PrimeReact types (TS2322-safe) ----
   const handlePage = (e: DataTablePageEvent) => {
     onPage({ first: e.first, rows: e.rows, page: e.page });
   };
 
   const handleSort = (e: DataTableStateEvent) => {
-    // PrimeReact can emit sortOrder as 1 | 0 | -1 | null | undefined
     const normalized: 1 | -1 | undefined =
       e.sortOrder === 1 ? 1 : e.sortOrder === -1 ? -1 : undefined;
 
     onSort({
       sortField: e.sortField ?? undefined,
       sortOrder: normalized,
+    });
+  };
+
+  const handleDelete = () => {
+    confirmDialog({
+      header: "Confirm Delete",
+      message: "Delete this album permanently?",
+      icon: "pi pi-exclamation-triangle",
+      acceptLabel: "Delete",
+      rejectLabel: "Cancel",
+      acceptClassName: "p-button-danger",
+      accept: async () => {
+        try {
+          setDeleting(true);
+          await deleteAlbum(album?.id ?? -1).then(() => navigate("/albums"));
+          toast.success("Album deleted.");
+        } catch {
+          toast.error("Failed to delete album.");
+        } finally {
+          setDeleting(false);
+        }
+      },
     });
   };
 
@@ -102,20 +134,54 @@ export default function AlbumDetailsPage() {
     return <Message severity="error" text={albumError ?? "Album not found."} />;
   }
 
+  const canModify = !!user && user?.role === UserRoleEnum.ADMIN;
+
+  const handleRefetch = () => {
+    albumRefetch?.();
+    refetchImage?.();
+  };
+
   return (
     <div className="album-details-page p-3">
-      {/* Top-right Back button */}
-      <div className="flex justify-content-end mb-3">
-        <Button
-          label="Back"
-          icon="pi pi-arrow-left"
-          onClick={() => navigate(-1)}
-          severity="secondary"
-          outlined
-        />
+      <div className="flex justify-content-between mb-3">
+        <div>
+          <Button
+            label="Home"
+            icon="pi pi-home"
+            onClick={() => navigate("/")}
+            severity="secondary"
+            outlined
+          />
+        </div>
+        <div className="flex justify-content-end gap-3">
+          {canModify && (
+            <div className="flex gap-3">
+              <Button
+                label="Edit"
+                icon="pi pi-pencil"
+                onClick={() => setEditAlbumDialogVisible(true)}
+                severity="info"
+                outlined
+              />
+              <Button
+                label="Delete"
+                icon={deleting ? "pi pi-spin pi-spinner" : "pi pi-trash"}
+                onClick={handleDelete}
+                severity="danger"
+                outlined
+              />
+            </div>
+          )}
+          <Button
+            label="Back"
+            icon="pi pi-arrow-left"
+            onClick={() => navigate(-1)}
+            severity="secondary"
+            outlined
+          />
+        </div>
       </div>
 
-      {/* Album Card */}
       <Card
         className="p-shadow-2"
         style={{ overflow: "hidden", borderRadius: 12 }}
@@ -134,7 +200,7 @@ export default function AlbumDetailsPage() {
             />
           </div>
 
-          <div className="flex-1">
+          <div className="flex flex-column gap-3 w-fit">
             <div className="text-2xl font-semibold mb-2">{album.name}</div>
 
             {album.year ? (
@@ -142,6 +208,18 @@ export default function AlbumDetailsPage() {
                 Released {album.year}
               </div>
             ) : null}
+
+            {Array.isArray(album.genres) && album.genres.length > 0 && (
+              <div className="flex gap-2 flex-wrap mb-3">
+                {album.genres.map((g: GenreType) => (
+                  <Chip
+                    key={g.id ?? g.name}
+                    label={g.name}
+                    className="rdialog__tag"
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex gap-2 flex-wrap">
@@ -160,7 +238,34 @@ export default function AlbumDetailsPage() {
       <Divider />
 
       <Card>
-        {/* Reviews Table */}
+        <div className="flex align-items-center justify-content-between mb-2">
+          <h2 className="m-0">Songs</h2>
+        </div>
+
+        <DataTable
+          value={album.songs ?? []}
+          rowHover
+          stripedRows
+          removableSort
+          paginator
+          rows={10}
+          emptyMessage="No songs on this album."
+          onRowClick={(row) => navigate(`/song/${row.data.id}`)}
+        >
+          <Column field="name" header="Title" sortable />
+
+          <Column
+            field="year"
+            header="Year"
+            body={(row: SongType) => row.year ?? "-"}
+            sortable
+          />
+        </DataTable>
+      </Card>
+
+      <Divider />
+
+      <Card>
         <div className="flex align-items-center justify-content-between mb-2">
           <h2 className="m-0">Reviews</h2>
           {reviewsError && <Message severity="error" text={reviewsError} />}
@@ -216,17 +321,37 @@ export default function AlbumDetailsPage() {
         </DataTable>
       </Card>
 
-      {/* Review dialog */}
       {dialogVisible && selectedReviewId !== undefined && (
         <ReviewDialog
-          key={selectedReviewId} // force remount per selection
+          key={selectedReviewId}
           visible={dialogVisible}
           onHide={closeDialog}
           reviewId={selectedReviewId}
           reviewType="ALBUM"
-          refetch={refresh} // refresh current page after edit/delete
+          refetch={refresh}
         />
       )}
+
+      {editAlbumDialogVisible && (
+        <CreateAlbumDialog
+          visible={editAlbumDialogVisible}
+          setVisible={setEditAlbumDialogVisible}
+          onCreated={handleRefetch}
+          existingAlbumData={{
+            albumId: albumId,
+            formData: {
+              name: album.name,
+              year: album.year,
+              cover: coverExists ? imageAsJsFile! : undefined,
+              link: album.link,
+            },
+            songIds: album.songs?.map((s) => s.id) ?? [],
+            artistIds: album.artists?.map((ar) => ar.id) ?? [],
+          }}
+        />
+      )}
+
+      <ConfirmDialog />
     </div>
   );
 }

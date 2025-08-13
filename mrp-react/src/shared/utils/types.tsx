@@ -8,6 +8,8 @@ export type SongType = {
   link?: string;
   fileUrl?: string;
   genres?: GenreType[];
+  albums?: AlbumType[];
+  artists?: ArtistType[];
   year: number;
   grade?: number;
 };
@@ -17,6 +19,9 @@ export type AlbumType = {
   name: string;
   imageUrl?: string;
   link?: string;
+  songs?: SongType[];
+  genres?: GenreType[];
+  artists?: ArtistType[];
   year: number;
   grade?: number;
 };
@@ -26,6 +31,8 @@ export type ArtistType = {
   name: string;
   imageUrl?: string;
   description: string;
+  albums?: AlbumType[];
+  songs?: SongType[];
 };
 
 export type GenreType = {
@@ -44,7 +51,6 @@ export const songCreateSchema = z.object({
     .max(new Date().getFullYear(), {
       message: `Year cannot exceed ${new Date().getFullYear()}.`,
     }),
-  genreIds: z.array(z.number().int().positive()).optional(),
 });
 export type SongCreateForm = z.infer<typeof songCreateSchema>;
 
@@ -142,4 +148,45 @@ export type PlaylistType = {
   collaborators: UserOption[];
 };
 
+export const playlistCreateSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().max(2000).optional().nullable(),
+  isPrivate: z.boolean(),
+  image: z
+    .any()
+    .refine((v) => v == null || v instanceof File, "Invalid file")
+    .optional()
+    .nullable(),
+});
+export type PlaylistCreateForm = z.infer<typeof playlistCreateSchema>;
+
 export type UserOption = { id: number; username: string };
+
+export type SongRequestData = {
+  songId?: number;
+  formData: SongCreateForm;
+  albumIds: number[];
+  artistIds: number[];
+  genreIds: number[];
+};
+
+export type AlbumRequestData = {
+  albumId?: number;
+  formData: AlbumCreateForm;
+  songIds: number[];
+  artistIds: number[];
+};
+
+export type ArtistRequestData = {
+  artistId?: number;
+  formData: ArtistCreateForm;
+  songIds: number[];
+  albumIds: number[];
+};
+
+export type PlaylistRequestData = {
+  playlistId?: number;
+  formData: PlaylistCreateForm;
+  songIds: number[];
+  collaboratorIds: number[];
+};

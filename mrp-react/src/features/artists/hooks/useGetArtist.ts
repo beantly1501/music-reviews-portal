@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import { getToken, AlbumType } from "@shared/utils";
+import { getToken, ArtistType } from "@shared/utils";
 
-export function useGetAlbum(id?: number) {
-  const [album, setAlbum] = useState<AlbumType | undefined>(undefined);
+export function useGetArtist(id?: number) {
+  const [artist, setArtist] = useState<ArtistType | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     if (!id) {
-      setAlbum(undefined);
+      setArtist(undefined);
       setLoading(false);
       setError(null);
       return;
@@ -22,12 +22,12 @@ export function useGetAlbum(id?: number) {
     setError(null);
 
     try {
-      const res = await fetch(`/api/album/${id}`, { headers });
+      const res = await fetch(`/api/artist/${id}`, { headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json: AlbumType = await res.json();
-      setAlbum(json);
+      const json: ArtistType = await res.json();
+      setArtist(json);
     } catch (e: any) {
-      setError(e?.message ?? "Failed to load album.");
+      setError(e?.message ?? "Failed to load artist.");
     } finally {
       setLoading(false);
     }
@@ -37,5 +37,5 @@ export function useGetAlbum(id?: number) {
     refetch();
   }, [refetch]);
 
-  return { album, loading, error, refetch };
+  return { artist, loading, error, refetch };
 }

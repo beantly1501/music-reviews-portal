@@ -3,9 +3,8 @@ import Layout from "./pages/Layout.tsx";
 import SongsPage from "./features/songs/Songs.page.tsx";
 import NewestReviewsPage from "./features/newest-reviews/NewestReviews.page.tsx";
 import AlbumsPage from "./features/albums/Albums.page.tsx";
-import ProfilePage from "./features/profile/Profile.page.tsx";
+import UserPage from "./features/user/User.page.tsx";
 import { LoginPage } from "./features/login-register/Login.page.tsx";
-import UserReviewPage from "./pages/UserReview.page.tsx";
 import ErrorPage from "./pages/Error.page.tsx";
 import { ProtectedRoute } from "./shared/components/ProtectedRoute.tsx";
 import { RegisterPage } from "./features/login-register/Register.page.tsx";
@@ -14,6 +13,8 @@ import ArtistsPage from "./features/artists/Artists.page.tsx";
 import PlaylistPage from "./features/playlists/Playlists.page.tsx";
 import SongDetailsPage from "./features/songs/SongDetails.page.tsx";
 import AlbumDetailsPage from "./features/albums/AlbumDetails.page.tsx";
+import ArtistDetailsPage from "./features/artists/ArtistDetails.page.tsx";
+import PlaylistDetailsPage from "./features/playlists/PlaylistDetails.page.tsx";
 
 export default function App() {
   return (
@@ -71,7 +72,15 @@ export default function App() {
           path="profile"
           element={
             <ProtectedRoute>
-              <ProfilePage />
+              <UserPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="user/:id"
+          element={
+            <ProtectedRoute>
+              <UserPage />
             </ProtectedRoute>
           }
         />
@@ -79,10 +88,11 @@ export default function App() {
 
       <Route path="/song/:id" element={<SongDetailsPage />} />
       <Route path="/album/:id" element={<AlbumDetailsPage />} />
+      <Route path="/artist/:id" element={<ArtistDetailsPage />} />
+      <Route path="/playlist/:id" element={<PlaylistDetailsPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      <Route path="/user-review/:id" element={<UserReviewPage />} />
       <Route path="*" element={<ErrorPage />} />
     </Routes>
   );

@@ -4,20 +4,23 @@ import { Badge } from "primereact/badge";
 import { Image } from "primereact/image";
 import { useGetImage } from "../hooks/useGetImage";
 import { PlaylistType } from "@shared/utils";
+import { useNavigate } from "react-router-dom";
 
-export default function PlaylistCard({ p }: { p: PlaylistType }) {
-  const isPublic = !p.isPrivate;
+export default function PlaylistCard({ playlist }: { playlist: PlaylistType }) {
+  const navigate = useNavigate();
+
+  const isPublic = !playlist.isPrivate;
 
   const {
     loading: loadingImage,
     exists: imageExists,
     image: image,
-  } = useGetImage(`/api${p.image}`);
+  } = useGetImage(`/api${playlist.image}`);
 
-  const songsCount = Array.isArray(p.songs) ? p.songs.length : 0;
+  const songsCount = Array.isArray(playlist.songs) ? playlist.songs.length : 0;
 
-  const collaboratorsCount = Array.isArray(p.collaborators)
-    ? p.collaborators.length
+  const collaboratorsCount = Array.isArray(playlist.collaborators)
+    ? playlist.collaborators.length
     : 0;
 
   const header = (
@@ -29,7 +32,7 @@ export default function PlaylistCard({ p }: { p: PlaylistType }) {
       ) : (
         <Image
           src={imageExists && image ? image : undefined}
-          alt={`${p.name} cover`}
+          alt={`${playlist.name} cover`}
           imageClassName="media-img"
           className="media-img-container"
         />
@@ -38,10 +41,14 @@ export default function PlaylistCard({ p }: { p: PlaylistType }) {
   );
 
   return (
-    <Card className="playlist-card select-none cursor-pointer" header={header}>
+    <Card
+      className="playlist-card select-none cursor-pointer"
+      header={header}
+      onClick={() => navigate(`/playlist/${playlist.id}`)}
+    >
       <div className="card-body">
         <div className="card-title-row">
-          <h3 className="card-title">{p.name}</h3>
+          <h3 className="card-title">{playlist.name}</h3>
           <Tag
             value={isPublic ? "Public" : "Private"}
             severity={isPublic ? "success" : "secondary"}
@@ -49,10 +56,12 @@ export default function PlaylistCard({ p }: { p: PlaylistType }) {
           />
         </div>
 
-        {p.description && <p className="card-desc">{p.description}</p>}
+        {playlist.description && (
+          <p className="card-desc">{playlist.description}</p>
+        )}
 
         <div className="card-meta-row">
-          <Tag value={p.ownerUsername} severity="warning" />
+          <Tag value={playlist.ownerUsername} severity="warning" />
           <div className="card-stats">
             <span className="card-stat">
               <i className="pi pi-headphones" />

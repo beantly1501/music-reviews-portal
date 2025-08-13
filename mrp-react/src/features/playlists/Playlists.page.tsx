@@ -45,7 +45,7 @@ export default function PlaylistsPage() {
 
         <div className="flex flex-wrap gap-4 justify-content-center w-full">
           {(playlists ?? []).map((p) => (
-            <PlaylistCard key={`playlist${p.id}`} p={p} />
+            <PlaylistCard key={`playlist${p.id}`} playlist={p} />
           ))}
           {!loading && !error && playlists?.length === 0 && (
             <div className="text-empty">No public playlists found.</div>

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fer.jbockal.mrp_backend.dto.playlist.PlaylistRequestDto;
 import fer.jbockal.mrp_backend.dto.playlist.PlaylistResponseDto;
-import fer.jbockal.mrp_backend.repository.projection.PlaylistRow;
 import fer.jbockal.mrp_backend.service.PlaylistService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -22,6 +21,14 @@ public class PlaylistController {
 
     private final PlaylistService playlistService;
     private final ObjectMapper objectMapper;
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PlaylistResponseDto> getById(
+            @AuthenticationPrincipal Object principal,
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(playlistService.getById(principal, id));
+    }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PlaylistResponseDto> createMultipart(
@@ -47,7 +54,7 @@ public class PlaylistController {
     }
 
     // ---------- UPDATE (multipart) ----------
-    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PlaylistResponseDto> updateMultipart(
             @PathVariable Long id,
             @AuthenticationPrincipal Object principal,
@@ -71,7 +78,7 @@ public class PlaylistController {
         return ResponseEntity.ok(playlistService.update(principal, id, dto));
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @AuthenticationPrincipal Object principal,
             @PathVariable Long id

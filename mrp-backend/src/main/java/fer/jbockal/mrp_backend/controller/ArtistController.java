@@ -94,7 +94,7 @@ public class ArtistController {
         return ResponseEntity.ok(artistService.createArtist(dto));
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RolesAllowed({"ROLE_ADMIN"})
     public ResponseEntity<ArtistResponseDto> update(
             @PathVariable Long id,

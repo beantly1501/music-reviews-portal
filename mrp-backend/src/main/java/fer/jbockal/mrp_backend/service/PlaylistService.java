@@ -17,6 +17,7 @@ import fer.jbockal.mrp_backend.repository.projection.PlaylistSongRow;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,6 +32,13 @@ public class PlaylistService {
     private final SongRepository songRepository;
     private final AppUserRepository appUserRepository;
     private final AppUserService appUserService;
+
+    @Transactional(readOnly = true)
+    public PlaylistResponseDto getById(Object principal, Long id) {
+        Playlist playlist = checkIsOwnerOrAdmin(principal, id);
+        return toDto(playlist);
+    }
+
 
     // CREATE
     public PlaylistResponseDto create(Object principal, PlaylistRequestDto dto) {

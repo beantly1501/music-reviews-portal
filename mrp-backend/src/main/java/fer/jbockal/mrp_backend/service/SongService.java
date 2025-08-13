@@ -10,15 +10,12 @@ import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.model.Artist;
 import fer.jbockal.mrp_backend.model.Genre;
 import fer.jbockal.mrp_backend.model.Song;
-import fer.jbockal.mrp_backend.repository.AlbumRepository;
-import fer.jbockal.mrp_backend.repository.ArtistRepository;
-import fer.jbockal.mrp_backend.repository.GenreRepository;
-import fer.jbockal.mrp_backend.repository.SongRepository;
-import fer.jbockal.mrp_backend.repository.SongReviewRepository;
+import fer.jbockal.mrp_backend.repository.*;
 import fer.jbockal.mrp_backend.repository.projection.AlbumForSongRow;
 import fer.jbockal.mrp_backend.repository.projection.ArtistRow;
 import fer.jbockal.mrp_backend.repository.projection.GenreRow;
 import fer.jbockal.mrp_backend.repository.projection.SongRow;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +24,7 @@ import java.util.*;
 import static java.util.stream.Collectors.*;
 
 @Service
+@AllArgsConstructor
 public class SongService {
 
     private final SongRepository songRepository;
@@ -34,20 +32,7 @@ public class SongService {
     private final AlbumRepository albumRepository;
     private final ArtistRepository artistRepository;
     private final GenreRepository genreRepository;
-
-    public SongService(
-            SongRepository songRepository,
-            SongReviewRepository songReviewRepository,
-            AlbumRepository albumRepository,
-            ArtistRepository artistRepository,
-            GenreRepository genreRepository
-    ) {
-        this.songRepository = songRepository;
-        this.songReviewRepository = songReviewRepository;
-        this.albumRepository = albumRepository;
-        this.artistRepository = artistRepository;
-        this.genreRepository = genreRepository;
-    }
+    private final PlaylistRepository playlistRepository;
 
     // ---------- READ: list all with review flag/grade (fast, blob-free) ----------
 
@@ -184,6 +169,9 @@ public class SongService {
     public void deleteSong(Long id) {
         Song song = songRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Song not found: " + id));
+
+        playlistRepository.unlinkSongFromAllPlaylists(id);
+        songReviewRepository.deleteReviewsBecauseOfDeletedSong(id);
 
         song.getAlbums().forEach(a -> a.getSongs().remove(song));
         song.getAlbums().clear();
