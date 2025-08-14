@@ -9,6 +9,8 @@ public interface SongReviewRow {
 
     String getSongName();
 
+    Long getUserId();
+
     String getUsername();
 
     Integer getGrade();

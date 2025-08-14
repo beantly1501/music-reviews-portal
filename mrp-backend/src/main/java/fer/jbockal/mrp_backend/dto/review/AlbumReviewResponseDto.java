@@ -6,6 +6,7 @@ public record AlbumReviewResponseDto(
         Long id,
         Long albumId,
         String albumName,
+        Long userId,
         String username,
         Integer grade,
         String description,

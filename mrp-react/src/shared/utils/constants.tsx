@@ -20,6 +20,7 @@ export const MOBILE_TABS_MENU: MenuItem[] = [
   { icon: "pi pi-headphones" },
   { icon: "pi pi-book" },
   { icon: "pi pi-star-fill" },
+  { icon: "pi pi-folder-open" },
   { icon: "pi pi-user" },
 ];
 

@@ -6,6 +6,7 @@ import fer.jbockal.mrp_backend.dto.partial.SongPartialDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Data
@@ -20,4 +21,5 @@ public class AlbumResponseDto {
     private Set<ArtistPartialDto> artists;
     private Set<GenrePartialDto> genres;
     private Integer grade;
+    private BigDecimal averageRating;
 }

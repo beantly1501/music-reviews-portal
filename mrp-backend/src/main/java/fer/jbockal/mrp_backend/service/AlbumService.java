@@ -1,3 +1,4 @@
+// AlbumService.java
 package fer.jbockal.mrp_backend.service;
 
 import fer.jbockal.mrp_backend.dto.album.AlbumRequestDto;
@@ -7,15 +8,16 @@ import fer.jbockal.mrp_backend.dto.partial.GenrePartialDto;
 import fer.jbockal.mrp_backend.dto.partial.SongPartialDto;
 import fer.jbockal.mrp_backend.model.*;
 import fer.jbockal.mrp_backend.repository.*;
-import fer.jbockal.mrp_backend.repository.projection.AlbumGenreRow;
-import fer.jbockal.mrp_backend.repository.projection.AlbumRow;
-import fer.jbockal.mrp_backend.repository.projection.AlbumSongRow;
-import fer.jbockal.mrp_backend.repository.projection.AlbumArtistRow;
+import fer.jbockal.mrp_backend.repository.projection.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 
@@ -42,16 +44,20 @@ public class AlbumService {
     // -------------- READ --------------
 
     @Transactional(readOnly = true)
-    public List<AlbumResponseDto> getAllAlbumsWithReviewed(AppUser user) {
-        var base = albumRepository.findAllBase();
-        return assembleDtos(base, user);
+    public Page<AlbumResponseDto> getAllAlbumsWithReviewed(AppUser user, Pageable pageable) {
+        Page<AlbumRow> base = albumRepository.findAllBase(pageable);
+        List<AlbumResponseDto> dtos = assembleDtos(base.getContent(), user);
+        return new PageImpl<>(dtos, pageable, base.getTotalElements());
     }
 
     @Transactional(readOnly = true)
-    public List<AlbumResponseDto> searchByNameFragment(String fragment) {
-        if (fragment == null || fragment.isBlank()) return List.of();
-        var base = albumRepository.findBaseByNameFragment(fragment);
-        return assembleDtos(base, null); // pass user if you want grades on search, too
+    public Page<AlbumResponseDto> searchByNameFragment(String fragment, Pageable pageable) {
+        if (fragment == null || fragment.isBlank()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+        Page<AlbumRow> base = albumRepository.findBaseByNameFragment(fragment, pageable);
+        List<AlbumResponseDto> dtos = assembleDtos(base.getContent(), null); // pass user if you want grades on search, too
+        return new PageImpl<>(dtos, pageable, base.getTotalElements());
     }
 
     @Transactional(readOnly = true)
@@ -191,6 +197,19 @@ public class AlbumService {
                     .collect(toMap(ar -> ar.getAlbum().getId(), AlbumReview::getGrade));
         }
 
+        // Bulk average ratings for these album IDs (rounded to 2 decimals)
+        Map<Long, BigDecimal> avgByAlbumId =
+                albumReviewRepository.findAveragesForAlbums(ids).stream()
+                        .collect(toMap(
+                                AlbumAverageProjection::getAlbumId,
+                                p -> {
+                                    Double avg = p.getAverage();
+                                    return (avg == null)
+                                            ? null
+                                            : BigDecimal.valueOf(avg).setScale(2, RoundingMode.HALF_UP);
+                                }
+                        ));
+
         List<AlbumResponseDto> out = new ArrayList<>(base.size());
         for (var row : base) {
             Long id = row.getId();
@@ -203,7 +222,8 @@ public class AlbumService {
                     emptyToNull(songsByAlbum.get(id)),
                     emptyToNull(artistsByAlbum.get(id)),
                     emptyToNull(genresByAlbum.get(id)),
-                    gradesByAlbumId.get(id)
+                    gradesByAlbumId.get(id),
+                    avgByAlbumId.get(id) // averageRating
             ));
         }
         return out;

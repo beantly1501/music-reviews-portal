@@ -3,8 +3,8 @@ package fer.jbockal.mrp_backend.repository;
 import fer.jbockal.mrp_backend.model.AlbumReview;
 import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.model.Album;
+import fer.jbockal.mrp_backend.repository.projection.AlbumAverageProjection;
 import fer.jbockal.mrp_backend.repository.projection.AlbumReviewRow;
-import fer.jbockal.mrp_backend.repository.projection.SongReviewRow;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +14,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReview, Long> 
             select ar.id as id,
                    a.id as albumId,
                    a.name as albumName,
+                   u.id as userId,
                    u.username as username,
                    ar.grade as grade,
                    ar.description as description,
@@ -44,6 +46,7 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReview, Long> 
             select ar.id as id,
                    a.id as albumId,
                    a.name as albumName,
+                   u.id as userId,
                    u.username as username,
                    ar.grade as grade,
                    ar.description as description,
@@ -59,6 +62,7 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReview, Long> 
             select ar.id as id,
                    a.id as albumId,
                    a.name as albumName,
+                   u.id as userId,
                    u.username as username,
                    ar.grade as grade,
                    ar.description as description,
@@ -75,6 +79,7 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReview, Long> 
             select ar.id as id,
                    a.id as albumId,
                    a.name as albumName,
+                   u.id as userId,
                    u.username as username,
                    ar.grade as grade,
                    ar.description as description,
@@ -89,8 +94,9 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReview, Long> 
 
     @Query(value = """
             select ar.id as id,
-                   a.id as songId,
+                   a.id as albumId,
                    a.name as albumName,
+                   u.id as userId,
                    u.username as username,
                    ar.grade as grade,
                    ar.description as description,
@@ -107,6 +113,15 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReview, Long> 
                     where a.id = :albumId
                     """)
     Page<AlbumReviewRow> findRowsByAlbumId(@Param("albumId") Long albumId, Pageable pageable);
+
+    @Query("""
+        select ar.album.id as albumId,
+               avg(ar.grade) as average
+        from AlbumReview ar
+        where ar.album.id in :albumIds
+        group by ar.album.id
+    """)
+    List<AlbumAverageProjection> findAveragesForAlbums(@Param("albumIds") Collection<Long> albumIds);
 
     @Modifying
     @Transactional

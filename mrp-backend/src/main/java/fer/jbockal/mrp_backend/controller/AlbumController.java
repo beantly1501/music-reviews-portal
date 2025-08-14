@@ -11,6 +11,9 @@ import jakarta.annotation.security.RolesAllowed;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,14 +39,20 @@ public class AlbumController {
     // ---------- READ ----------
 
     @GetMapping("/all")
-    public ResponseEntity<List<AlbumResponseDto>> all(@AuthenticationPrincipal Object principal) {
+    public ResponseEntity<Page<AlbumResponseDto>> all(
+            @AuthenticationPrincipal Object principal,
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
         AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
-        return ResponseEntity.ok(albumService.getAllAlbumsWithReviewed(user));
+        return ResponseEntity.ok(albumService.getAllAlbumsWithReviewed(user, pageable));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<AlbumResponseDto>> search(@RequestParam("q") String query) {
-        return ResponseEntity.ok(albumService.searchByNameFragment(query));
+    public ResponseEntity<Page<AlbumResponseDto>> search(
+            @RequestParam("q") String query,
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return ResponseEntity.ok(albumService.searchByNameFragment(query, pageable));
     }
 
     @GetMapping("/{id}")

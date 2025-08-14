@@ -1,3 +1,4 @@
+// SongService.java
 package fer.jbockal.mrp_backend.service;
 
 import fer.jbockal.mrp_backend.dto.partial.AlbumPartialDto;
@@ -11,14 +12,13 @@ import fer.jbockal.mrp_backend.model.Artist;
 import fer.jbockal.mrp_backend.model.Genre;
 import fer.jbockal.mrp_backend.model.Song;
 import fer.jbockal.mrp_backend.repository.*;
-import fer.jbockal.mrp_backend.repository.projection.AlbumForSongRow;
-import fer.jbockal.mrp_backend.repository.projection.ArtistRow;
-import fer.jbockal.mrp_backend.repository.projection.GenreRow;
-import fer.jbockal.mrp_backend.repository.projection.SongRow;
+import fer.jbockal.mrp_backend.repository.projection.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 import static java.util.stream.Collectors.*;
@@ -228,6 +228,19 @@ public class SongService {
                     .collect(toMap(sr -> sr.getSong().getId(), sr -> sr.getGrade()));
         }
 
+        // Bulk average ratings for these song IDs (rounded to 2 decimals)
+        Map<Long, BigDecimal> avgBySongId =
+                songReviewRepository.findAveragesForSongs(ids).stream()
+                        .collect(toMap(
+                                SongAverageProjection::getSongId,
+                                p -> {
+                                    Double avg = p.getAverage();
+                                    return (avg == null)
+                                            ? null
+                                            : BigDecimal.valueOf(avg).setScale(2, RoundingMode.HALF_UP);
+                                }
+                        ));
+
         List<SongResponseDto> out = new ArrayList<>(base.size());
         for (var s : base) {
             Long id = s.getId();
@@ -241,7 +254,8 @@ public class SongService {
                     emptyToNull(albumsBySong.get(id)),
                     emptyToNull(artistsBySong.get(id)),
                     emptyToNull(genresBySong.get(id)),
-                    gradesBySongId.get(id)
+                    gradesBySongId.get(id),
+                    avgBySongId.get(id)        // averageRating
             ));
         }
         return out;

@@ -1,20 +1,20 @@
+import { useCallback, useEffect, useState } from "react";
 import {
   extractErrorMessage,
-  AlbumType,
   getToken,
   Options,
   PageResponse,
+  PlaylistType,
 } from "@shared/utils";
-import { useEffect, useState, useCallback } from "react";
 
-export function useGetAlbums(options: Options = {}) {
+export function useGetMyPlaylists(options: Options = {}) {
   const { page: initialPage = 0, size: initialSize = 20, sort } = options;
 
-  const [albums, setAlbums] = useState<AlbumType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<PlaylistType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // local pagination state
+  // local pagination state so callers can update page/size
   const [page, setPage] = useState<number>(initialPage);
   const [size, setSize] = useState<number>(initialSize);
 
@@ -23,8 +23,10 @@ export function useGetAlbums(options: Options = {}) {
   const [isFirst, setIsFirst] = useState<boolean>(true);
   const [isLast, setIsLast] = useState<boolean>(true);
 
-  const fetchAlbums = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
+    setError(null);
+
     try {
       const token = getToken();
 
@@ -36,38 +38,38 @@ export function useGetAlbums(options: Options = {}) {
         sorts.forEach((s) => params.append("sort", s));
       }
 
-      const res = await fetch(`/api/album/all?${params.toString()}`, {
-        headers: {
-          Accept: "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+      const url = `/api/playlists/mine?${params.toString()}`;
+      const headers: Record<string, string> = { Accept: "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
 
+      const res = await fetch(url, { method: "GET", headers });
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `HTTP ${res.status}`);
+        if (res.status === 401 || res.status === 403) {
+          throw new Error("You must be signed in to view your playlists.");
+        }
+        throw new Error(`HTTP ${res.status} while fetching your playlists`);
       }
 
       const json = await res.json();
 
+      // Prefer Page<T>; support plain array as a fallback
       if (Array.isArray(json)) {
-        const arr = json as AlbumType[];
-        setAlbums(arr);
+        const arr = json as PlaylistType[];
+        setData(arr);
         setTotalElements(arr.length);
         setTotalPages(1);
         setIsFirst(true);
         setIsLast(true);
       } else {
-        const pg = json as PageResponse<AlbumType>;
-        setAlbums(pg.content ?? []);
+        const pg = json as PageResponse<PlaylistType>;
+        setData(pg.content ?? []);
         setTotalElements(pg.totalElements ?? 0);
         setTotalPages(pg.totalPages ?? 0);
-        if (typeof pg.number === "number") setPage(pg.number);
-        if (typeof pg.size === "number") setSize(pg.size);
+        setPage(pg.number);
+        setSize(pg.size);
         setIsFirst(!!pg.first);
         setIsLast(!!pg.last);
       }
-      setError(null);
     } catch (e: unknown) {
       setError(extractErrorMessage(e));
     } finally {
@@ -76,14 +78,21 @@ export function useGetAlbums(options: Options = {}) {
   }, [page, size, sort]);
 
   useEffect(() => {
-    void fetchAlbums();
-  }, [fetchAlbums]);
+    let mounted = true;
+    (async () => {
+      await fetchData();
+      if (!mounted) return;
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [fetchData]);
 
   return {
-    albums,
+    data,
     loading,
     error,
-    // pagination
+    // pagination info
     page,
     size,
     totalElements,
@@ -95,6 +104,6 @@ export function useGetAlbums(options: Options = {}) {
     // controls
     setPage,
     setSize,
-    refetch: fetchAlbums,
+    refetch: fetchData,
   };
 }

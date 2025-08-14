@@ -16,6 +16,8 @@ import java.time.LocalDate;
 public sealed interface ReviewResponseDto permits SongReviewResponseDto, AlbumReviewResponseDto {
     Long id();
 
+    Long userId();
+
     String username();
 
     Integer grade();

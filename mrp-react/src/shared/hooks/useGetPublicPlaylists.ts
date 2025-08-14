@@ -1,20 +1,30 @@
+import { useCallback, useEffect, useState } from "react";
 import {
   extractErrorMessage,
-  AlbumType,
   getToken,
-  Options,
   PageResponse,
+  PlaylistType,
 } from "@shared/utils";
-import { useEffect, useState, useCallback } from "react";
 
-export function useGetAlbums(options: Options = {}) {
-  const { page: initialPage = 0, size: initialSize = 20, sort } = options;
+type Options = {
+  page?: number; // 0-based
+  size?: number;
+  sort?: string | string[]; // e.g. "id,desc"
+  userId?: number | string; // whose public playlists to fetch
+};
 
-  const [albums, setAlbums] = useState<AlbumType[]>([]);
-  const [loading, setLoading] = useState(true);
+export function useGetPublicPlaylists(options: Options = {}) {
+  const {
+    page: initialPage = 0,
+    size: initialSize = 20,
+    sort,
+    userId,
+  } = options;
+
+  const [data, setData] = useState<PlaylistType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // local pagination state
   const [page, setPage] = useState<number>(initialPage);
   const [size, setSize] = useState<number>(initialSize);
 
@@ -23,8 +33,21 @@ export function useGetAlbums(options: Options = {}) {
   const [isFirst, setIsFirst] = useState<boolean>(true);
   const [isLast, setIsLast] = useState<boolean>(true);
 
-  const fetchAlbums = useCallback(async () => {
+  const fetchData = useCallback(async () => {
+    if (userId == null) {
+      setData([]);
+      setTotalElements(0);
+      setTotalPages(0);
+      setIsFirst(true);
+      setIsLast(true);
+      setLoading(false);
+      setError("Missing userId");
+      return;
+    }
+
     setLoading(true);
+    setError(null);
+
     try {
       const token = getToken();
 
@@ -36,30 +59,28 @@ export function useGetAlbums(options: Options = {}) {
         sorts.forEach((s) => params.append("sort", s));
       }
 
-      const res = await fetch(`/api/album/all?${params.toString()}`, {
-        headers: {
-          Accept: "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+      const idPath = encodeURIComponent(String(userId));
+      const url = `/api/playlists/public/${idPath}?${params.toString()}`;
+      const headers: Record<string, string> = { Accept: "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
 
+      const res = await fetch(url, { method: "GET", headers });
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `HTTP ${res.status}`);
+        throw new Error(`HTTP ${res.status} while fetching public playlists`);
       }
 
       const json = await res.json();
 
       if (Array.isArray(json)) {
-        const arr = json as AlbumType[];
-        setAlbums(arr);
+        const arr = json as PlaylistType[];
+        setData(arr);
         setTotalElements(arr.length);
         setTotalPages(1);
         setIsFirst(true);
         setIsLast(true);
       } else {
-        const pg = json as PageResponse<AlbumType>;
-        setAlbums(pg.content ?? []);
+        const pg = json as PageResponse<PlaylistType>;
+        setData(pg.content ?? []);
         setTotalElements(pg.totalElements ?? 0);
         setTotalPages(pg.totalPages ?? 0);
         if (typeof pg.number === "number") setPage(pg.number);
@@ -67,23 +88,21 @@ export function useGetAlbums(options: Options = {}) {
         setIsFirst(!!pg.first);
         setIsLast(!!pg.last);
       }
-      setError(null);
     } catch (e: unknown) {
       setError(extractErrorMessage(e));
     } finally {
       setLoading(false);
     }
-  }, [page, size, sort]);
+  }, [page, size, sort, userId]);
 
   useEffect(() => {
-    void fetchAlbums();
-  }, [fetchAlbums]);
+    void fetchData();
+  }, [fetchData]);
 
   return {
-    albums,
+    data,
     loading,
     error,
-    // pagination
     page,
     size,
     totalElements,
@@ -92,9 +111,8 @@ export function useGetAlbums(options: Options = {}) {
     isLast,
     hasPreviousPage: !isFirst && totalPages > 0,
     hasNextPage: !isLast && totalPages > 0,
-    // controls
     setPage,
     setSize,
-    refetch: fetchAlbums,
+    refetch: fetchData,
   };
 }

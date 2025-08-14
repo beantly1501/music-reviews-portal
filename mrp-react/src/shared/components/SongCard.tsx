@@ -152,6 +152,14 @@ export default function SongCard({ song, refetch }: Props) {
                 />
               )}
             </div>
+
+            {song.averageRating && (
+              <div className="flex justify-content-center gap-2">
+                Average:
+                <i className="pi pi-star my-auto" />
+                {`${song.averageRating} / 5`}
+              </div>
+            )}
           </div>
         </div>
       </Card>

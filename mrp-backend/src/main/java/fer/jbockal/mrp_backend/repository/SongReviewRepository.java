@@ -3,6 +3,7 @@ package fer.jbockal.mrp_backend.repository;
 import fer.jbockal.mrp_backend.model.SongReview;
 import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.model.Song;
+import fer.jbockal.mrp_backend.repository.projection.SongAverageProjection;
 import fer.jbockal.mrp_backend.repository.projection.SongReviewRow;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,7 @@ public interface SongReviewRepository extends JpaRepository<SongReview, Long> {
             select sr.id as id,
                    s.id as songId,
                    s.name as songName,
+                   u.id as userId,
                    u.username as username,
                    sr.grade as grade,
                    sr.description as description,
@@ -43,6 +45,7 @@ public interface SongReviewRepository extends JpaRepository<SongReview, Long> {
             select sr.id as id,
                    s.id as songId,
                    s.name as songName,
+                   u.id as userId,
                    u.username as username,
                    sr.grade as grade,
                    sr.description as description,
@@ -58,6 +61,7 @@ public interface SongReviewRepository extends JpaRepository<SongReview, Long> {
             select sr.id as id,
                    s.id as songId,
                    s.name as songName,
+                   u.id as userId,
                    u.username as username,
                    sr.grade as grade,
                    sr.description as description,
@@ -74,6 +78,7 @@ public interface SongReviewRepository extends JpaRepository<SongReview, Long> {
             select sr.id as id,
                    s.id as songId,
                    s.name as songName,
+                   u.id as userId,
                    u.username as username,
                    sr.grade as grade,
                    sr.description as description,
@@ -90,6 +95,7 @@ public interface SongReviewRepository extends JpaRepository<SongReview, Long> {
             select sr.id as id,
                    s.id as songId,
                    s.name as songName,
+                   u.id as userId,
                    u.username as username,
                    sr.grade as grade,
                    sr.description as description,
@@ -107,6 +113,18 @@ public interface SongReviewRepository extends JpaRepository<SongReview, Long> {
                     """)
     Page<SongReviewRow> findRowsBySongId(@Param("songId") Long songId, Pageable pageable);
 
+    @Query("""
+        select r.song.id as songId,
+               avg(r.grade) as average,
+               count(r.id) as count
+        from SongReview r
+        where r.song.id in :songIds
+        group by r.song.id
+    """)
+    List<SongAverageProjection> findAveragesForSongs(@Param("songIds") Iterable<Long> songIds);
+
+    @Query("select avg(r.grade) from SongReview r where r.song.id = :songId")
+    Double findAverageForSong(@Param("songId") Long songId);
 
     @Modifying
     @Transactional

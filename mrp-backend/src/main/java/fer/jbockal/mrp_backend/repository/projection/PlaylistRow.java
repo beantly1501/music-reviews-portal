@@ -11,6 +11,8 @@ public interface PlaylistRow {
 
     boolean getIsPrivate();
 
+    Long getOwnerId();
+
     String getOwnerUsername();
 
     Integer getSongsCount();

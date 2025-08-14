@@ -28,6 +28,15 @@ public class ReviewController {
         return ResponseEntity.ok(reviews);
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<ReviewResponseDto>> getByUser(
+            @PathVariable Long userId,
+            @RequestParam(value = "count", required = false) Integer count
+    ) {
+        List<ReviewResponseDto> reviews = reviewService.getReviewsByUserId(userId, count);
+        return ResponseEntity.ok(reviews);
+    }
+
     @GetMapping("/newest")
     public ResponseEntity<List<ReviewResponseDto>> newest(@RequestParam(name = "count", defaultValue = "20") int count) {
         if (count <= 0) return ResponseEntity.badRequest().build();

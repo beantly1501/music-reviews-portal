@@ -137,6 +137,14 @@ export default function AlbumCard({ album, refetch }: Props) {
                 />
               )}
             </div>
+
+            {album.averageRating && (
+              <div className="flex justify-content-center gap-2">
+                Average:
+                <i className="pi pi-star my-auto" />
+                {`${album.averageRating} / 5`}
+              </div>
+            )}
           </div>
         </div>
       </Card>

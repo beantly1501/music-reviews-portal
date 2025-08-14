@@ -1,3 +1,4 @@
+// AlbumRepository.java
 package fer.jbockal.mrp_backend.repository;
 
 import fer.jbockal.mrp_backend.model.Album;
@@ -5,6 +6,8 @@ import fer.jbockal.mrp_backend.repository.projection.AlbumArtistRow;
 import fer.jbockal.mrp_backend.repository.projection.AlbumGenreRow;
 import fer.jbockal.mrp_backend.repository.projection.AlbumRow;
 import fer.jbockal.mrp_backend.repository.projection.AlbumSongRow;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,22 +18,34 @@ import java.util.List;
 @Repository
 public interface AlbumRepository extends JpaRepository<Album, Long> {
 
-    // ---- Base (blob-free) rows for albums ----
 
-    @Query(value = """
+    @Query(
+            value = """
                 select a.id as id, a.name as name, a.link as link, a.year as year
                 from album a
                 order by a.id
-            """, nativeQuery = true)
-    List<AlbumRow> findAllBase();
+            """,
+            countQuery = """
+                select count(*) from album a
+            """,
+            nativeQuery = true
+    )
+    Page<AlbumRow> findAllBase(Pageable pageable);
 
-    @Query(value = """
+    @Query(
+            value = """
                 select a.id as id, a.name as name, a.link as link, a.year as year
                 from album a
                 where lower(a.name) like lower(concat('%', :fragment, '%'))
                 order by a.id
-            """, nativeQuery = true)
-    List<AlbumRow> findBaseByNameFragment(@Param("fragment") String fragment);
+            """,
+            countQuery = """
+                select count(*) from album a
+                where lower(a.name) like lower(concat('%', :fragment, '%'))
+            """,
+            nativeQuery = true
+    )
+    Page<AlbumRow> findBaseByNameFragment(@Param("fragment") String fragment, Pageable pageable);
 
     @Query(value = """
                 select a.id as id, a.name as name, a.link as link, a.year as year

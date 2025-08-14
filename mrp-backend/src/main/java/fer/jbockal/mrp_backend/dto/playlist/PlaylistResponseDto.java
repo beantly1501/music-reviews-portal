@@ -12,6 +12,7 @@ public record PlaylistResponseDto(
         String image,
         String description,
         boolean isPrivate,
+        Long ownerId,
         String ownerUsername,
         LocalDate creationDate,
         UserPartialDto lastEditedBy,

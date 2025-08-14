@@ -5,6 +5,7 @@ import fer.jbockal.mrp_backend.dto.partial.AlbumPartialDto;
 import fer.jbockal.mrp_backend.dto.partial.ArtistPartialDto;
 import fer.jbockal.mrp_backend.dto.partial.GenrePartialDto;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 public record SongResponseDto(
@@ -17,6 +18,7 @@ public record SongResponseDto(
         Set<AlbumPartialDto> albums,
         Set<ArtistPartialDto> artists,
         Set<GenrePartialDto> genres,
-        Integer grade
+        Integer grade,
+        BigDecimal averageRating
 ) {
 }

@@ -6,6 +6,7 @@ public record SongReviewResponseDto(
         Long id,
         Long songId,
         String songName,
+        Long userId,
         String username,
         Integer grade,
         String description,

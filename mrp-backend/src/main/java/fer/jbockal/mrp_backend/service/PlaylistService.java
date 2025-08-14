@@ -15,7 +15,10 @@ import fer.jbockal.mrp_backend.repository.projection.PlaylistCollaboratorRow;
 import fer.jbockal.mrp_backend.repository.projection.PlaylistRow;
 import fer.jbockal.mrp_backend.repository.projection.PlaylistSongRow;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +38,13 @@ public class PlaylistService {
 
     @Transactional(readOnly = true)
     public PlaylistResponseDto getById(Object principal, Long id) {
-        Playlist playlist = checkIsOwnerOrAdmin(principal, id);
+        Playlist playlist = checkCanSeePlaylist(principal, id);
         return toDto(playlist);
+    }
+
+    public Page<PlaylistResponseDto> listPublicByUserId(Long userId, Pageable pageable) {
+        Page<PlaylistRow> rows = playlistRepository.findPublicRowsByOwnerId(userId, pageable);
+        return toDtosFromRows(rows);
     }
 
 
@@ -139,22 +147,21 @@ public class PlaylistService {
         return toDto(p);
     }
 
-    // LISTS -> DTOs
-    public List<PlaylistResponseDto> listMine(Object principal, int page, int size) {
+    public Page<PlaylistResponseDto> listMine(Object principal, Pageable pageable) {
         AppUser u = appUserService.resolveAppUserFromPrincipal(principal);
-        List<PlaylistRow> rows = playlistRepository.findRowsForUser(u, PageRequest.of(page, size));
+        Page<PlaylistRow> rows = playlistRepository.findRowsForUser(u, pageable);
         return toDtosFromRows(rows);
     }
 
-    public List<PlaylistResponseDto> listPublic(int page, int size) {
-        List<PlaylistRow> rows = playlistRepository.findPublicRows(PageRequest.of(page, size));
+    public Page<PlaylistResponseDto> listPublic(Pageable pageable) {
+        Page<PlaylistRow> rows = playlistRepository.findPublicRows(pageable);
         return toDtosFromRows(rows);
     }
 
-    public List<PlaylistResponseDto> listAllAsAdmin(Object principal, int page, int size) {
+    public Page<PlaylistResponseDto> listAllAsAdmin(Object principal, Pageable pageable) {
         AppUser u = appUserService.resolveAppUserFromPrincipal(principal);
         if (u.getRole() != Role.ADMIN) throw new SecurityException("Admin required");
-        List<PlaylistRow> rows = playlistRepository.findAllRows(PageRequest.of(page, size));
+        Page<PlaylistRow> rows = playlistRepository.findAllRows(pageable);
         return toDtosFromRows(rows);
     }
 
@@ -189,6 +196,16 @@ public class PlaylistService {
         throw new SecurityException("Only owner or admin can perform this action");
     }
 
+    private Playlist checkCanSeePlaylist(Object principal, Long playlistId) {
+        AppUser actor = appUserService.resolveAppUserFromPrincipal(principal);
+        Playlist p = playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new IllegalArgumentException("Playlist not found: " + playlistId));
+        if (actor.getRole() == Role.ADMIN) return p;
+        if (p.getOwner().getId().equals(actor.getId())) return p;
+        if (!p.isPrivate()) return p;
+        throw new SecurityException("Only owner or admin can perform this action");
+    }
+
     // ----- DTO assembly -----
 
     private PlaylistResponseDto toDto(Playlist p) {
@@ -213,6 +230,7 @@ public class PlaylistService {
                 "/images/playlist/" + pid,
                 p.getDescription(),
                 p.isPrivate(),
+                p.getOwner() != null ? p.getOwner().getId() : null,
                 p.getOwner() != null ? p.getOwner().getUsername() : null,
                 p.getCreationDate(),
                 lastEdited,
@@ -221,8 +239,11 @@ public class PlaylistService {
         );
     }
 
-    private List<PlaylistResponseDto> toDtosFromRows(List<PlaylistRow> rows) {
-        if (rows == null || rows.isEmpty()) return List.of();
+    private Page<PlaylistResponseDto> toDtosFromRows(Page<PlaylistRow> page) {
+        var rows = page.getContent();
+        if (rows == null || rows.isEmpty()) {
+            return new PageImpl<>(List.of(), page.getPageable(), page.getTotalElements());
+        }
 
         List<Long> ids = rows.stream().map(PlaylistRow::getId).toList();
 
@@ -240,7 +261,7 @@ public class PlaylistService {
                                 mapping(this::toPartialUser, toCollection(LinkedHashSet::new))
                         ));
 
-        Map<Long, java.time.LocalDate> createdById =
+        Map<Long, java.time.LocalDate> creationDateById =
                 playlistRepository.findAllById(ids).stream()
                         .collect(toMap(Playlist::getId, Playlist::getCreationDate));
 
@@ -252,18 +273,21 @@ public class PlaylistService {
                                 r -> new UserPartialDto(r.getId(), r.getUsername())
                         ));
 
-        return rows.stream().map(r -> new PlaylistResponseDto(
+        List<PlaylistResponseDto> dtos = rows.stream().map(r -> new PlaylistResponseDto(
                 r.getId(),
                 r.getName(),
                 "/images/playlist/" + r.getId(),
                 r.getDescription(),
                 r.getIsPrivate(),
+                r.getOwnerId(),
                 r.getOwnerUsername(),
-                createdById.get(r.getId()),
+                creationDateById.get(r.getId()),
                 editorByPlaylist.get(r.getId()),
                 songsByPlaylist.getOrDefault(r.getId(), new LinkedHashSet<>()),
                 collabsByPlaylist.getOrDefault(r.getId(), new LinkedHashSet<>())
         )).toList();
+
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
     private SongPartialDto toPartialSong(PlaylistSongRow r) {

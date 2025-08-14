@@ -12,6 +12,7 @@ export type SongType = {
   artists?: ArtistType[];
   year: number;
   grade?: number;
+  averageRating?: number;
 };
 
 export type AlbumType = {
@@ -24,6 +25,7 @@ export type AlbumType = {
   artists?: ArtistType[];
   year: number;
   grade?: number;
+  averageRating?: number;
 };
 
 export type ArtistType = {
@@ -68,7 +70,7 @@ export const albumCreateSchema = z.object({
 
 export type AlbumCreateForm = z.infer<typeof albumCreateSchema>;
 
-export type UserInfo = {
+export type UserInfoType = {
   id: number;
   username: string;
   password: string;
@@ -98,6 +100,7 @@ export type ReviewResponse = {
   songName?: string;
   albumName?: string;
   albumId?: number;
+  userId: number;
   username: string;
   grade: number;
   description: string;
@@ -143,6 +146,7 @@ export type PlaylistType = {
   image: string | null;
   description: string | null;
   isPrivate: boolean;
+  ownerId: number;
   ownerUsername: string;
   songs: SongType[];
   collaborators: UserOption[];
@@ -189,4 +193,22 @@ export type PlaylistRequestData = {
   formData: PlaylistCreateForm;
   songIds: number[];
   collaboratorIds: number[];
+};
+
+export type Options = {
+  page?: number;
+  size?: number;
+  sort?: string | string[];
+};
+
+export type PageResponse<T> = {
+  content: T[];
+  number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first?: boolean;
+  last?: boolean;
+  numberOfElements?: number;
+  empty?: boolean;
 };

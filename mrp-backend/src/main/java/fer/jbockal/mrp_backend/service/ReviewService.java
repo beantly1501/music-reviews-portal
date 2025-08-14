@@ -38,6 +38,26 @@ public class ReviewService {
         return toDtos(songRows, albumRows);
     }
 
+    public List<ReviewResponseDto> getReviewsByUserId(Long userId, Integer count) {
+        AppUser user = appUserService.getUserById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+
+        List<SongReviewRow> songRows;
+        List<AlbumReviewRow> albumRows;
+
+        if (count != null && count > 0) {
+            PageRequest pr = PageRequest.of(0, count);
+            songRows = songReviewRepository.findRowsByUser(user, pr);
+            albumRows = albumReviewRepository.findRowsByUser(user, pr);
+        } else {
+            songRows = songReviewRepository.findRowsByUser(user);
+            albumRows = albumReviewRepository.findRowsByUser(user);
+        }
+
+        // `toDtos` already sorts by creationDate (descending)
+        return toDtos(songRows, albumRows);
+    }
+
     public List<ReviewResponseDto> getReviewsByCurrentUser(Object principal, Integer count) {
         AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
 
@@ -84,6 +104,7 @@ public class ReviewService {
                     r.getId(),
                     r.getSongId(),
                     r.getSongName(),
+                    r.getUserId(),
                     r.getUsername(),
                     r.getGrade(),
                     r.getDescription(),
@@ -96,6 +117,7 @@ public class ReviewService {
                     r.getId(),
                     r.getAlbumId(),
                     r.getAlbumName(),
+                    r.getUserId(),
                     r.getUsername(),
                     r.getGrade(),
                     r.getDescription(),
@@ -118,6 +140,7 @@ public class ReviewService {
                 r.getId(),
                 r.getSong().getId(),
                 r.getSong().getName(),
+                r.getUser().getId(),
                 r.getUser().getUsername(),
                 r.getGrade(),
                 r.getDescription(),
@@ -141,6 +164,7 @@ public class ReviewService {
                         r.getId(),
                         r.getSongId(),
                         r.getSongName(),
+                        r.getUserId(),
                         r.getUsername(),
                         r.getGrade(),
                         r.getDescription(),
@@ -162,7 +186,7 @@ public class ReviewService {
         );
         songReviewRepository.save(rev);
         return new SongReviewResponseDto(
-                rev.getId(), song.getId(), song.getName(), user.getUsername(), rev.getGrade(),
+                rev.getId(), song.getId(), song.getName(), user.getId(), user.getUsername(), rev.getGrade(),
                 rev.getDescription(), rev.getCreationDate(), "/images/song/" + song.getId()
         );
     }
@@ -180,7 +204,7 @@ public class ReviewService {
         songReviewRepository.save(rev);
         Song song = rev.getSong();
         return new SongReviewResponseDto(
-                rev.getId(), song.getId(), song.getName(), user.getUsername(), rev.getGrade(),
+                rev.getId(), song.getId(), song.getName(), user.getId(), user.getUsername(), rev.getGrade(),
                 rev.getDescription(), LocalDate.now(), "/images/song/" + song.getId()
         );
     }
@@ -209,6 +233,7 @@ public class ReviewService {
                 r.getId(),
                 r.getAlbum().getId(),
                 r.getAlbum().getName(),
+                r.getUser().getId(),
                 r.getUser().getUsername(),
                 r.getGrade(),
                 r.getDescription(),
@@ -232,6 +257,7 @@ public class ReviewService {
                         r.getId(),
                         r.getAlbumId(),
                         r.getAlbumName(),
+                        r.getUserId(),
                         r.getUsername(),
                         r.getGrade(),
                         r.getDescription(),
@@ -252,7 +278,7 @@ public class ReviewService {
         );
         albumReviewRepository.save(rev);
         return new AlbumReviewResponseDto(
-                rev.getId(), album.getId(), album.getName(), user.getUsername(), rev.getGrade(),
+                rev.getId(), album.getId(), album.getName(), user.getId(), user.getUsername(), rev.getGrade(),
                 rev.getDescription(), rev.getCreationDate(), "/images/album/" + album.getId()
         );
     }
@@ -270,7 +296,7 @@ public class ReviewService {
         albumReviewRepository.save(rev);
         Album album = rev.getAlbum();
         return new AlbumReviewResponseDto(
-                rev.getId(), album.getId(), album.getName(), user.getUsername(), rev.getGrade(),
+                rev.getId(), album.getId(), album.getName(), user.getId(), user.getUsername(), rev.getGrade(),
                 rev.getDescription(), LocalDate.now(), "/images/album/" + album.getId()
         );
     }

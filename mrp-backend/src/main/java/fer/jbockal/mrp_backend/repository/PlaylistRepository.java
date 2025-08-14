@@ -5,6 +5,7 @@ import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.repository.projection.PlaylistRow;
 import fer.jbockal.mrp_backend.repository.projection.PlaylistSongRow;
 import fer.jbockal.mrp_backend.repository.projection.PlaylistCollaboratorRow;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,25 +19,62 @@ import java.util.List;
 @Repository
 public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
-    @Query("""
+    @Query(
+            value = """
+        select p.id as id,
+               p.name as name,
+               p.description as description,
+               p.isPrivate as isPrivate,
+               o.id as ownerId,
+               o.username as ownerUsername,
+               (select count(s2.id) from Playlist p2 join p2.songs s2 where p2.id = p.id) as songsCount,
+               (select count(u2.id) from Playlist p3 join p3.collaborators u2 where p3.id = p.id) as collaboratorsCount
+        from Playlist p
+        join p.owner o
+        order by p.id desc
+        """,
+            countQuery = """
+        select count(p)
+        from Playlist p
+        join p.owner o
+        """
+    )
+    Page<PlaylistRow> findAllRows(Pageable pageable);
+
+    // PlaylistRepository — UPDATED method (filter by ownerId)
+    @Query(
+            value = """
             select p.id as id,
                    p.name as name,
                    p.description as description,
                    p.isPrivate as isPrivate,
+                   o.id as ownerId,
                    o.username as ownerUsername,
                    (select count(s2.id) from Playlist p2 join p2.songs s2 where p2.id = p.id) as songsCount,
                    (select count(u2.id) from Playlist p3 join p3.collaborators u2 where p3.id = p.id) as collaboratorsCount
             from Playlist p
             join p.owner o
+            where p.isPrivate = false
+              and o.id = :ownerId
             order by p.id desc
-            """)
-    List<PlaylistRow> findAllRows(Pageable pageable);
+            """,
+            countQuery = """
+            select count(p)
+            from Playlist p
+            join p.owner o
+            where p.isPrivate = false
+              and o.id = :ownerId
+            """
+    )
+    Page<PlaylistRow> findPublicRowsByOwnerId(@Param("ownerId") Long ownerId, Pageable pageable);
 
-    @Query("""
+    @Query(
+            value = """
             select p.id as id,
                    p.name as name,
                    p.description as description,
                    p.isPrivate as isPrivate,
+                   o.id as ownerId,
                    o.username as ownerUsername,
                    (select count(s2.id) from Playlist p2 join p2.songs s2 where p2.id = p.id) as songsCount,
                    (select count(u2.id) from Playlist p3 join p3.collaborators u2 where p3.id = p.id) as collaboratorsCount
@@ -44,14 +82,22 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
             join p.owner o
             where p.isPrivate = false
             order by p.id desc
-            """)
-    List<PlaylistRow> findPublicRows(Pageable pageable);
+            """,
+            countQuery = """
+            select count(p)
+            from Playlist p
+            where p.isPrivate = false
+            """
+    )
+    Page<PlaylistRow> findPublicRows(Pageable pageable);
 
-    @Query("""
+    @Query(
+            value = """
             select p.id as id,
                    p.name as name,
                    p.description as description,
                    p.isPrivate as isPrivate,
+                   o.id as ownerId,
                    o.username as ownerUsername,
                    (select count(s2.id) from Playlist p2 join p2.songs s2 where p2.id = p.id) as songsCount,
                    (select count(u2.id) from Playlist p3 join p3.collaborators u2 where p3.id = p.id) as collaboratorsCount
@@ -59,8 +105,14 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
             join p.owner o
             where (o = :user or :user member of p.collaborators)
             order by p.id desc
-            """)
-    List<PlaylistRow> findRowsForUser(@Param("user") AppUser user, Pageable pageable);
+            """,
+            countQuery = """
+            select count(p)
+            from Playlist p
+            where (p.owner = :user or :user member of p.collaborators)
+            """
+    )
+    Page<PlaylistRow> findRowsForUser(@Param("user") AppUser user, Pageable pageable);
 
     @Query("""
             select p.id as playlistId, s.id as id, s.name as name, s.link as link, s.year as year

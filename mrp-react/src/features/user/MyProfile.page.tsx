@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import { DataTable, DataTablePageEvent } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Rating } from "primereact/rating";
@@ -8,30 +7,37 @@ import { Button } from "primereact/button";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Message } from "primereact/message";
 
-import { PlaylistType, ReviewResponse } from "@shared/utils";
-import ReviewDialog from "../../features/review/ReviewDialog.tsx";
-import { useGetPublicPlaylists } from "../../shared/hooks/useGetPublicPlaylists.ts";
-import { useGetUserReviews } from "../../shared/hooks/useGetUserReviews.ts";
-import { useGetUserById } from "../../shared/hooks/useGetUserById.ts";
+import { PlaylistType, ReviewResponse, useLogout } from "@shared/utils";
 import { UserInfo } from "./UserInfo.tsx";
+import { useGetMyReviews } from "./hooks/useGetMyReviews.ts";
+import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
+import ReviewDialog from "../../features/review/ReviewDialog.tsx";
+import { useGetMyPlaylists } from "../playlists/hooks/useGetMyPlaylists.ts";
+import { useNavigate } from "react-router-dom";
 
-export default function UserPage() {
-  const { id: userIdParam } = useParams();
-  const userId = userIdParam ? Number(userIdParam) : NaN;
+type Row = ReviewResponse & { name: string };
+
+export default function MyProfilePage() {
+  const logout = useLogout();
   const navigate = useNavigate();
 
-  // viewed user info
-  const { user: viewedUser, loading: userLoading } = useGetUserById(userId);
+  // current user
+  const {
+    user,
+    loading: userLoading,
+    error: userError,
+    refresh: refreshUser,
+  } = useCurrentUser();
 
-  // reviews for this user (not paginated—mirrors your MyProfilePage)
+  // reviews
   const {
     reviews,
     loading: reviewsLoading,
     error: reviewsError,
-    refetch: refreshRatings,
-  } = useGetUserReviews(userId);
+    refresh: refreshRatings,
+  } = useGetMyReviews();
 
-  // public playlists for this user (server-side pageable)
+  // playlists (server-side pageable)
   const {
     data: playlists,
     loading: playlistsLoading,
@@ -42,7 +48,7 @@ export default function UserPage() {
     setPage,
     setSize,
     refetch: refetchPlaylists,
-  } = useGetPublicPlaylists({ page: 0, size: 20, userId });
+  } = useGetMyPlaylists({ page: 0, size: 20 });
 
   const [dialogVisible, setDialogVisible] = useState(false);
   const [selectedReviewId, setSelectedReviewId] = useState<
@@ -56,7 +62,6 @@ export default function UserPage() {
     () =>
       (reviews ?? []).map((r) => ({
         ...r,
-        // keep shape compatible if you later add a "name" column
         name: r.type === "SONG" ? (r.songName ?? "") : (r.albumName ?? ""),
       })),
     [reviews],
@@ -75,67 +80,57 @@ export default function UserPage() {
   };
 
   const onPlaylistsPage = (e: DataTablePageEvent) => {
-    if (typeof e.page === "number") setPage(e.page); // 0-based
+    // e.page is 0-based
+    if (typeof e.page === "number") setPage(e.page);
     if (typeof e.rows === "number") setSize(e.rows);
   };
 
-  const loadingAny = userLoading || playlistsLoading || reviewsLoading;
+  if (userLoading || reviewsLoading) return <div>Loading...</div>;
 
-  if (!userIdParam || Number.isNaN(userId)) {
-    return <div className="p-4">No user specified.</div>;
+  if (!user || userError) {
+    return (
+      <div>
+        <div>Error: {userError}</div>
+        <Button onClick={refreshUser}>Retry</Button>
+      </div>
+    );
   }
 
-  if (loadingAny && totalElements === 0 && (!reviews || reviews.length === 0)) {
+  if (reviewsError) {
     return (
-      <div className="page-status">
-        <ProgressSpinner />
-        <div className="page-status__text">Loading…</div>
+      <div>
+        <div>Error loading reviews: {reviewsError}</div>
+        <Button onClick={refreshRatings}>Retry</Button>
       </div>
     );
   }
 
   return (
     <div className="flex flex-column gap-4">
-      {/* Header for the viewed user */}
-      <div className="flex align-items-center justify-content-end">
-        <UserInfo user={viewedUser} />
-        <Button
-          label="Back"
-          className="mb-auto"
-          icon="pi pi-arrow-left"
-          onClick={() => navigate(-1)}
-          outlined
-        />
-      </div>
+      <UserInfo user={user} logout={logout} />
 
       {/* Reviews */}
       <div>
-        <div className="flex align-items-center justify-content-between">
-          <h2 className="m-0 mb-3">{viewedUser?.username}'s Reviews</h2>
-          {reviewsError && (
-            <div className="my-2">
-              <Message
-                severity="error"
-                text={`Error loading reviews: ${reviewsError}`}
-              />
-            </div>
-          )}
-        </div>
-
+        <h1>My reviews</h1>
         <DataTable
           value={tableData}
           rowHover
           stripedRows
           removableSort
-          emptyMessage={`${viewedUser?.username} has no reviews yet.`}
+          emptyMessage="You currently have no reviews."
           onRowClick={(e) => openDialogForRow(e.data as ReviewResponse)}
           rowClassName={() => ({ "cursor-pointer": true })}
-          loading={reviewsLoading}
         >
+          <Column
+            field="name"
+            header="Name"
+            body={(row: Row) => row.name}
+            sortable
+          />
           <Column
             field="type"
             header="Type"
-            body={(row: ReviewResponse) => (
+            body={(row: Row) => (
               <Tag
                 value={row.type === "SONG" ? "Song" : "Album"}
                 severity={row.type === "SONG" ? "success" : "info"}
@@ -146,7 +141,7 @@ export default function UserPage() {
           <Column
             field="grade"
             header="Rating"
-            body={(row: ReviewResponse) => (
+            body={(row: Row) => (
               <Rating value={row.grade} cancel={false} readOnly />
             )}
             sortable
@@ -155,31 +150,29 @@ export default function UserPage() {
           <Column
             field="creationDate"
             header="Creation Date"
-            body={(row: ReviewResponse) =>
+            body={(row: Row) =>
               new Date(row.creationDate).toLocaleDateString("hr-HR")
             }
             sortable
           />
         </DataTable>
-
         {dialogVisible && selectedReviewId !== undefined && (
           <ReviewDialog
-            key={selectedReviewId}
+            key={selectedReviewId} // force remount when a different row is clicked
             visible={dialogVisible}
             onHide={closeDialog}
             reviewId={selectedReviewId}
             reviewType={selectedReviewType}
-            refetch={refreshRatings}
+            refetch={refreshRatings} // refresh list after edit/delete
           />
         )}
       </div>
 
-      {/* Public Playlists */}
+      {/* Playlists */}
       <div className="mt-5">
         <div className="flex align-items-center justify-content-between">
-          <h2 className="m-0 mb-3">
-            {viewedUser && `${viewedUser.username}'s public playlists`}
-          </h2>
+          <h1 className="m-0 mb-3">My playlists</h1>
+          <div className="text-500">{totalElements} total</div>
         </div>
 
         {playlistsError && (
@@ -203,7 +196,7 @@ export default function UserPage() {
           onPage={onPlaylistsPage}
           rowsPerPageOptions={[10, 20, 50]}
           loading={playlistsLoading}
-          emptyMessage={`${viewedUser ? viewedUser.username : `User #${userId}`} has no public playlists.`}
+          emptyMessage="You currently have no playlists."
           rowHover
           stripedRows
           removableSort
