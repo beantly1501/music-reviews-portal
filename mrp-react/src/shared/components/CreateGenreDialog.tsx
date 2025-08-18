@@ -9,6 +9,7 @@ import {
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { getToken } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type Form = { name: string };
 
@@ -42,7 +43,7 @@ export default function CreateGenreDialog({
       };
       if (token) headers.Authorization = `Bearer ${token}`;
 
-      const res = await fetch("/api/genre/create", {
+      const res = await fetch(`${VITE_BACKEND_URL}/genre/create`, {
         method: "POST",
         headers,
         body: JSON.stringify({ name: data.name }),

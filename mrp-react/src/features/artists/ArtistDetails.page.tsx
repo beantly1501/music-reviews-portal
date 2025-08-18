@@ -18,6 +18,7 @@ import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 import { toast } from "../../shared/components/ToastContext.tsx";
 import CreateArtistDialog from "./CreateArtistDialog.tsx";
 import { deleteArtist } from "./utils/helpers.tsx";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function ArtistDetailsPage() {
   const navigate = useNavigate();
@@ -36,7 +37,9 @@ export default function ArtistDetailsPage() {
     image: imageSrc,
     imageAsJsFile,
     refetch: refetchImage,
-  } = useGetImage(artistId ? `/api/images/artist/${artistId}` : undefined);
+  } = useGetImage(
+    artistId ? `${VITE_BACKEND_URL}/images/artist/${artistId}` : undefined,
+  );
 
   const [editArtistDialogVisible, setEditArtistDialogVisible] =
     useState<boolean>(false);

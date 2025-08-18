@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getToken, AlbumType } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetAlbum(id?: number) {
   const [album, setAlbum] = useState<AlbumType | undefined>(undefined);
@@ -22,7 +23,7 @@ export function useGetAlbum(id?: number) {
     setError(null);
 
     try {
-      const res = await fetch(`/api/album/${id}`, { headers });
+      const res = await fetch(`${VITE_BACKEND_URL}/album/${id}`, { headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json: AlbumType = await res.json();
       setAlbum(json);

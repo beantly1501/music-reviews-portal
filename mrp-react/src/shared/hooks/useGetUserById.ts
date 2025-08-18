@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage, getToken, UserInfoType } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetUserById(userId: number | string | undefined) {
   const [state, setState] = useState<{
@@ -26,7 +27,7 @@ export function useGetUserById(userId: number | string | undefined) {
 
     try {
       const token = getToken();
-      const url = `/api/user/${encodeURIComponent(String(userId))}`;
+      const url = `${VITE_BACKEND_URL}/user/${encodeURIComponent(String(userId))}`;
 
       const res = await fetch(url, {
         headers: {

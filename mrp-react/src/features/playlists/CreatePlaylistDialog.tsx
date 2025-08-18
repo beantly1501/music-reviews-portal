@@ -250,7 +250,6 @@ export default function CreatePlaylistDialog({
             />
           </div>
 
-          {/* SONGS MULTISELECT */}
           <div className="field">
             <label htmlFor="songIdsSelect">Songs</label>
             <Controller
@@ -273,7 +272,6 @@ export default function CreatePlaylistDialog({
             />
           </div>
 
-          {/* COLLABORATORS MULTISELECT */}
           <div className="field">
             <label htmlFor="collaboratorIdsSelect">
               Collaborators (Optional)

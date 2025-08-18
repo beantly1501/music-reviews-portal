@@ -1,9 +1,10 @@
 import { getToken, PlaylistRequestData } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export async function deletePlaylist(id: number): Promise<void> {
   const token = getToken();
 
-  const res = await fetch(`/api/playlists/${id}`, {
+  const res = await fetch(`${VITE_BACKEND_URL}/playlists/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -46,7 +47,7 @@ export async function createPlaylist({
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`/api/playlists/create`, {
+  const res = await fetch(`${VITE_BACKEND_URL}/playlists/create`, {
     method: "POST",
     headers,
     body: fd,
@@ -80,7 +81,7 @@ export async function updatePlaylist({
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(
-    `/api/playlists/${encodeURIComponent(String(playlistId))}/update`,
+    `${VITE_BACKEND_URL}/playlists/${encodeURIComponent(String(playlistId))}/update`,
     {
       method: "PUT",
       headers,

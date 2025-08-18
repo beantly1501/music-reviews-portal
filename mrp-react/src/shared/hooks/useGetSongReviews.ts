@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage, getToken, ReviewResponse } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type PageResp<T> = {
   content: T[];
   totalElements: number;
   totalPages: number;
   size: number;
-  number: number; // 0-based page index
+  number: number;
 };
 
 type SortMeta = { field: string; order: 1 | -1 };
@@ -65,7 +66,7 @@ export function useGetSongReviews(songId?: number) {
       try {
         const params = buildParams(nextPage, nextRows, sortM);
         const res = await fetch(
-          `/api/reviews/song/all/${songId}?${params.toString()}`,
+          `${VITE_BACKEND_URL}/reviews/song/all/${songId}?${params.toString()}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           },

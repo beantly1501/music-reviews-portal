@@ -4,6 +4,7 @@ import { ArtistType } from "@shared/utils";
 import { useGetImage } from "../hooks/useGetImage";
 import { Badge } from "primereact/badge";
 import { useNavigate } from "react-router-dom";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface Props {
   artist: ArtistType;
@@ -13,7 +14,7 @@ export default function ArtistCard({ artist }: Props) {
   const navigate = useNavigate();
 
   const { loading, exists, image } = useGetImage(
-    artist.imageUrl ? `/api${artist.imageUrl}` : undefined,
+    artist.imageUrl ? `${VITE_BACKEND_URL}${artist.imageUrl}` : undefined,
   );
 
   const header = (

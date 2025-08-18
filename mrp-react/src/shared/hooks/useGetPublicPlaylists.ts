@@ -5,12 +5,13 @@ import {
   PageResponse,
   PlaylistType,
 } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type Options = {
-  page?: number; // 0-based
+  page?: number;
   size?: number;
-  sort?: string | string[]; // e.g. "id,desc"
-  userId?: number | string; // whose public playlists to fetch
+  sort?: string | string[];
+  userId?: number | string;
 };
 
 export function useGetPublicPlaylists(options: Options = {}) {
@@ -60,7 +61,7 @@ export function useGetPublicPlaylists(options: Options = {}) {
       }
 
       const idPath = encodeURIComponent(String(userId));
-      const url = `/api/playlists/public/${idPath}?${params.toString()}`;
+      const url = `${VITE_BACKEND_URL}/playlists/public/${idPath}?${params.toString()}`;
       const headers: Record<string, string> = { Accept: "application/json" };
       if (token) headers.Authorization = `Bearer ${token}`;
 

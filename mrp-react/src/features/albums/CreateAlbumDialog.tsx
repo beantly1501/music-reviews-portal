@@ -165,7 +165,6 @@ export default function CreateAlbumDialog({
     >
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
-          {/* ALBUM NAME */}
           <div className="field">
             <label htmlFor="name">Album Name</label>
             <Controller
@@ -185,7 +184,6 @@ export default function CreateAlbumDialog({
           </div>
 
           <div className="flex justify-content-around gap-3">
-            {/* COVER IMAGE */}
             <div className="field">
               <label htmlFor="cover">Cover Image</label>
               <Controller
@@ -219,7 +217,6 @@ export default function CreateAlbumDialog({
               )}
             </div>
 
-            {/* LINK */}
             <div className="field">
               <label htmlFor="link">Link to Album</label>
               <Controller
@@ -239,7 +236,6 @@ export default function CreateAlbumDialog({
             </div>
           </div>
 
-          {/* YEAR */}
           <div className="field">
             <label htmlFor="year">Year</label>
             <Controller
@@ -267,7 +263,6 @@ export default function CreateAlbumDialog({
             )}
           </div>
 
-          {/* SONGS MULTISELECT */}
           <div className="field">
             <label htmlFor="songIdsSelect">Songs (optional)</label>
             <Controller
@@ -289,7 +284,6 @@ export default function CreateAlbumDialog({
             />
           </div>
 
-          {/* ARTISTS MULTISELECT */}
           <div className="field">
             <label htmlFor="artistIdsSelect">Artists (optional)</label>
             <Controller

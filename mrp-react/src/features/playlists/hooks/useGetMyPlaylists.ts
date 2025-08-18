@@ -6,6 +6,7 @@ import {
   PageResponse,
   PlaylistType,
 } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetMyPlaylists(options: Options = {}) {
   const { page: initialPage = 0, size: initialSize = 20, sort } = options;
@@ -37,7 +38,7 @@ export function useGetMyPlaylists(options: Options = {}) {
         sorts.forEach((s) => params.append("sort", s));
       }
 
-      const url = `/api/playlists/mine?${params.toString()}`;
+      const url = `${VITE_BACKEND_URL}/playlists/mine?${params.toString()}`;
       const headers: Record<string, string> = { Accept: "application/json" };
       if (token) headers.Authorization = `Bearer ${token}`;
 

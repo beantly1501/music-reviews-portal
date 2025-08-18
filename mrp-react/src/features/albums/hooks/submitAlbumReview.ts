@@ -1,10 +1,11 @@
 import { AlbumReviewFormData, getToken } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export async function submitAlbumReview(data: AlbumReviewFormData) {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
 
-  const res = await fetch("/api/reviews/album/create", {
+  const res = await fetch(`${VITE_BACKEND_URL}/reviews/album/create`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

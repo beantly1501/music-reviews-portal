@@ -93,7 +93,6 @@ export default function UserPage() {
 
   return (
     <div className="flex flex-column gap-4">
-      {/* Header for the viewed user */}
       <div className="flex align-items-center justify-content-end">
         <UserInfo user={viewedUser} />
         <Button
@@ -105,7 +104,6 @@ export default function UserPage() {
         />
       </div>
 
-      {/* Reviews */}
       <div>
         <div className="flex align-items-center justify-content-between">
           <h2 className="m-0 mb-3">{viewedUser?.username}'s Reviews</h2>
@@ -171,7 +169,6 @@ export default function UserPage() {
         )}
       </div>
 
-      {/* Public Playlists */}
       <div className="mt-5">
         <div className="flex align-items-center justify-content-between">
           <h2 className="m-0 mb-3">

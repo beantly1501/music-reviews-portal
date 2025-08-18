@@ -6,6 +6,7 @@ import {
   PageResponse,
 } from "@shared/utils";
 import { useEffect, useState, useCallback } from "react";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetAlbums(options: Options = {}) {
   const { page: initialPage = 0, size: initialSize = 20, sort } = options;
@@ -35,12 +36,15 @@ export function useGetAlbums(options: Options = {}) {
         sorts.forEach((s) => params.append("sort", s));
       }
 
-      const res = await fetch(`/api/album/all?${params.toString()}`, {
-        headers: {
-          Accept: "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      const res = await fetch(
+        `${VITE_BACKEND_URL}/album/all?${params.toString()}`,
+        {
+          headers: {
+            Accept: "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
         },
-      });
+      );
 
       if (!res.ok) {
         const text = await res.text();

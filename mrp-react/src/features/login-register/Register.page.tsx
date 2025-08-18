@@ -17,6 +17,7 @@ import {
 } from "@shared/utils";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../shared/components/Auth.tsx";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type JwtPayload = { exp?: number; sub?: string };
 
@@ -54,7 +55,7 @@ export function RegisterPage() {
   const onSubmit: SubmitHandler<RegisterForm> = async (data) => {
     setError(null);
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch(`${VITE_BACKEND_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

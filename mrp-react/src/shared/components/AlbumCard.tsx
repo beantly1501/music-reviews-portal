@@ -19,6 +19,7 @@ import { toast } from "./ToastContext.tsx";
 import { useNavigate } from "react-router-dom";
 import { Chip } from "primereact/chip";
 import { Badge } from "primereact/badge";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface Props {
   album: AlbumType;
@@ -34,7 +35,9 @@ export default function AlbumCard({ album, refetch }: Props) {
     loading: loadingImage,
     exists: imageExists,
     image: image,
-  } = useGetImage(album.imageUrl ? `/api${album.imageUrl}` : undefined);
+  } = useGetImage(
+    album.imageUrl ? `${VITE_BACKEND_URL}${album.imageUrl}` : undefined,
+  );
 
   const genres = album.genres ?? [];
   const visibleGenres = genres.slice(0, MAX_GENRES);

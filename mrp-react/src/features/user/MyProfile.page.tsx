@@ -105,7 +105,6 @@ export default function MyProfilePage() {
     <div className="flex flex-column gap-4">
       <UserInfo user={user} logout={logout} />
 
-      {/* Reviews */}
       <div>
         <h1>My reviews</h1>
         <DataTable
@@ -164,7 +163,6 @@ export default function MyProfilePage() {
         )}
       </div>
 
-      {/* Playlists */}
       <div className="mt-5">
         <div className="flex align-items-center justify-content-between">
           <h1 className="m-0 mb-3">My playlists</h1>

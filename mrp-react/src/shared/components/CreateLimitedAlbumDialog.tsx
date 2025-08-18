@@ -11,6 +11,7 @@ import { AlbumCreateForm, albumCreateSchema, getToken } from "@shared/utils";
 import { InputText } from "primereact/inputtext";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface Props {
   visible: boolean;
@@ -55,7 +56,7 @@ export default function CreateLimitedAlbumDialog({
       const headers: Record<string, string> = {};
       if (token) headers.Authorization = `Bearer ${token}`;
 
-      const res = await fetch("/api/album/create", {
+      const res = await fetch(`${VITE_BACKEND_URL}/album/create`, {
         method: "POST",
         headers,
         body: formData,
@@ -82,7 +83,6 @@ export default function CreateLimitedAlbumDialog({
     >
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
-          {/* ALBUM NAME */}
           <div className="field">
             <label htmlFor="name">Album Name</label>
             <Controller
@@ -95,7 +95,6 @@ export default function CreateLimitedAlbumDialog({
             )}
           </div>
 
-          {/* COVER IMAGE */}
           <div className="field">
             <label htmlFor="cover">Cover Image</label>
             <Controller
@@ -121,7 +120,6 @@ export default function CreateLimitedAlbumDialog({
             )}
           </div>
 
-          {/* LINK */}
           <div className="field">
             <label htmlFor="link">Link to Album</label>
             <Controller
@@ -134,7 +132,6 @@ export default function CreateLimitedAlbumDialog({
             )}
           </div>
 
-          {/* YEAR */}
           <div className="field">
             <label htmlFor="year">Year</label>
             <Controller

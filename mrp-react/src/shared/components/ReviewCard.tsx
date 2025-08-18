@@ -6,6 +6,7 @@ import { Image } from "primereact/image";
 import { ReviewResponse } from "@shared/utils";
 import { useGetImage } from "../hooks/useGetImage";
 import ReviewDialog from "../../features/review/ReviewDialog.tsx";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface ReviewCardProps {
   review: ReviewResponse;
@@ -24,7 +25,7 @@ export const ReviewCard = ({ review, refetch }: ReviewCardProps) => {
     review.image
       ? review.image.startsWith("/api")
         ? review.image
-        : `/api${review.image}`
+        : `${VITE_BACKEND_URL}${review.image}`
       : undefined,
   );
 

@@ -30,6 +30,7 @@ import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { deleteAlbumReview, deleteSongReview } from "./utils/helpers.tsx";
 import { useNavigate } from "react-router-dom";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type Props = {
   visible: boolean;
@@ -58,7 +59,9 @@ export default function ReviewDialog({
     loading: loadingReviewImg,
     exists: reviewImgExists,
     image: reviewImg,
-  } = useGetImage(review?.image ? `/api${review?.image}` : undefined);
+  } = useGetImage(
+    review?.image ? `${VITE_BACKEND_URL}${review?.image}` : undefined,
+  );
 
   const songId = review?.type === "SONG" ? review.songId : undefined;
   const albumId = review?.type === "ALBUM" ? review.albumId : undefined;
@@ -216,7 +219,6 @@ export default function ReviewDialog({
 
       {reviewId && !loading && review && (
         <Card className="rdialog__card p-shadow-2">
-          {/* Hero */}
           <div className="rdialog__hero">
             <div className="rdialog__hero-media">
               <Image
@@ -264,7 +266,6 @@ export default function ReviewDialog({
 
           <Divider />
 
-          {/* Entity details */}
           <div className="rdialog__section">
             <div className="rdialog__entity">
               <div className="rdialog__entity-body">

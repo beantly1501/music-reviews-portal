@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ReviewResponse, extractErrorMessage, getToken } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type Options = {
   count?: number;
@@ -29,7 +30,7 @@ export function useGetUserReviews(userId: number, options: Options = {}) {
       const params = new URLSearchParams();
       if (count && count > 0) params.set("count", String(count));
 
-      const url = `/api/reviews/user/${encodeURIComponent(String(userId))}${
+      const url = `${VITE_BACKEND_URL}/reviews/user/${encodeURIComponent(String(userId))}${
         params.toString() ? `?${params.toString()}` : ""
       }`;
 

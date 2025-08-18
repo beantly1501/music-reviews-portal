@@ -33,6 +33,8 @@ import { toast } from "../../shared/components/ToastContext.tsx";
 import CreateAlbumDialog from "./CreateAlbumDialog.tsx";
 import { deleteAlbum } from "./utils/helpers.tsx";
 
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export default function AlbumDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -49,7 +51,9 @@ export default function AlbumDetailsPage() {
     image: coverSrc,
     imageAsJsFile,
     refetch: refetchImage,
-  } = useGetImage(albumId ? `/api/images/album/${albumId}` : undefined);
+  } = useGetImage(
+    albumId ? `${VITE_BACKEND_URL}/images/album/${albumId}` : undefined,
+  );
   const {
     reviews,
     total,
@@ -221,7 +225,6 @@ export default function AlbumDetailsPage() {
               </div>
             )}
 
-            {/* Actions */}
             <div className="flex gap-2 flex-wrap">
               {album.link && (
                 <Button

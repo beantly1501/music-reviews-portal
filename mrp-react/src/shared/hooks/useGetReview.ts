@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { extractErrorMessage, getToken, ReviewResponse } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetReview(id?: number, reviewType?: string) {
   const [review, setReview] = useState<ReviewResponse | undefined>(undefined);
@@ -21,9 +22,12 @@ export function useGetReview(id?: number, reviewType?: string) {
     setLoading(true);
     setError(null);
 
-    fetch(`/api/reviews${reviewType === "SONG" ? "/song/" : "/album/"}${id}`, {
-      headers,
-    })
+    fetch(
+      `${VITE_BACKEND_URL}/reviews${reviewType === "SONG" ? "/song/" : "/album/"}${id}`,
+      {
+        headers,
+      },
+    )
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage, getToken, ReviewResponse } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type PageResp<T> = {
   content: T[];
@@ -50,7 +51,7 @@ export function useGetAlbumReviews(albumId?: number) {
       try {
         const params = buildParams(nextPage, nextRows);
         const res = await fetch(
-          `/api/reviews/album/all/${albumId}?${params.toString()}`,
+          `${VITE_BACKEND_URL}/reviews/album/all/${albumId}?${params.toString()}`,
           {
             headers: token ? { Authorization: `Bearer ${token}` } : undefined,
           },

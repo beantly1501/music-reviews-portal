@@ -1,9 +1,10 @@
 import { ArtistRequestData, getToken } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export async function deleteArtist(id: number): Promise<void> {
   const token = getToken();
 
-  const res = await fetch(`/api/artist/${id}`, {
+  const res = await fetch(`${VITE_BACKEND_URL}/artist/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -45,7 +46,7 @@ export async function createArtist({
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch("/api/artist/create", {
+  const res = await fetch(`${VITE_BACKEND_URL}/artist/create`, {
     method: "POST",
     headers,
     body: fd,
@@ -75,7 +76,7 @@ export async function updateArtist({
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(
-    `/api/artist/${encodeURIComponent(String(artistId))}/update`,
+    `${VITE_BACKEND_URL}/artist/${encodeURIComponent(String(artistId))}/update`,
     {
       method: "PUT",
       headers,

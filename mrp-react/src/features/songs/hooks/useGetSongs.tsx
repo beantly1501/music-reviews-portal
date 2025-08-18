@@ -1,5 +1,6 @@
 import { extractErrorMessage, getToken, SongType } from "@shared/utils";
 import { useEffect, useState, useCallback } from "react";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetSongs() {
   const [songs, setSongs] = useState<SongType[]>([]);
@@ -10,7 +11,7 @@ export function useGetSongs() {
     setLoading(true);
     try {
       const token = getToken();
-      const res = await fetch("/api/song/all", {
+      const res = await fetch(`${VITE_BACKEND_URL}/song/all`, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },

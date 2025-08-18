@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getToken } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useSongAudio(songId: number, fileUrl?: string) {
   const [loading, setLoading] = useState(false);
@@ -36,7 +37,7 @@ export function useSongAudio(songId: number, fileUrl?: string) {
     }
 
     setLoading(true);
-    fetch(`/api${fileUrl}`, {
+    fetch(`${VITE_BACKEND_URL}${fileUrl}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {

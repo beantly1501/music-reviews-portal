@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getToken, SongType } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetSong(id?: number) {
   const [song, setSong] = useState<SongType | undefined>(undefined);
@@ -25,7 +26,9 @@ export function useGetSong(id?: number) {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(`/api/song/${effectiveId}`, { headers });
+        const res = await fetch(`${VITE_BACKEND_URL}/song/${effectiveId}`, {
+          headers,
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const json: SongType = await res.json();

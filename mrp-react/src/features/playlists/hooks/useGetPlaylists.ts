@@ -5,6 +5,7 @@ import {
   PageResponse,
   PlaylistType,
 } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type Options = {
   page?: number;
@@ -48,7 +49,7 @@ export function useGetPlaylists(options: Options = {}) {
         sorts.forEach((s) => params.append("sort", s));
       }
 
-      const url = `/api/playlists/${scope}?${params.toString()}`;
+      const url = `${VITE_BACKEND_URL}/playlists/${scope}?${params.toString()}`;
       const headers: Record<string, string> = { Accept: "application/json" };
       if (token) headers.Authorization = `Bearer ${token}`;
 

@@ -185,7 +185,6 @@ export default function CreateSongDialog({
     >
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
-          {/* SONG NAME */}
           <div className="field">
             <label htmlFor="name">Song Name</label>
             <Controller
@@ -205,7 +204,6 @@ export default function CreateSongDialog({
           </div>
 
           <div className="flex justify-content-around gap-3">
-            {/* AUDIO FILE */}
             <div className="field">
               <label htmlFor="file">Audio File</label>
               <Controller
@@ -240,7 +238,6 @@ export default function CreateSongDialog({
               )}
             </div>
 
-            {/* COVER */}
             <div className="field">
               <label htmlFor="cover">Cover Image</label>
               <Controller
@@ -275,7 +272,6 @@ export default function CreateSongDialog({
             </div>
           </div>
 
-          {/* LINK */}
           <div className="field">
             <label htmlFor="link">Link to song</label>
             <Controller
@@ -294,7 +290,6 @@ export default function CreateSongDialog({
             )}
           </div>
 
-          {/* YEAR */}
           <div className="field">
             <label htmlFor="year">Year</label>
             <Controller
@@ -320,7 +315,6 @@ export default function CreateSongDialog({
             )}
           </div>
 
-          {/* GENRES MULTISELECT */}
           <div className="field">
             <label htmlFor="genreIdsSelect">Genres (optional)</label>
             <Controller
@@ -342,7 +336,6 @@ export default function CreateSongDialog({
             />
           </div>
 
-          {/* ALBUMS MULTISELECT */}
           <div className="field">
             <label htmlFor="albumIdsSelect">Albums (optional)</label>
             <Controller
@@ -364,7 +357,6 @@ export default function CreateSongDialog({
             />
           </div>
 
-          {/* ARTISTS MULTISELECT */}
           <div className="field">
             <label htmlFor="artistIdsSelect">Artists (optional)</label>
             <Controller
@@ -395,7 +387,6 @@ export default function CreateSongDialog({
         </form>
       </FormProvider>
 
-      {/* CREATE DIALOGS */}
       <CreateLimitedAlbumDialog
         visible={albumDialogVisible}
         setVisible={setAlbumDialogVisible}

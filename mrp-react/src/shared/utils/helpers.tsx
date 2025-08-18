@@ -1,5 +1,6 @@
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function isTokenExpired(token: string): boolean {
   try {
@@ -14,7 +15,7 @@ export function isTokenExpired(token: string): boolean {
 export async function checkServerTokenValidity(
   token: string,
 ): Promise<boolean> {
-  const res = await fetch("/api/auth/validate", {
+  const res = await fetch(`${VITE_BACKEND_URL}/auth/validate`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

@@ -12,6 +12,7 @@ import { jwtDecode } from "jwt-decode";
 import { Link, useNavigate } from "react-router-dom";
 import { LoginForm, loginSchema } from "@shared/utils";
 import { useAuth } from "../../shared/components/Auth.tsx";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type JwtPayload = { exp?: number; sub?: string };
 
@@ -47,7 +48,7 @@ export function LoginPage() {
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     setError(null);
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch(`${VITE_BACKEND_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -61,7 +62,7 @@ export function LoginPage() {
       if (!token || isTokenExpired(token))
         throw new Error("Invalid or expired token");
 
-      login(token); // ✅ updates context + localStorage
+      login(token);
       navigate("/", { replace: true });
     } catch {
       setError("Login failed");

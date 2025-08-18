@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage, getToken, UserOption } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetUsernames() {
   const [users, setUsers] = useState<UserOption[] | null>(null);
@@ -14,7 +15,7 @@ export function useGetUsernames() {
       const headers: Record<string, string> = { Accept: "application/json" };
       if (token) headers.Authorization = `Bearer ${token}`;
 
-      const res = await fetch(`/api/user/all`, { headers });
+      const res = await fetch(`${VITE_BACKEND_URL}/user/all`, { headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as UserOption[];
       setUsers(json);

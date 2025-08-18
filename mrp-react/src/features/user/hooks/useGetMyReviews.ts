@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { extractErrorMessage, getToken, ReviewResponse } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface UseGetMyReviewsResult {
   reviews: ReviewResponse[];
@@ -25,7 +26,10 @@ export function useGetMyReviews(count?: number): UseGetMyReviewsResult {
     }
 
     try {
-      const url = new URL("/api/reviews/mine", window.location.origin);
+      const url = new URL(
+        `${VITE_BACKEND_URL}/reviews/mine`,
+        window.location.origin,
+      );
       if (count !== undefined) {
         url.searchParams.append("count", String(count));
       }

@@ -1,5 +1,6 @@
 import { extractErrorMessage, ArtistType, getToken } from "@shared/utils";
 import { useEffect, useState, useCallback } from "react";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetArtists() {
   const [artists, setArtists] = useState<ArtistType[]>([]);
@@ -10,7 +11,7 @@ export function useGetArtists() {
     setLoading(true);
     try {
       const token = getToken();
-      const res = await fetch("/api/artist/all", {
+      const res = await fetch(`${VITE_BACKEND_URL}/artist/all`, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },

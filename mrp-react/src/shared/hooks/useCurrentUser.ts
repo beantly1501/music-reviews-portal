@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage, getToken, UserInfoType } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useCurrentUser() {
   const [state, setState] = useState<{
@@ -22,7 +23,7 @@ export function useCurrentUser() {
     }
 
     try {
-      const res = await fetch("/api/user/me", {
+      const res = await fetch(`${VITE_BACKEND_URL}/user/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

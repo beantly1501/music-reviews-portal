@@ -1,4 +1,5 @@
 import { AlbumRequestData, getToken } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export async function createAlbum({
   formData,
@@ -19,7 +20,7 @@ export async function createAlbum({
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch("/api/album/create", {
+  const res = await fetch(`${VITE_BACKEND_URL}/album/create`, {
     method: "POST",
     headers,
     body: fd,
@@ -62,7 +63,7 @@ export async function updateAlbum({
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(
-    `/api/album/${encodeURIComponent(String(albumId))}/update`,
+    `${VITE_BACKEND_URL}/album/${encodeURIComponent(String(albumId))}/update`,
     {
       method: "PUT",
       headers,
@@ -81,7 +82,7 @@ export async function updateAlbum({
 export async function deleteAlbum(id: number): Promise<void> {
   const token = getToken();
 
-  const res = await fetch(`/api/album/${id}`, {
+  const res = await fetch(`${VITE_BACKEND_URL}/album/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,

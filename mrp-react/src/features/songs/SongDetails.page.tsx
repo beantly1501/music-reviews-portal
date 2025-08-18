@@ -33,6 +33,7 @@ import CreateSongDialog from "./CreateSongDialog.tsx";
 import { useSongAudio } from "../../shared/hooks/useSongAudio.ts";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { toast } from "../../shared/components/ToastContext.tsx";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function SongDetailsPage() {
   const navigate = useNavigate();
@@ -56,7 +57,9 @@ export default function SongDetailsPage() {
     image: imageSrc,
     imageAsJsFile,
     refetch: refetchImage,
-  } = useGetImage(songId ? `/api/images/song/${songId}` : undefined);
+  } = useGetImage(
+    songId ? `${VITE_BACKEND_URL}/images/song/${songId}` : undefined,
+  );
   const {
     reviews,
     total,
@@ -187,7 +190,6 @@ export default function SongDetailsPage() {
         </div>
       </div>
 
-      {/* Song Card */}
       <Card
         className="p-shadow-2"
         style={{ overflow: "hidden", borderRadius: 12 }}
@@ -230,7 +232,6 @@ export default function SongDetailsPage() {
               </div>
             )}
 
-            {/* Actions */}
             <div className="flex gap-5 flex-wrap">
               {song.link && (
                 <Button
@@ -279,7 +280,6 @@ export default function SongDetailsPage() {
       <Divider />
 
       <Card>
-        {/* Reviews Table */}
         <div className="flex align-items-center justify-content-between mb-2">
           <h2 className="m-0">Reviews</h2>
           {reviewsError && <Message severity="error" text={reviewsError} />}
@@ -335,7 +335,6 @@ export default function SongDetailsPage() {
         </DataTable>
       </Card>
 
-      {/* Review dialog */}
       {dialogVisible && selectedReviewId !== undefined && (
         <ReviewDialog
           key={selectedReviewId}

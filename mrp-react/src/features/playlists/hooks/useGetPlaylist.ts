@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getToken, PlaylistType } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetPlaylist(id?: number) {
   const [playlist, setPlaylist] = useState<PlaylistType | undefined>(undefined);
@@ -22,7 +23,9 @@ export function useGetPlaylist(id?: number) {
     setError(null);
 
     try {
-      const res = await fetch(`/api/playlists/${id}`, { headers });
+      const res = await fetch(`${VITE_BACKEND_URL}/playlists/${id}`, {
+        headers,
+      });
       if (!res.ok) {
         let msg = `HTTP ${res.status}`;
         try {

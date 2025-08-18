@@ -24,6 +24,7 @@ import { SongType, UserOption, UserRoleEnum } from "@shared/utils";
 import { useGetPlaylist } from "./hooks/useGetPlaylist.ts";
 import { deletePlaylist } from "./utils/helpers.tsx";
 import CreatePlaylistDialog from "./CreatePlaylistDialog.tsx";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function PlaylistDetailsPage() {
   const navigate = useNavigate();
@@ -42,7 +43,9 @@ export default function PlaylistDetailsPage() {
     imageAsJsFile,
     refetch: refetchImage,
   } = useGetImage(
-    playlistId ? `/api/images/playlist/${playlistId}` : undefined,
+    playlistId
+      ? `${VITE_BACKEND_URL}/images/playlist/${playlistId}`
+      : undefined,
   );
   const { user } = useCurrentUser();
 

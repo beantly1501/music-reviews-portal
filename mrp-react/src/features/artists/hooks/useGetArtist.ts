@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { getToken, ArtistType } from "@shared/utils";
+import { getToken, ArtistType, extractErrorMessage } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetArtist(id?: number) {
   const [artist, setArtist] = useState<ArtistType | undefined>(undefined);
@@ -22,12 +23,12 @@ export function useGetArtist(id?: number) {
     setError(null);
 
     try {
-      const res = await fetch(`/api/artist/${id}`, { headers });
+      const res = await fetch(`${VITE_BACKEND_URL}/artist/${id}`, { headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json: ArtistType = await res.json();
       setArtist(json);
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to load artist.");
+    } catch (e: unknown) {
+      setError(extractErrorMessage(e));
     } finally {
       setLoading(false);
     }

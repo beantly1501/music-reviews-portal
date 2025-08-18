@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { extractErrorMessage, getToken, ReviewResponse } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface UseGetAllReviewsResult {
   reviews: ReviewResponse[];
@@ -25,7 +26,7 @@ export function useGetAllReviews(): UseGetAllReviewsResult {
     }
 
     try {
-      const response = await fetch("/api/reviews/all", {
+      const response = await fetch(`${VITE_BACKEND_URL}/reviews/all`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${jwt}`,

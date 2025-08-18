@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { extractErrorMessage, getToken, ReviewResponse } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetNewestRatings(count = 20) {
   const [reviews, setReviews] = useState<ReviewResponse[]>([]);
@@ -11,7 +12,7 @@ export function useGetNewestRatings(count = 20) {
     setError(null);
     try {
       const token = getToken();
-      const url = `/api/reviews/newest?count=${encodeURIComponent(count)}`;
+      const url = `${VITE_BACKEND_URL}/reviews/newest?count=${encodeURIComponent(count)}`;
       const res = await fetch(url, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),

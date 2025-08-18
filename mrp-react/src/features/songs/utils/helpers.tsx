@@ -1,9 +1,10 @@
 import { getToken, SongRequestData } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export async function deleteSong(id: number): Promise<void> {
   const token = getToken();
 
-  const res = await fetch(`/api/song/${id}`, {
+  const res = await fetch(`${VITE_BACKEND_URL}/song/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -46,7 +47,7 @@ export async function createSong({ formData }: SongRequestData): Promise<void> {
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch("/api/song/create", {
+  const res = await fetch(`${VITE_BACKEND_URL}/song/create`, {
     method: "POST",
     headers,
     body: fd,
@@ -94,7 +95,7 @@ export async function updateSong({
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(
-    `/api/song/${encodeURIComponent(String(songId))}/update`,
+    `${VITE_BACKEND_URL}/song/${encodeURIComponent(String(songId))}/update`,
     {
       method: "PUT",
       headers,

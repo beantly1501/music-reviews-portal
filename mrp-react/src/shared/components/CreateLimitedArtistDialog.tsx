@@ -17,6 +17,7 @@ import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface Props {
   visible: boolean;
@@ -75,7 +76,7 @@ export default function CreateLimitedArtistDialog({
       const headers: Record<string, string> = {};
       if (token) headers.Authorization = `Bearer ${token}`;
 
-      const res = await fetch("/api/artist/create", {
+      const res = await fetch(`${VITE_BACKEND_URL}/artist/create`, {
         method: "POST",
         headers,
         body: formData,
@@ -102,7 +103,6 @@ export default function CreateLimitedArtistDialog({
     >
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
-          {/* ARTIST NAME */}
           <div className="field">
             <label htmlFor="name">Artist Name</label>
             <Controller
@@ -115,7 +115,6 @@ export default function CreateLimitedArtistDialog({
             )}
           </div>
 
-          {/* DESCRIPTION */}
           <div className="field">
             <label htmlFor="description">Description</label>
             <Controller
@@ -135,7 +134,6 @@ export default function CreateLimitedArtistDialog({
             )}
           </div>
 
-          {/* IMAGE */}
           <div className="field">
             <label htmlFor="image">Image</label>
             <Controller

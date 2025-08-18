@@ -18,6 +18,7 @@ import { submitSongReview } from "../../features/songs/hooks/submitSongReview.ts
 import { CreateSongReview } from "../../features/songs/CreateSongReview.tsx";
 import { toast } from "./ToastContext.tsx";
 import { useNavigate } from "react-router-dom";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface Props {
   song: SongType;
@@ -40,7 +41,7 @@ export default function SongCard({ song, refetch }: Props) {
     loading: loadingImage,
     exists: imageExists,
     image: image,
-  } = useGetImage(`/api${song.imageUrl}`);
+  } = useGetImage(`${VITE_BACKEND_URL}${song.imageUrl}`);
 
   const {
     loading: loadingAudio,

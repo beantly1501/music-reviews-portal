@@ -5,6 +5,7 @@ import { Image } from "primereact/image";
 import { useGetImage } from "../hooks/useGetImage";
 import { PlaylistType } from "@shared/utils";
 import { useNavigate } from "react-router-dom";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function PlaylistCard({ playlist }: { playlist: PlaylistType }) {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function PlaylistCard({ playlist }: { playlist: PlaylistType }) {
     loading: loadingImage,
     exists: imageExists,
     image: image,
-  } = useGetImage(`/api${playlist.image}`);
+  } = useGetImage(`${VITE_BACKEND_URL}${playlist.image}`);
 
   const songsCount = Array.isArray(playlist.songs) ? playlist.songs.length : 0;
 

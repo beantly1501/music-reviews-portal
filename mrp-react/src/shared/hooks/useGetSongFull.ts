@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getToken, SongType } from "@shared/utils";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetSongFull(id?: number) {
   const [song, setSong] = useState<SongType | undefined>(undefined);
@@ -27,7 +28,7 @@ export function useGetSongFull(id?: number) {
     setLoadingSongAudio(true);
     setError(null);
 
-    fetch(`/api/song/${id}`, { headers })
+    fetch(`${VITE_BACKEND_URL}/song/${id}`, { headers })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -35,7 +36,7 @@ export function useGetSongFull(id?: number) {
       .then((json: SongType) => {
         setSong(json);
 
-        fetch(`/api${json.fileUrl}`, {
+        fetch(`${VITE_BACKEND_URL}${json.fileUrl}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
           .then((res) => {
