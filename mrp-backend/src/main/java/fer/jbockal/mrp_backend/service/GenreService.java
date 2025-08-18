@@ -27,7 +27,6 @@ public class GenreService {
         this.songRepository = songRepository;
     }
 
-    // -------- READ --------
 
     @Transactional(readOnly = true)
     public List<GenreResponseDto> getAllGenres() {
@@ -49,7 +48,6 @@ public class GenreService {
         return assembleDtos(List.of(row)).get(0);
     }
 
-    // -------- WRITE --------
 
     @Transactional
     public GenreResponseDto createGenre(GenreRequestDto req) {
@@ -77,7 +75,6 @@ public class GenreService {
         if (req.getName() != null) existing.setName(req.getName());
 
         if (req.getSongIds() != null) {
-            // reset associations
             existing.getSongs().forEach(s -> s.getGenres().remove(existing));
             existing.getSongs().clear();
             for (Long sid : req.getSongIds()) {
@@ -103,7 +100,6 @@ public class GenreService {
         genreRepository.delete(g);
     }
 
-    // -------- DTO assembly (batched) --------
 
     private List<GenreResponseDto> assembleDtos(List<GenreBaseRow> base) {
         if (base == null || base.isEmpty()) return List.of();

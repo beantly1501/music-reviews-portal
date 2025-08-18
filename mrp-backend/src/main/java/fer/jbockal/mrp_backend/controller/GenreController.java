@@ -19,7 +19,6 @@ public class GenreController {
 
     private final GenreService genreService;
 
-    // READ
     @GetMapping("/all")
     public ResponseEntity<List<GenreResponseDto>> all() {
         return ResponseEntity.ok(genreService.getAllGenres());

@@ -18,7 +18,6 @@ public class SongReview {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Optionally, load the Song and User objects
     @ManyToOne(fetch = FetchType.LAZY)        // << lazy by default for ManyToOne, but good to be explicit
     @JoinColumn(name = "song_id", nullable = false)
     private Song song;

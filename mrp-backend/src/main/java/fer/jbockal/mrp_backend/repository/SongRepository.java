@@ -15,10 +15,6 @@ import java.util.List;
 @Repository
 public interface SongRepository extends JpaRepository<Song, Long> {
 
-    List<Song> findByNameContainingIgnoreCase(String fragment);
-
-    // --- Fast, blob-free base rows (list & single) ---
-
     @Query(value = """
                 select s.id as id, s.name as name, s.link as link, s.year as year
                 from song s
@@ -41,7 +37,6 @@ public interface SongRepository extends JpaRepository<Song, Long> {
             """, nativeQuery = true)
     SongRow findBaseById(@Param("id") Long id);
 
-    // --- Batch relations (no row explosion) ---
 
     @Query(value = """
                 select sa.song_id as songId, a.id as id, a.name as name, a.link as link, a.year as year
@@ -70,7 +65,6 @@ public interface SongRepository extends JpaRepository<Song, Long> {
             """, nativeQuery = true)
     List<GenreRow> findGenresForSongs(@Param("ids") List<Long> ids);
 
-    // --- Stream blobs without loading the whole entity graph ---
 
     @Query("select s.cover from Song s where s.id = :id")
     byte[] findCoverById(@Param("id") Long id);

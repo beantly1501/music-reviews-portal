@@ -23,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -36,7 +35,6 @@ public class AlbumController {
     private final AppUserService appUserService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // ---------- READ ----------
 
     @GetMapping("/all")
     public ResponseEntity<Page<AlbumResponseDto>> all(
@@ -75,7 +73,6 @@ public class AlbumController {
                 .body(resource);
     }
 
-    // ---------- WRITE: JSON ----------
 
     @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
     @RolesAllowed({"ROLE_ADMIN"})
@@ -98,7 +95,6 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.updateAlbum(id, body, user));
     }
 
-    // ---------- WRITE: MULTIPART ----------
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RolesAllowed({"ROLE_ADMIN"})
@@ -156,7 +152,6 @@ public class AlbumController {
         return ResponseEntity.noContent().build();
     }
 
-    // ---------- helper ----------
     private Set<Long> parseIdSet(String json) throws Exception {
         if (json == null || json.isBlank()) return null;
         return objectMapper.readValue(json, new TypeReference<Set<Long>>() {

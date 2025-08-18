@@ -1,4 +1,3 @@
-// SongService.java
 package fer.jbockal.mrp_backend.service;
 
 import fer.jbockal.mrp_backend.dto.partial.AlbumPartialDto;
@@ -6,11 +5,7 @@ import fer.jbockal.mrp_backend.dto.partial.ArtistPartialDto;
 import fer.jbockal.mrp_backend.dto.partial.GenrePartialDto;
 import fer.jbockal.mrp_backend.dto.song.SongRequestDto;
 import fer.jbockal.mrp_backend.dto.song.SongResponseDto;
-import fer.jbockal.mrp_backend.model.Album;
-import fer.jbockal.mrp_backend.model.AppUser;
-import fer.jbockal.mrp_backend.model.Artist;
-import fer.jbockal.mrp_backend.model.Genre;
-import fer.jbockal.mrp_backend.model.Song;
+import fer.jbockal.mrp_backend.model.*;
 import fer.jbockal.mrp_backend.repository.*;
 import fer.jbockal.mrp_backend.repository.projection.*;
 import lombok.AllArgsConstructor;
@@ -34,7 +29,6 @@ public class SongService {
     private final GenreRepository genreRepository;
     private final PlaylistRepository playlistRepository;
 
-    // ---------- READ: list all with review flag/grade (fast, blob-free) ----------
 
     @Transactional(readOnly = true)
     public List<SongResponseDto> getAllSongsWithReviewed(AppUser user) {
@@ -42,18 +36,6 @@ public class SongService {
         return assembleDtos(base, user);
     }
 
-    // ---------- READ: search by name (fast, blob-free) ----------
-
-    @Transactional(readOnly = true)
-    public List<SongResponseDto> searchByNameFragment(String fragment) {
-        if (fragment == null || fragment.isBlank()) {
-            return List.of();
-        }
-        var base = songRepository.findBaseByNameFragment(fragment);
-        return assembleDtos(base, null); // grades not needed? keep null user if not required
-    }
-
-    // ---------- READ: find by id (fast, blob-free) ----------
 
     @Transactional(readOnly = true)
     public SongResponseDto findById(Long id, AppUser user) {
@@ -64,7 +46,6 @@ public class SongService {
         return assembleDtos(List.of(row), user).get(0);
     }
 
-    // ---------- READ: stream blobs without loading entities ----------
 
     @Transactional(readOnly = true)
     public byte[] getSongImage(Long id) {
@@ -76,7 +57,6 @@ public class SongService {
         return songRepository.findFileById(id);
     }
 
-    // ---------- WRITE: create / update / delete ----------
 
     @Transactional
     public SongResponseDto createSong(SongRequestDto req, AppUser user) {
@@ -87,7 +67,6 @@ public class SongService {
         if (req.getCover() != null) s.setCover(req.getCover());
         if (req.getFile() != null) s.setFile(req.getFile());
 
-        // Attach relations by id (no need to touch existing collections)
         if (req.getAlbumIds() != null) {
             for (Long aid : req.getAlbumIds()) {
                 Album a = albumRepository.findById(aid)
@@ -114,7 +93,6 @@ public class SongService {
         }
 
         Song saved = songRepository.save(s);
-        // Return a projection-assembled DTO (blob-free & relation-batched)
         return findById(saved.getId(), user);
     }
 
@@ -129,7 +107,6 @@ public class SongService {
         if (req.getCover() != null) existing.setCover(req.getCover());
         if (req.getFile() != null) existing.setFile(req.getFile());
 
-        // Rewire relations if ids were provided
         if (req.getAlbumIds() != null) {
             existing.getAlbums().forEach(a -> a.getSongs().remove(existing));
             existing.getAlbums().clear();
@@ -185,14 +162,12 @@ public class SongService {
         songRepository.delete(song);
     }
 
-    // ---------- Helper to assemble DTOs from lightweight rows ----------
 
     private List<SongResponseDto> assembleDtos(List<SongRow> base, AppUser userForGrades) {
         if (base == null || base.isEmpty()) return List.of();
 
         var ids = base.stream().map(SongRow::getId).toList();
 
-        // Batch fetch relations
         Map<Long, LinkedHashSet<AlbumPartialDto>> albumsBySong =
                 songRepository.findAlbumsForSongs(ids).stream()
                         .collect(groupingBy(AlbumForSongRow::getSongId, mapping(ar ->
@@ -225,10 +200,9 @@ public class SongService {
         Map<Long, Integer> gradesBySongId = Collections.emptyMap();
         if (userForGrades != null) {
             gradesBySongId = songReviewRepository.findByUser(userForGrades).stream()
-                    .collect(toMap(sr -> sr.getSong().getId(), sr -> sr.getGrade()));
+                    .collect(toMap(sr -> sr.getSong().getId(), SongReview::getGrade));
         }
 
-        // Bulk average ratings for these song IDs (rounded to 2 decimals)
         Map<Long, BigDecimal> avgBySongId =
                 songReviewRepository.findAveragesForSongs(ids).stream()
                         .collect(toMap(

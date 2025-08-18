@@ -14,10 +14,6 @@ import java.util.List;
 @Repository
 public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
-    // If you had this already for convenience searches:
-    List<Artist> findByNameContainingIgnoreCase(String fragment);
-
-    // ---- Base (blob-free) rows for artists ----
 
     @Query(value = """
                 select ar.id as id, ar.name as name, ar.description as description

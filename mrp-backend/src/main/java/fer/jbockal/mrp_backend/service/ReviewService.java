@@ -54,7 +54,6 @@ public class ReviewService {
             albumRows = albumReviewRepository.findRowsByUser(user);
         }
 
-        // `toDtos` already sorts by creationDate (descending)
         return toDtos(songRows, albumRows);
     }
 
@@ -131,7 +130,6 @@ public class ReviewService {
                 .collect(Collectors.toList());
     }
 
-    // === SONG REVIEWS ===
     public SongReviewResponseDto getSongReview(Long reviewId) {
         var r = songReviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("Review not found: " + reviewId));
@@ -224,7 +222,6 @@ public class ReviewService {
 
     }
 
-    // === ALBUM REVIEWS ===
     public AlbumReviewResponseDto getAlbumReview(Long reviewId) {
         var r = albumReviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("Album review not found: " + reviewId));

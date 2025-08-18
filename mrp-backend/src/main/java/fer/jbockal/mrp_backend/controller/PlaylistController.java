@@ -64,7 +64,6 @@ public class PlaylistController {
         return ResponseEntity.ok(playlistService.create(principal, dto));
     }
 
-    // ---------- UPDATE (multipart) ----------
     @PutMapping(value = "/{id}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PlaylistResponseDto> updateMultipart(
             @PathVariable Long id,
@@ -157,7 +156,6 @@ public class PlaylistController {
         return ResponseEntity.ok(playlistService.listAllAsAdmin(principal, pageable));
     }
 
-    // ---------- helper ----------
     private List<Long> parseIdList(String jsonArray) {
         if (jsonArray == null || jsonArray.isBlank()) return null;
         try {

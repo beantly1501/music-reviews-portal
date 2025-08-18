@@ -16,7 +16,6 @@ public class SongRequestDto {
     private byte[] file;
     private Long year;
 
-    // optional associations
     private Set<Long> albumIds;
     private Set<Long> artistIds;
     private Set<Long> genreIds;

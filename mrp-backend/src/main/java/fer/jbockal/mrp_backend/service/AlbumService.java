@@ -1,4 +1,3 @@
-// AlbumService.java
 package fer.jbockal.mrp_backend.service;
 
 import fer.jbockal.mrp_backend.dto.album.AlbumRequestDto;
@@ -41,7 +40,6 @@ public class AlbumService {
         this.albumReviewRepository = albumReviewRepository;
     }
 
-    // -------------- READ --------------
 
     @Transactional(readOnly = true)
     public Page<AlbumResponseDto> getAllAlbumsWithReviewed(AppUser user, Pageable pageable) {
@@ -74,7 +72,6 @@ public class AlbumService {
         return bytes;
     }
 
-    // -------------- WRITE --------------
 
     @Transactional
     public AlbumResponseDto createAlbum(AlbumRequestDto req, AppUser user) {
@@ -156,7 +153,6 @@ public class AlbumService {
         albumRepository.delete(a);
     }
 
-    // -------------- DTO assembly --------------
 
     private List<AlbumResponseDto> assembleDtos(List<AlbumRow> base, AppUser user) {
         if (base == null || base.isEmpty()) return List.of();
@@ -197,7 +193,6 @@ public class AlbumService {
                     .collect(toMap(ar -> ar.getAlbum().getId(), AlbumReview::getGrade));
         }
 
-        // Bulk average ratings for these album IDs (rounded to 2 decimals)
         Map<Long, BigDecimal> avgByAlbumId =
                 albumReviewRepository.findAveragesForAlbums(ids).stream()
                         .collect(toMap(

@@ -41,7 +41,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     )
     Page<PlaylistRow> findAllRows(Pageable pageable);
 
-    // PlaylistRepository — UPDATED method (filter by ownerId)
     @Query(
             value = """
             select p.id as id,

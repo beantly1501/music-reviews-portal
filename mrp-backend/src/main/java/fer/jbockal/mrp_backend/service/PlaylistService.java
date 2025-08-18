@@ -17,7 +17,6 @@ import fer.jbockal.mrp_backend.repository.projection.PlaylistSongRow;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +47,6 @@ public class PlaylistService {
     }
 
 
-    // CREATE
     public PlaylistResponseDto create(Object principal, PlaylistRequestDto dto) {
         AppUser owner = appUserService.resolveAppUserFromPrincipal(principal);
 
@@ -73,7 +71,6 @@ public class PlaylistService {
         return toDto(p);
     }
 
-    // UPDATE
     public PlaylistResponseDto update(Object principal, Long id, PlaylistRequestDto dto) {
         Playlist p = checkIsOwnerOrAdmin(principal, id);
 
@@ -100,7 +97,6 @@ public class PlaylistService {
         playlistRepository.delete(p);
     }
 
-    // SONGS
     public PlaylistResponseDto addSongs(Object principal, Long playlistId, List<Long> songIds) {
         Playlist p = checkCanEdit(principal, playlistId);
         if (songIds != null && !songIds.isEmpty()) {
@@ -122,7 +118,6 @@ public class PlaylistService {
         return toDto(p);
     }
 
-    // COLLABORATORS
     public PlaylistResponseDto addCollaborators(Object principal, Long playlistId, List<Long> userIds) {
         Playlist p = checkIsOwnerOrAdmin(principal, playlistId);
         if (userIds != null && !userIds.isEmpty()) {
@@ -165,7 +160,6 @@ public class PlaylistService {
         return toDtosFromRows(rows);
     }
 
-    // ==== helpers ====
     private Set<Song> fetchSongs(Collection<Long> ids) {
         if (ids == null || ids.isEmpty()) return new LinkedHashSet<>();
         return new LinkedHashSet<>(songRepository.findAllById(ids));
@@ -206,7 +200,6 @@ public class PlaylistService {
         throw new SecurityException("Only owner or admin can perform this action");
     }
 
-    // ----- DTO assembly -----
 
     private PlaylistResponseDto toDto(Playlist p) {
         Long pid = p.getId();
@@ -265,7 +258,6 @@ public class PlaylistService {
                 playlistRepository.findAllById(ids).stream()
                         .collect(toMap(Playlist::getId, Playlist::getCreationDate));
 
-        // Reuse PlaylistCollaboratorRow projection to fetch lastEditedBy in batch
         Map<Long, UserPartialDto> editorByPlaylist =
                 playlistRepository.findEditorsForPlaylists(ids).stream()
                         .collect(toMap(

@@ -43,7 +43,6 @@ public class ArtistService {
         this.albumRepository = albumRepository;
     }
 
-    // -------------- READ --------------
 
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getAllArtists() {
@@ -67,20 +66,17 @@ public class ArtistService {
 
     @Transactional(readOnly = true)
     public byte[] getArtistImage(Long id) {
-        // If your repository method is named findCoverById, rename here accordingly.
         byte[] bytes = artistRepository.findImageById(id);
         if (bytes == null) throw new IllegalArgumentException("Image not found for artist: " + id);
         return bytes;
     }
 
-    // -------------- WRITE --------------
 
     @Transactional
     public ArtistResponseDto createArtist(ArtistRequestDto req) {
         Artist ar = new Artist();
         ar.setName(req.getName());
         ar.setDescription(req.getDescription());
-        // Use image vs cover to match your DTO/Entity naming
         if (req.getImage() != null) ar.setImage(req.getImage());
 
         if (req.getSongIds() != null) {
@@ -152,7 +148,6 @@ public class ArtistService {
         artistRepository.delete(ar);
     }
 
-    // -------------- DTO assembly --------------
 
     private List<ArtistResponseDto> assembleDtos(List<ArtistBaseRow> base) {
         if (base == null || base.isEmpty()) return List.of();

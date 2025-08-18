@@ -1,4 +1,3 @@
-// AlbumRepository.java
 package fer.jbockal.mrp_backend.repository;
 
 import fer.jbockal.mrp_backend.model.Album;
@@ -54,7 +53,6 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
             """, nativeQuery = true)
     AlbumRow findBaseById(@Param("id") Long id);
 
-    // ---- Relations (batched, no row explosion) ----
 
     @Query(value = """
                 select sa.album_id as albumId, s.id as id, s.name as name, s.link as link, s.year as year
@@ -74,7 +72,6 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
             """, nativeQuery = true)
     List<AlbumArtistRow> findArtistsForAlbums(@Param("ids") List<Long> albumIds);
 
-    // ---- Blob field-select (avoid loading entity graph) ----
 
     @Query("select a.cover from Album a where a.id = :id")
     byte[] findCoverById(@Param("id") Long id);

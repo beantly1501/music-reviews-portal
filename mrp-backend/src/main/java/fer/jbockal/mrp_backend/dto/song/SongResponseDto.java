@@ -1,4 +1,3 @@
-// SongResponseDto.java
 package fer.jbockal.mrp_backend.dto.song;
 
 import fer.jbockal.mrp_backend.dto.partial.AlbumPartialDto;

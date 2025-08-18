@@ -29,7 +29,6 @@ public class ArtistController {
     private final ArtistService artistService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // -------- READ --------
 
     @GetMapping("/all")
     public ResponseEntity<List<ArtistResponseDto>> all() {
@@ -57,7 +56,6 @@ public class ArtistController {
                 .body(resource);
     }
 
-    // -------- WRITE: JSON variant (backwards compatible) --------
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @RolesAllowed({"ROLE_ADMIN"})
@@ -71,7 +69,6 @@ public class ArtistController {
         return ResponseEntity.ok(artistService.updateArtist(id, body));
     }
 
-    // -------- WRITE: MULTIPART variant (file upload) --------
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RolesAllowed({"ROLE_ADMIN"})
@@ -79,7 +76,6 @@ public class ArtistController {
             @RequestParam("name") String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestPart(value = "image", required = false) MultipartFile image,
-            // Accept either JSON arrays in a string or multiple repeated parts — here we parse JSON string:
             @RequestParam(value = "songIds", required = false) String songIdsJson,
             @RequestParam(value = "albumIds", required = false) String albumIdsJson
     ) throws Exception {
@@ -122,10 +118,8 @@ public class ArtistController {
         return ResponseEntity.noContent().build();
     }
 
-    // ---- helpers ----
     private Set<Long> parseIdSet(String json) throws Exception {
         if (json == null || json.isBlank()) return null;
-        // Accept "[]", "[1,2,3]" etc.
         return objectMapper.readValue(json, new TypeReference<Set<Long>>() {
         });
     }

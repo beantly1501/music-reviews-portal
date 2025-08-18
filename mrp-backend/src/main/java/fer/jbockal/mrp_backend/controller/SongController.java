@@ -33,7 +33,6 @@ public class SongController {
     private final AppUserService appUserService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // -------- READ --------
 
     @GetMapping("/all")
     public ResponseEntity<List<SongResponseDto>> all(@AuthenticationPrincipal Object principal) {
@@ -80,7 +79,6 @@ public class SongController {
                 .body(resource);
     }
 
-    // -------- WRITE: JSON (existing) --------
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @RolesAllowed({"ROLE_ADMIN"})
@@ -99,7 +97,6 @@ public class SongController {
         return ResponseEntity.ok(songService.updateSong(id, body, user));
     }
 
-    // -------- WRITE: MULTIPART (new) --------
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @RolesAllowed({"ADMIN"})
@@ -158,7 +155,6 @@ public class SongController {
         return ResponseEntity.ok(songService.updateSong(id, dto, user));
     }
 
-    // -------- DELETE --------
     @DeleteMapping("/{id}")
     @RolesAllowed({"ROLE_ADMIN"})
     public ResponseEntity<Void> delete(@PathVariable Long id) {
@@ -166,7 +162,6 @@ public class SongController {
         return ResponseEntity.noContent().build();
     }
 
-    // -------- helper --------
     private Set<Long> parseIdSet(String json) throws Exception {
         if (json == null || json.isBlank()) return null;
         return objectMapper.readValue(json, new TypeReference<Set<Long>>() {

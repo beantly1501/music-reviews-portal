@@ -13,7 +13,6 @@ import java.util.List;
 @Repository
 public interface GenreRepository extends JpaRepository<Genre, Long> {
 
-    // ---- Base (lean) rows ----
 
     @Query(value = """
                 select g.id as id, g.name as name
@@ -37,7 +36,6 @@ public interface GenreRepository extends JpaRepository<Genre, Long> {
             """, nativeQuery = true)
     GenreBaseRow findBaseById(@Param("id") Long id);
 
-    // ---- Relations (batched; no row explosion) ----
 
     @Query(value = """
                 select sg.genre_id as genreId,
