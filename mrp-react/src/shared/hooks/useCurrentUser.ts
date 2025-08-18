@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { extractErrorMessage, getToken, UserInfo } from "@shared/utils";
+import { extractErrorMessage, getToken, UserInfoType } from "@shared/utils";
 
 export function useCurrentUser() {
   const [state, setState] = useState<{
-    user: UserInfo | null;
+    user: UserInfoType | null;
     loading: boolean;
     error: string | null;
   }>({
@@ -44,7 +44,7 @@ export function useCurrentUser() {
         return;
       }
 
-      const user: UserInfo = await res.json();
+      const user: UserInfoType = await res.json();
       setState({ user, loading: false, error: null });
     } catch (e: unknown) {
       setState({

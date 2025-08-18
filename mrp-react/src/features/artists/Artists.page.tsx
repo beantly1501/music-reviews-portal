@@ -6,9 +6,12 @@ import { Message } from "primereact/message";
 import CreateArtistDialog from "./CreateArtistDialog.tsx";
 import { useGetArtists } from "./hooks/useGetArtists.ts";
 import ArtistCard from "../../shared/components/ArtistCard.tsx";
+import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
+import { UserRoleEnum } from "@shared/utils";
 
 export default function ArtistsPage() {
   const { artists, loading, error, refetch } = useGetArtists();
+  const { user } = useCurrentUser();
   const [visibleDialog, setVisibleDialog] = useState<boolean>(false);
 
   if (loading) {
@@ -37,12 +40,14 @@ export default function ArtistsPage() {
   return (
     <>
       <div className="artists-page">
-        <Button
-          label="Add New Artist"
-          icon="pi pi-plus"
-          onClick={() => setVisibleDialog(true)}
-          className="artists-page__add-btn"
-        />
+        {user?.role === UserRoleEnum.ADMIN && (
+          <Button
+            label="Add New Artist"
+            icon="pi pi-plus"
+            onClick={() => setVisibleDialog(true)}
+            className="artists-page__add-btn"
+          />
+        )}
 
         {artists.length > 0 ? (
           <div className="artists-grid">

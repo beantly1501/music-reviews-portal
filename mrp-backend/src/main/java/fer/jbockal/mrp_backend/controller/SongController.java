@@ -91,7 +91,7 @@ public class SongController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @RolesAllowed({"ROLE_ADMIN"})
+    @RolesAllowed({"ADMIN"})
     public ResponseEntity<SongResponseDto> updateJson(@PathVariable Long id,
                                                       @AuthenticationPrincipal Object principal,
                                                       @RequestBody SongRequestDto body) {
@@ -102,7 +102,7 @@ public class SongController {
     // -------- WRITE: MULTIPART (new) --------
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @RolesAllowed({"ROLE_ADMIN"})
+    @RolesAllowed({"ADMIN"})
     public ResponseEntity<SongResponseDto> createMultipart(
             @AuthenticationPrincipal Object principal,
             @RequestParam("name") String name,
@@ -151,9 +151,9 @@ public class SongController {
         dto.setLink(link);
         if (cover != null && !cover.isEmpty()) dto.setCover(cover.getBytes());
         if (file != null && !file.isEmpty()) dto.setFile(file.getBytes());
+        dto.setGenreIds(parseIdSet(genreIdsJson));
         dto.setAlbumIds(parseIdSet(albumIdsJson));
         dto.setArtistIds(parseIdSet(artistIdsJson));
-        dto.setGenreIds(parseIdSet(genreIdsJson));
 
         return ResponseEntity.ok(songService.updateSong(id, dto, user));
     }

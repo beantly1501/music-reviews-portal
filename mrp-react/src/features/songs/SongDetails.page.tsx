@@ -21,7 +21,12 @@ import ReviewDialog from "../../features/review/ReviewDialog.tsx";
 import { useGetSong } from "../../shared/hooks/useGetSong.ts";
 import { useGetImage } from "../../shared/hooks/useGetImage.ts";
 import { useGetSongReviews } from "../../shared/hooks/useGetSongReviews.ts";
-import { GenreType, ReviewResponse, UserRoleEnum } from "@shared/utils";
+import {
+  GenreType,
+  ReviewResponse,
+  toCommaSeparated,
+  UserRoleEnum,
+} from "@shared/utils";
 import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
 import { deleteSong } from "./utils/helpers.tsx";
 import CreateSongDialog from "./CreateSongDialog.tsx";
@@ -203,6 +208,9 @@ export default function SongDetailsPage() {
 
           <div className="flex-1">
             <div className="text-2xl font-semibold mb-2">{song.name}</div>
+            <div className="text-lg font-semibold mb-2">
+              {toCommaSeparated(song.artists?.map((a) => a.name) ?? [])}
+            </div>
 
             {song.year ? (
               <div className="text-color-secondary mb-2">
@@ -345,17 +353,19 @@ export default function SongDetailsPage() {
           setVisible={setEditSongDialogVisible}
           onCreated={handleRefetch}
           existingSongData={{
-            songId: songId,
+            songId,
             formData: {
               name: song.name,
-              cover: imageExists ? imageAsJsFile! : undefined,
-              file: audioExists ? audioAsJsFile! : undefined,
-              year: song.year,
-              link: song.link,
+              // narrow to File | undefined (avoid null)
+              cover: imageExists && imageAsJsFile ? imageAsJsFile : undefined,
+              file: audioExists && audioAsJsFile ? audioAsJsFile : undefined,
+              year: song.year ?? undefined,
+              link: song.link ?? undefined,
+              // move arrays INSIDE formData
+              albumIds: song.albums?.map((a) => a.id) ?? [],
+              artistIds: song.artists?.map((a) => a.id) ?? [],
+              genreIds: song.genres?.map((g) => g.id) ?? [],
             },
-            albumIds: song.albums?.map((g) => g.id) ?? [],
-            artistIds: song.artists?.map((ar) => ar.id) ?? [],
-            genreIds: song.genres?.map((al) => al.id) ?? [],
           }}
         />
       )}

@@ -344,9 +344,9 @@ export default function AlbumDetailsPage() {
               year: album.year,
               cover: coverExists ? imageAsJsFile! : undefined,
               link: album.link,
+              songIds: album.songs?.map((s) => s.id) ?? [],
+              artistIds: album.artists?.map((ar) => ar.id) ?? [],
             },
-            songIds: album.songs?.map((s) => s.id) ?? [],
-            artistIds: album.artists?.map((ar) => ar.id) ?? [],
           }}
         />
       )}

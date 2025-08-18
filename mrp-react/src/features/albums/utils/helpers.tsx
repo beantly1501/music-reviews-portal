@@ -2,18 +2,18 @@ import { AlbumRequestData, getToken } from "@shared/utils";
 
 export async function createAlbum({
   formData,
-  songIds,
-  artistIds,
 }: AlbumRequestData): Promise<void> {
   const fd = new FormData();
-  fd.append("name", formData.name);
-  if (formData.link) fd.append("link", formData.link);
+  fd.set("name", formData.name);
+  if (formData.link) fd.set("link", formData.link);
   if (formData.year !== undefined && formData.year !== null) {
-    fd.append("year", String(formData.year));
+    fd.set("year", String(formData.year));
   }
-  if (formData.cover) fd.append("cover", formData.cover);
-  if (songIds?.length) fd.append("songIds", JSON.stringify(songIds));
-  if (artistIds?.length) fd.append("artistIds", JSON.stringify(artistIds));
+  if (formData.cover) fd.set("cover", formData.cover);
+  if (formData.songIds?.length)
+    fd.set("songIds", JSON.stringify(formData.songIds));
+  if (formData.artistIds?.length)
+    fd.set("artistIds", JSON.stringify(formData.artistIds));
 
   const token = getToken();
   const headers: Record<string, string> = {};
@@ -36,18 +36,26 @@ export async function createAlbum({
 export async function updateAlbum({
   albumId,
   formData,
-  songIds,
-  artistIds,
 }: AlbumRequestData): Promise<void> {
   const fd = new FormData();
-  if (formData.name) fd.append("name", formData.name);
-  if (formData.link) fd.append("link", formData.link);
+  if (formData.name) fd.set("name", formData.name);
+  if (formData.link) fd.set("link", formData.link);
   if (formData.year !== undefined && formData.year !== null) {
-    fd.append("year", String(formData.year));
+    fd.set("year", String(formData.year));
   }
-  if (formData.cover) fd.append("cover", formData.cover);
-  if (songIds?.length) fd.append("songIds", JSON.stringify(songIds));
-  if (artistIds?.length) fd.append("artistIds", JSON.stringify(artistIds));
+  if (formData.cover) fd.set("cover", formData.cover);
+  fd.set(
+    "songIds",
+    formData.songIds?.length
+      ? JSON.stringify(formData.songIds)
+      : JSON.stringify([]),
+  );
+  fd.set(
+    "artistIds",
+    formData.artistIds?.length
+      ? JSON.stringify(formData.artistIds)
+      : JSON.stringify([]),
+  );
 
   const token = getToken();
   const headers: Record<string, string> = {};

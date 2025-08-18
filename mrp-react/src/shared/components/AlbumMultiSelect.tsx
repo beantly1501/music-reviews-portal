@@ -1,4 +1,3 @@
-// src/features/albums/components/AlbumMultiSelect.tsx
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
 import { Button } from "primereact/button";
 
@@ -52,7 +51,6 @@ export default function AlbumMultiSelect({
           <small className="text-500">{opt.year}</small>
         </div>
       )}
-      /* keep the default header (with filter) and add our button to the footer */
       panelFooterTemplate={() => (
         <div className="flex justify-content-center p-2">
           <Button

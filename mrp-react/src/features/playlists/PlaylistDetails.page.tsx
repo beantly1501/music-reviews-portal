@@ -51,7 +51,9 @@ export default function PlaylistDetailsPage() {
     useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
 
-  const canModify = !!user && user.role === UserRoleEnum.ADMIN;
+  const canModify =
+    !!user &&
+    (user.role === UserRoleEnum.ADMIN || user.id === playlist?.ownerId);
 
   const handleDelete = () => {
     confirmDialog({
@@ -116,7 +118,13 @@ export default function PlaylistDetailsPage() {
           background: isEven ? "var(--surface-50)" : "transparent",
           transition: "background 0.15s ease",
         }}
-        onClick={() => navigate(`/user/${item.id}`)}
+        onClick={() => {
+          if (user?.id === item.id) {
+            navigate(`/profile`);
+          } else {
+            navigate(`/user/${item.id}`);
+          }
+        }}
         role="button"
         tabIndex={0}
         title={username}
@@ -218,7 +226,16 @@ export default function PlaylistDetailsPage() {
                 />
               </div>
 
-              <div className="text-color-secondary">
+              <div
+                className="text-color-secondary cursor-pointer select-none"
+                onClick={() => {
+                  if (user?.id === playlist?.ownerId) {
+                    navigate("/profile");
+                  } else {
+                    navigate(`/user/${playlist?.ownerId}`);
+                  }
+                }}
+              >
                 Owner: <strong>{playlist.ownerUsername}</strong>
               </div>
 
@@ -284,14 +301,15 @@ export default function PlaylistDetailsPage() {
           onCreated={handleRefetch}
           existingPlaylistData={{
             playlistId,
+            ownerId: playlist.ownerId,
             formData: {
               name: playlist.name,
               image: imageExists ? imageAsJsFile : undefined,
               description: playlist.description,
               isPrivate: playlist.isPrivate,
+              songIds: playlist.songs?.map((s) => s.id) ?? [],
+              collaboratorIds: playlist.collaborators?.map((c) => c.id) ?? [],
             },
-            songIds: playlist.songs?.map((s) => s.id) ?? [],
-            collaboratorIds: playlist.collaborators?.map((c) => c.id) ?? [],
           }}
         />
       )}

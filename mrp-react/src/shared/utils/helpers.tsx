@@ -69,3 +69,7 @@ export function parseIdList(input: string | undefined): number[] {
 
 export const truncate = (name: string, max = 15) =>
   name.length > max ? name.slice(0, max) + "..." : name;
+
+export function toCommaSeparated<T>(arr: T[]): string {
+  return arr.map(String).join(", ");
+}

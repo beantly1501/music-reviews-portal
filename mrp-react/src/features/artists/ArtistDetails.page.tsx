@@ -166,7 +166,7 @@ export default function ArtistDetailsPage() {
 
       <Card>
         <div className="flex align-items-center justify-content-between mb-2">
-          <h2 className="m-0">Songs</h2>
+          <h2 className="m-0">Songs this artist appears on</h2>
         </div>
 
         <DataTable
@@ -193,7 +193,7 @@ export default function ArtistDetailsPage() {
 
       <Card>
         <div className="flex align-items-center justify-content-between mb-2">
-          <h2 className="m-0">Albums</h2>
+          <h2 className="m-0">Albums this artist appears on</h2>
         </div>
 
         <DataTable
@@ -225,11 +225,11 @@ export default function ArtistDetailsPage() {
             artistId,
             formData: {
               name: artist.name,
-              image: imageExists ? imageAsJsFile : undefined,
+              image: imageExists ? imageAsJsFile! : undefined,
               description: artist.description,
+              songIds: artist.songs?.map((s) => s.id) ?? [],
+              albumIds: artist.albums?.map((a) => a.id) ?? [],
             },
-            songIds: artist.songs?.map((s) => s.id) ?? [],
-            albumIds: artist.albums?.map((a) => a.id) ?? [],
           }}
         />
       )}

@@ -5,9 +5,12 @@ import { Message } from "primereact/message";
 import CreateSongDialog from "./CreateSongDialog.tsx";
 import { useState } from "react";
 import SongCard from "../../shared/components/SongCard.tsx";
+import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
+import { UserRoleEnum } from "@shared/utils";
 
 export default function SongsPage() {
   const { songs, loading, error, refetch } = useGetSongs();
+  const { user } = useCurrentUser();
   const [visibleDialog, setVisibleDialog] = useState<boolean>(false);
 
   if (loading) {
@@ -36,12 +39,14 @@ export default function SongsPage() {
   return (
     <>
       <div className="flex flex-column justify-content-center align-items-center gap-4">
-        <Button
-          label="Add New Song"
-          icon="pi pi-plus"
-          className="w-15rem"
-          onClick={() => setVisibleDialog(true)}
-        />
+        {user?.role === UserRoleEnum.ADMIN && (
+          <Button
+            label="Add New Song"
+            icon="pi pi-plus"
+            className="w-15rem"
+            onClick={() => setVisibleDialog(true)}
+          />
+        )}
         <div className="flex flex flex-wrap gap-4 justify-content-center">
           {songs.map((song) => (
             <SongCard key={`song${song.id}`} song={song} refetch={refetch} />

@@ -15,7 +15,6 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  parseIdList,
   SongCreateForm,
   songCreateSchema,
   SongRequestData,
@@ -45,8 +44,19 @@ interface Props {
   visible: boolean;
   setVisible: Dispatch<boolean>;
   onCreated: () => void;
-  existingSongData?: SongRequestData;
+  existingSongData?: SongRequestData; // expects arrays in formData
 }
+
+const EMPTY_FORM: SongCreateForm = {
+  name: "",
+  link: undefined,
+  year: undefined,
+  file: undefined,
+  cover: undefined,
+  albumIds: [],
+  artistIds: [],
+  genreIds: [],
+};
 
 export default function CreateSongDialog({
   visible,
@@ -70,36 +80,15 @@ export default function CreateSongDialog({
     refetch: refetchAlbums,
   } = useGetAlbums();
 
-  const [selectedArtistIds, setSelectedArtistIds] = useState<number[]>([]);
-  const [selectedAlbumIds, setSelectedAlbumIds] = useState<number[]>([]);
-  const [selectedGenreIds, setSelectedGenreIds] = useState<number[]>([]);
-
   const [artistDialogVisible, setArtistDialogVisible] = useState(false);
   const [albumDialogVisible, setAlbumDialogVisible] = useState(false);
   const [genreDialogVisible, setGenreDialogVisible] = useState(false);
 
   const audioUploadRef = useRef<FileUpload>(null);
   const coverUploadRef = useRef<FileUpload>(null);
-  const [audioName, setAudioName] = useState<string>("");
-  const [coverName, setCoverName] = useState<string>("");
+  const [audioName, setAudioName] = useState<string>("Choose");
+  const [coverName, setCoverName] = useState<string>("Choose");
 
-  // hidden inputs sync (for existing submit logic)
-  useEffect(() => {
-    const el = document.getElementById("artistIds") as HTMLInputElement | null;
-    if (el) el.value = selectedArtistIds.join(",");
-  }, [selectedArtistIds]);
-
-  useEffect(() => {
-    const el = document.getElementById("albumIds") as HTMLInputElement | null;
-    if (el) el.value = selectedAlbumIds.join(",");
-  }, [selectedAlbumIds]);
-
-  useEffect(() => {
-    const el = document.getElementById("genreIds") as HTMLInputElement | null;
-    if (el) el.value = selectedGenreIds.join(",");
-  }, [selectedGenreIds]);
-
-  // on created inside child dialogs, refetch lists so new option appears
   const handleArtistCreated = useCallback(() => {
     refetchArtists?.();
     setArtistDialogVisible(false);
@@ -115,17 +104,14 @@ export default function CreateSongDialog({
     setGenreDialogVisible(false);
   }, [refetchGenres]);
 
-  // map fetched data for MultiSelects
   const artistOptions: ArtistOption[] = useMemo(
     () => (artists as ArtistOption[]) ?? [],
     [artists],
   );
-
   const albumOptions: AlbumOption[] = useMemo(
     () => (albums as AlbumOption[]) ?? [],
     [albums],
   );
-
   const genreOptions: GenreOption[] = useMemo(
     () => (genres as GenreOption[]) ?? [],
     [genres],
@@ -133,75 +119,56 @@ export default function CreateSongDialog({
 
   const methods = useForm<SongCreateForm>({
     resolver: zodResolver(songCreateSchema),
-    // fills everything but multiselects if existing song data exists
-    defaultValues: existingSongData?.formData ?? {
-      name: "",
-      link: "",
-      year: undefined,
-      file: undefined,
-      cover: undefined,
-    },
+    defaultValues: EMPTY_FORM,
   });
 
   const {
     handleSubmit,
     reset,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = methods;
+
+  useEffect(() => {
+    const nextDefaults: SongCreateForm = existingSongData
+      ? {
+          name: existingSongData.formData.name ?? "",
+          link: existingSongData.formData.link ?? undefined,
+          year: existingSongData.formData.year ?? undefined,
+          file: undefined,
+          cover: undefined,
+          albumIds: existingSongData.formData.albumIds ?? [],
+          artistIds: existingSongData.formData.artistIds ?? [],
+          genreIds: existingSongData.formData.genreIds ?? [],
+        }
+      : EMPTY_FORM;
+
+    reset(nextDefaults);
+
+    setAudioName(
+      existingSongData?.formData.file ? "Change Existing" : "Choose",
+    );
+    setCoverName(
+      existingSongData?.formData.cover ? "Change Existing" : "Choose",
+    );
+  }, [existingSongData, visible, reset]);
 
   const onSubmit: SubmitHandler<SongCreateForm> = useCallback(
     async (data) => {
-      const albumIdsInput = (
-        document.getElementById("albumIds") as HTMLInputElement | null
-      )?.value;
-      const artistIdsInput = (
-        document.getElementById("artistIds") as HTMLInputElement | null
-      )?.value;
-      const genreIdsInput = (
-        document.getElementById("genreIds") as HTMLInputElement | null
-      )?.value;
-
-      const albumIds = parseIdList(albumIdsInput);
-      const artistIds = parseIdList(artistIdsInput);
-      const genreIds = parseIdList(genreIdsInput);
-
-      if (existingSongData) {
+      if (existingSongData?.songId) {
         await updateSong({
           songId: existingSongData.songId,
           formData: data,
-          albumIds,
-          artistIds,
-          genreIds,
         });
       } else {
-        await createSong({
-          formData: data,
-          albumIds,
-          artistIds,
-          genreIds,
-        });
+        await createSong({ formData: data });
       }
-
-      reset();
+      reset(EMPTY_FORM);
       onCreated();
       setVisible(false);
     },
-    [onCreated, reset, setVisible],
+    [existingSongData, onCreated, reset, setVisible],
   );
-
-  // fills multiselects and song and cover names if they exist
-  useEffect(() => {
-    setSelectedGenreIds(existingSongData?.genreIds ?? []);
-    setSelectedAlbumIds(existingSongData?.albumIds ?? []);
-    setSelectedArtistIds(existingSongData?.artistIds ?? []);
-    setAudioName(
-      existingSongData?.formData.file ? `Change Existing` : "Choose",
-    );
-    setCoverName(
-      existingSongData?.formData.cover ? `Change Existing` : "Choose",
-    );
-  }, [existingSongData]);
 
   return (
     <Dialog
@@ -210,7 +177,7 @@ export default function CreateSongDialog({
         existingSongData ? <div>Edit Song</div> : <div>Add a Song</div>
       }
       onHide={() => {
-        reset();
+        reset(EMPTY_FORM);
         setVisible(false);
       }}
       resizable={false}
@@ -224,7 +191,13 @@ export default function CreateSongDialog({
             <Controller
               name="name"
               control={control}
-              render={({ field }) => <InputText id="name" {...field} />}
+              render={({ field }) => (
+                <InputText
+                  id="name"
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value)}
+                />
+              )}
             />
             {errors.name && (
               <small className="p-error">{errors.name.message}</small>
@@ -249,9 +222,7 @@ export default function CreateSongDialog({
                     maxFileSize={10_000_000}
                     chooseLabel={audioName}
                     chooseOptions={{
-                      icon: existingSongData?.formData.file
-                        ? "pi pi-sync"
-                        : "pi pi-plus",
+                      icon: existingSongData ? "pi pi-sync" : "pi pi-plus",
                     }}
                     onSelect={(event: FileUploadSelectEvent) => {
                       if (event.files && event.files.length) {
@@ -285,9 +256,7 @@ export default function CreateSongDialog({
                     maxFileSize={5_000_000}
                     chooseLabel={coverName}
                     chooseOptions={{
-                      icon: existingSongData?.formData.cover
-                        ? "pi pi-sync"
-                        : "pi pi-plus",
+                      icon: existingSongData ? "pi pi-sync" : "pi pi-plus",
                     }}
                     onSelect={(event: FileUploadSelectEvent) => {
                       if (event.files && event.files.length) {
@@ -312,7 +281,13 @@ export default function CreateSongDialog({
             <Controller
               name="link"
               control={control}
-              render={({ field }) => <InputText id="link" {...field} />}
+              render={({ field }) => (
+                <InputText
+                  id="link"
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value)}
+                />
+              )}
             />
             {errors.link && (
               <small className="p-error">{errors.link.message}</small>
@@ -330,7 +305,10 @@ export default function CreateSongDialog({
                   id="year"
                   type="number"
                   value={field.value !== undefined ? String(field.value) : ""}
-                  onChange={(e) => field.onChange(Number(e.target.value))}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    field.onChange(v === "" ? undefined : Number(v));
+                  }}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}
@@ -345,57 +323,75 @@ export default function CreateSongDialog({
           {/* GENRES MULTISELECT */}
           <div className="field">
             <label htmlFor="genreIdsSelect">Genres (optional)</label>
-            <GenresMultiSelect
-              value={selectedGenreIds}
-              options={genreOptions}
-              loading={genresLoading}
-              onChange={setSelectedGenreIds}
-              onCreateNew={() => setGenreDialogVisible(true)}
-              appendTo={
-                typeof document !== "undefined" ? document.body : undefined
-              }
-              className="w-full"
+            <Controller
+              name="genreIds"
+              control={control}
+              render={({ field }) => (
+                <GenresMultiSelect
+                  value={field.value ?? []}
+                  options={genreOptions}
+                  loading={genresLoading}
+                  onChange={(ids) => field.onChange(ids)}
+                  onCreateNew={() => setGenreDialogVisible(true)}
+                  appendTo={
+                    typeof document !== "undefined" ? document.body : undefined
+                  }
+                  className="w-full"
+                />
+              )}
             />
           </div>
 
           {/* ALBUMS MULTISELECT */}
           <div className="field">
             <label htmlFor="albumIdsSelect">Albums (optional)</label>
-            <AlbumMultiSelect
-              value={selectedAlbumIds}
-              options={albumOptions}
-              loading={albumsLoading}
-              onChange={setSelectedAlbumIds}
-              onCreateNew={() => setAlbumDialogVisible(true)}
-              appendTo={
-                typeof document !== "undefined" ? document.body : undefined
-              }
-              className="w-full"
+            <Controller
+              name="albumIds"
+              control={control}
+              render={({ field }) => (
+                <AlbumMultiSelect
+                  value={field.value ?? []}
+                  options={albumOptions}
+                  loading={albumsLoading}
+                  onChange={(ids) => field.onChange(ids)}
+                  onCreateNew={() => setAlbumDialogVisible(true)}
+                  appendTo={
+                    typeof document !== "undefined" ? document.body : undefined
+                  }
+                  className="w-full"
+                />
+              )}
             />
           </div>
 
           {/* ARTISTS MULTISELECT */}
           <div className="field">
             <label htmlFor="artistIdsSelect">Artists (optional)</label>
-            <ArtistMultiSelect
-              value={selectedArtistIds}
-              options={artistOptions}
-              loading={artistsLoading}
-              onChange={setSelectedArtistIds}
-              onCreateNew={() => setArtistDialogVisible(true)}
-              appendTo={
-                typeof document !== "undefined" ? document.body : undefined
-              }
-              className="w-full"
+            <Controller
+              name="artistIds"
+              control={control}
+              render={({ field }) => (
+                <ArtistMultiSelect
+                  value={field.value ?? []}
+                  options={artistOptions}
+                  loading={artistsLoading}
+                  onChange={(ids) => field.onChange(ids)}
+                  onCreateNew={() => setArtistDialogVisible(true)}
+                  appendTo={
+                    typeof document !== "undefined" ? document.body : undefined
+                  }
+                  className="w-full"
+                />
+              )}
             />
           </div>
 
-          {/* HIDDEN INPUTS kept for existing onSubmit logic (do not remove) */}
-          <input type="hidden" id="albumIds" />
-          <input type="hidden" id="artistIds" />
-          <input type="hidden" id="genreIds" />
-
-          <Button type="submit" label="Submit" className="mt-3" />
+          <Button
+            type="submit"
+            label="Submit"
+            loading={isSubmitting}
+            className="mt-3"
+          />
         </form>
       </FormProvider>
 

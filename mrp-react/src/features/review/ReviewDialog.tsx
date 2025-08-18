@@ -29,6 +29,7 @@ import { updateAlbumReview } from "../albums/hooks/updateAlbumReview.ts";
 import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { deleteAlbumReview, deleteSongReview } from "./utils/helpers.tsx";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   visible: boolean;
@@ -50,6 +51,7 @@ export default function ReviewDialog({
   const [deleting, setDeleting] = useState<boolean>(false);
 
   const { user } = useCurrentUser();
+  const navigate = useNavigate();
 
   const { review, loading, error } = useGetReview(reviewId, reviewType);
   const {
@@ -234,7 +236,16 @@ export default function ReviewDialog({
 
             <div className="rdialog__hero-info">
               <div className="rdialog__meta">
-                <span className="rdialog__meta-item">
+                <span
+                  className="rdialog__meta-item cursor-pointer select-none"
+                  onClick={() => {
+                    if (user?.id === review?.userId) {
+                      navigate(`/profile`);
+                    } else {
+                      navigate(`/user/${review?.userId}`);
+                    }
+                  }}
+                >
                   <i className="pi pi-user" /> {review.username}
                 </span>
                 <span className="rdialog__meta-sep">•</span>

@@ -7,6 +7,8 @@ import { Paginator, PaginatorPageChangeEvent } from "primereact/paginator";
 import { useGetAlbums } from "./hooks/useGetAlbums";
 import CreateAlbumDialog from "./CreateAlbumDialog";
 import AlbumCard from "../../shared/components/AlbumCard.tsx";
+import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
+import { UserRoleEnum } from "@shared/utils";
 
 export default function AlbumsPage() {
   const {
@@ -20,7 +22,8 @@ export default function AlbumsPage() {
     totalPages,
     setPage,
     setSize,
-  } = useGetAlbums({ page: 0, size: 20 /*, sort: "id,asc" */ });
+  } = useGetAlbums({ page: 0, size: 20 });
+  const { user } = useCurrentUser();
 
   const [visibleDialog, setVisibleDialog] = useState<boolean>(false);
 
@@ -55,14 +58,14 @@ export default function AlbumsPage() {
   return (
     <>
       <div className="flex flex-column justify-content-center align-items-center gap-4 w-full">
-        <div className="flex align-items-center gap-3">
+        {user?.role === UserRoleEnum.ADMIN && (
           <Button
             label="Add New Album"
             icon="pi pi-plus"
             className="w-15rem"
             onClick={() => setVisibleDialog(true)}
           />
-        </div>
+        )}
 
         {albums.length > 0 ? (
           <>

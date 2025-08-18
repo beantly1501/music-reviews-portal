@@ -5,7 +5,7 @@ export type SongType = {
   id: number;
   name: string;
   imageUrl?: string;
-  link?: string;
+  link: string;
   fileUrl?: string;
   genres?: GenreType[];
   albums?: AlbumType[];
@@ -19,7 +19,7 @@ export type AlbumType = {
   id: number;
   name: string;
   imageUrl?: string;
-  link?: string;
+  link: string;
   songs?: SongType[];
   genres?: GenreType[];
   artists?: ArtistType[];
@@ -42,23 +42,27 @@ export type GenreType = {
   name: string;
 };
 
+const thisYear = new Date().getFullYear();
+
 export const songCreateSchema = z.object({
   name: z.string().min(1, { message: "Song name is required." }),
   cover: z.instanceof(File).optional(),
-  link: z.string().optional(),
   file: z.instanceof(File).optional(),
-  year: z
-    .number({ error: "Year must be a number." })
-    .int()
-    .max(new Date().getFullYear(), {
-      message: `Year cannot exceed ${new Date().getFullYear()}.`,
-    }),
+
+  link: z.url("Link must be a valid URL.").optional(),
+
+  year: z.number().int().max(thisYear).optional(),
+
+  albumIds: z.array(z.number()).default([]).optional(),
+  genreIds: z.array(z.number()).default([]).optional(),
+  artistIds: z.array(z.number()).default([]).optional(),
 });
+
 export type SongCreateForm = z.infer<typeof songCreateSchema>;
 
 export const albumCreateSchema = z.object({
   name: z.string().min(1, "Album name is required."),
-  link: z.url("Link must be a valid URL.").optional(),
+  link: z.url("Link must be a valid URL."),
   year: z
     .number({ error: "Year must be a number." })
     .int("Year must be an integer.")
@@ -66,6 +70,9 @@ export const albumCreateSchema = z.object({
   cover: z
     .instanceof(File, { message: "Cover must be a valid file." })
     .optional(),
+
+  songIds: z.array(z.number()).default([]).optional(),
+  artistIds: z.array(z.number()).default([]).optional(),
 });
 
 export type AlbumCreateForm = z.infer<typeof albumCreateSchema>;
@@ -78,7 +85,6 @@ export type UserInfoType = {
   role: UserRoleEnum;
 };
 
-// --- auth-related schemas & types ---
 export const loginSchema = z.object({
   username: z.string().nonempty({ message: "Username is required." }),
   password: z.string().nonempty({ message: "Password is required." }),
@@ -131,12 +137,10 @@ export type AlbumReviewFormData = z.infer<typeof albumReviewSchema>;
 export const artistCreateSchema = z.object({
   name: z.string().min(1, { message: "Artist name is required." }),
   description: z.string().min(1, { message: "Description is required." }),
-  image: z
-    .any()
-    .optional()
-    .refine((file) => !file || file instanceof File, {
-      message: "Invalid file type",
-    }),
+  image: z.instanceof(File).optional(),
+
+  songIds: z.array(z.number()).default([]).optional(),
+  albumIds: z.array(z.number()).default([]).optional(),
 });
 export type ArtistCreateForm = z.infer<typeof artistCreateSchema>;
 
@@ -157,10 +161,12 @@ export const playlistCreateSchema = z.object({
   description: z.string().max(2000).optional().nullable(),
   isPrivate: z.boolean(),
   image: z
-    .any()
-    .refine((v) => v == null || v instanceof File, "Invalid file")
+    .instanceof(File, { message: "Image must be a valid file" })
     .optional()
     .nullable(),
+
+  songIds: z.array(z.number()).default([]).optional(),
+  collaboratorIds: z.array(z.number()).default([]).optional(),
 });
 export type PlaylistCreateForm = z.infer<typeof playlistCreateSchema>;
 
@@ -169,30 +175,22 @@ export type UserOption = { id: number; username: string };
 export type SongRequestData = {
   songId?: number;
   formData: SongCreateForm;
-  albumIds: number[];
-  artistIds: number[];
-  genreIds: number[];
 };
 
 export type AlbumRequestData = {
   albumId?: number;
   formData: AlbumCreateForm;
-  songIds: number[];
-  artistIds: number[];
 };
 
 export type ArtistRequestData = {
   artistId?: number;
   formData: ArtistCreateForm;
-  songIds: number[];
-  albumIds: number[];
 };
 
 export type PlaylistRequestData = {
   playlistId?: number;
+  ownerId?: number;
   formData: PlaylistCreateForm;
-  songIds: number[];
-  collaboratorIds: number[];
 };
 
 export type Options = {

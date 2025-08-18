@@ -22,7 +22,6 @@ import { Button } from "primereact/button";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 
 import {
-  parseIdList,
   PlaylistCreateForm,
   playlistCreateSchema,
   PlaylistRequestData,
@@ -38,6 +37,7 @@ import SongMultiSelect, {
 import { useGetUsernames } from "../../shared/hooks/useGetUsers.ts";
 import UserMultiSelect from "../../shared/components/UserMultiSelect.tsx";
 import { createPlaylist, updatePlaylist } from "./utils/helpers.tsx";
+import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
 
 interface Props {
   visible: boolean;
@@ -45,6 +45,15 @@ interface Props {
   onCreated: () => void;
   existingPlaylistData?: PlaylistRequestData;
 }
+
+const EMPTY_FORM: PlaylistCreateForm = {
+  name: "",
+  image: null,
+  description: "",
+  isPrivate: false,
+  songIds: [],
+  collaboratorIds: [],
+};
 
 export default function CreatePlaylistDialog({
   visible,
@@ -54,11 +63,8 @@ export default function CreatePlaylistDialog({
 }: Props) {
   const { songs, loading: songsLoading, refetch: refetchSongs } = useGetSongs();
   const { users, loading: usersLoading } = useGetUsernames();
+  const { user } = useCurrentUser();
 
-  const [selectedSongIds, setSelectedSongIds] = useState<number[]>([]);
-  const [selectedCollaboratorIds, setSelectedCollaboratorIds] = useState<
-    number[]
-  >([]);
   const [songDialogVisible, setSongDialogVisible] = useState(false);
 
   const coverUploadRef = useRef<FileUpload>(null);
@@ -74,19 +80,17 @@ export default function CreatePlaylistDialog({
     [songs],
   );
 
-  const collaboratorOptions: UserOption[] = useMemo(
-    () => (users as UserOption[]) ?? [],
-    [users],
-  );
+  const collaboratorOptions: UserOption[] =
+    (users?.filter((u) =>
+      existingPlaylistData
+        ? u.id !== existingPlaylistData?.ownerId
+        : u.id !== user?.id,
+    ) as UserOption[]) ?? [];
 
   const methods = useForm<PlaylistCreateForm>({
     resolver: zodResolver(playlistCreateSchema),
-    defaultValues: existingPlaylistData?.formData ?? {
-      name: "",
-      image: null,
-      description: "",
-      isPrivate: false,
-    },
+    defaultValues: EMPTY_FORM,
+    shouldUnregister: false,
   });
 
   const {
@@ -97,41 +101,40 @@ export default function CreatePlaylistDialog({
   } = methods;
 
   useEffect(() => {
-    const el = document.getElementById("songIds") as HTMLInputElement | null;
-    if (el) el.value = selectedSongIds.join(",");
-  }, [selectedSongIds]);
+    const nextDefaults: PlaylistCreateForm = existingPlaylistData
+      ? {
+          name: existingPlaylistData.formData.name ?? "",
+          image: null,
+          description: existingPlaylistData.formData.description ?? "",
+          isPrivate: existingPlaylistData.formData.isPrivate,
+          songIds: existingPlaylistData.formData.songIds ?? [],
+          collaboratorIds: existingPlaylistData.formData.collaboratorIds ?? [],
+        }
+      : EMPTY_FORM;
 
-  useEffect(() => {
-    const el = document.getElementById(
-      "collaboratorIds",
-    ) as HTMLInputElement | null;
-    if (el) el.value = selectedCollaboratorIds.join(",");
-  }, [selectedCollaboratorIds]);
+    reset(nextDefaults);
+    setCoverName(
+      existingPlaylistData?.formData.image ? "Change Existing" : "Choose image",
+    );
+  }, [existingPlaylistData, visible, reset]);
 
   const onSubmit: SubmitHandler<PlaylistCreateForm> = useCallback(
     async (data) => {
-      const songIdsInput = (
-        document.getElementById("songIds") as HTMLInputElement | null
-      )?.value;
-      const collaboratorIdsInput = (
-        document.getElementById("collaboratorIds") as HTMLInputElement | null
-      )?.value;
-
-      const songIds = parseIdList(songIdsInput);
-      const collaboratorIds = parseIdList(collaboratorIdsInput);
+      const normalized: PlaylistCreateForm = {
+        ...data,
+        songIds: data.songIds ?? [],
+        collaboratorIds: data.collaboratorIds ?? [],
+      };
 
       if (existingPlaylistData) {
         await updatePlaylist({
           playlistId: existingPlaylistData.playlistId,
-          formData: data,
-          songIds,
-          collaboratorIds,
+          ownerId: existingPlaylistData.ownerId,
+          formData: normalized,
         });
       } else {
         await createPlaylist({
-          formData: data,
-          songIds,
-          collaboratorIds,
+          formData: normalized,
         });
       }
 
@@ -140,14 +143,6 @@ export default function CreatePlaylistDialog({
     },
     [onCreated, setVisible, existingPlaylistData],
   );
-
-  useEffect(() => {
-    setSelectedSongIds(existingPlaylistData?.songIds ?? []);
-    setSelectedCollaboratorIds(existingPlaylistData?.collaboratorIds ?? []);
-    setCoverName(
-      existingPlaylistData?.formData.image ? `Change Existing` : "Choose",
-    );
-  }, [existingPlaylistData]);
 
   return (
     <Dialog
@@ -160,7 +155,7 @@ export default function CreatePlaylistDialog({
         )
       }
       onHide={() => {
-        reset();
+        reset(EMPTY_FORM); // clear on close
         setVisible(false);
       }}
       resizable={false}
@@ -244,7 +239,7 @@ export default function CreatePlaylistDialog({
               render={({ field }) => (
                 <>
                   <InputSwitch
-                    checked={field.value}
+                    checked={!!field.value}
                     onChange={(e) => field.onChange(e.value)}
                   />
                   <label htmlFor="isPrivate" className="m-0">
@@ -255,43 +250,53 @@ export default function CreatePlaylistDialog({
             />
           </div>
 
+          {/* SONGS MULTISELECT */}
           <div className="field">
             <label htmlFor="songIdsSelect">Songs</label>
-            <SongMultiSelect
-              id="songIdsSelect"
-              value={selectedSongIds}
-              options={songOptions}
-              loading={songsLoading}
-              onChange={setSelectedSongIds}
-              onCreateNew={() => setSongDialogVisible(true)}
-              appendTo={
-                typeof document !== "undefined" ? document.body : undefined
-              }
-              className="w-full"
+            <Controller
+              name="songIds"
+              control={control}
+              render={({ field }) => (
+                <SongMultiSelect
+                  id="songIdsSelect"
+                  value={field.value ?? []}
+                  options={songOptions}
+                  loading={songsLoading}
+                  onChange={(ids) => field.onChange(ids)}
+                  onCreateNew={() => setSongDialogVisible(true)}
+                  appendTo={
+                    typeof document !== "undefined" ? document.body : undefined
+                  }
+                  className="w-full"
+                />
+              )}
             />
           </div>
 
+          {/* COLLABORATORS MULTISELECT */}
           <div className="field">
             <label htmlFor="collaboratorIdsSelect">
               Collaborators (Optional)
             </label>
-            <UserMultiSelect
-              id="collaboratorIdsSelect"
-              value={selectedCollaboratorIds}
-              options={collaboratorOptions}
-              loading={usersLoading}
-              onChange={setSelectedCollaboratorIds}
-              appendTo={
-                typeof document !== "undefined" ? document.body : undefined
-              }
-              className="w-full"
-              placeholder="Choose collaborators"
+            <Controller
+              name="collaboratorIds"
+              control={control}
+              render={({ field }) => (
+                <UserMultiSelect
+                  id="collaboratorIdsSelect"
+                  value={field.value ?? []}
+                  options={collaboratorOptions}
+                  loading={usersLoading}
+                  onChange={(ids) => field.onChange(ids)}
+                  appendTo={
+                    typeof document !== "undefined" ? document.body : undefined
+                  }
+                  className="w-full"
+                  placeholder="Choose collaborators"
+                />
+              )}
             />
           </div>
-
-          {/* HIDDEN INPUTS kept for existing onSubmit logic */}
-          <input type="hidden" id="songIds" />
-          <input type="hidden" id="collaboratorIds" />
 
           <div className="flex justify-content-end gap-2 mt-3">
             <Button type="submit" label="Create" loading={isSubmitting} />

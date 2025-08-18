@@ -32,18 +32,15 @@ export async function deletePlaylist(id: number): Promise<void> {
 
 export async function createPlaylist({
   formData,
-  songIds,
-  collaboratorIds,
 }: PlaylistRequestData): Promise<void> {
   const fd = new FormData();
-  fd.append("name", formData.name);
-  if (formData.description != null)
-    fd.append("description", formData.description);
-  fd.append("isPrivate", String(!!formData.isPrivate));
-  if (formData.image) fd.append("image", formData.image);
-  if (songIds?.length) fd.append("songIds", JSON.stringify(songIds));
-  if (collaboratorIds?.length)
-    fd.append("collaboratorIds", JSON.stringify(collaboratorIds));
+  fd.set("name", formData.name);
+  if (formData.description != null) fd.set("description", formData.description);
+  fd.set("isPrivate", String(!!formData.isPrivate));
+  if (formData.image) fd.set("image", formData.image as File);
+
+  fd.set("songIds", JSON.stringify(formData.songIds ?? []));
+  fd.set("collaboratorIds", JSON.stringify(formData.collaboratorIds ?? []));
 
   const token = getToken();
   const headers: Record<string, string> = {};
@@ -66,22 +63,17 @@ export async function createPlaylist({
 export async function updatePlaylist({
   playlistId,
   formData,
-  songIds,
-  collaboratorIds,
 }: PlaylistRequestData): Promise<void> {
   const fd = new FormData();
-  if (formData.name) fd.append("name", formData.name);
-  if (formData.description != null)
-    fd.append("description", formData.description);
-
+  if (formData.name) fd.set("name", formData.name);
+  if (formData.description != null) fd.set("description", formData.description);
   if (typeof formData.isPrivate === "boolean") {
-    fd.append("isPrivate", String(!!formData.isPrivate));
+    fd.set("isPrivate", String(!!formData.isPrivate));
   }
-  if (formData.image) fd.append("image", formData.image);
+  if (formData.image) fd.set("image", formData.image as File);
 
-  if (songIds?.length) fd.append("songIds", JSON.stringify(songIds));
-  if (collaboratorIds?.length)
-    fd.append("collaboratorIds", JSON.stringify(collaboratorIds));
+  fd.set("songIds", JSON.stringify(formData.songIds ?? []));
+  fd.set("collaboratorIds", JSON.stringify(formData.collaboratorIds ?? []));
 
   const token = getToken();
   const headers: Record<string, string> = {};
