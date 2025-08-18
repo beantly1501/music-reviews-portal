@@ -74,7 +74,6 @@ export function useGetAlbumReviews(albumId?: number) {
     [albumId, page, rows, buildParams, token],
   );
 
-  // PrimeReact DataTable events
   const onPage = useCallback(
     (e: { first: number; rows: number; page?: number }) => {
       const nextPage =

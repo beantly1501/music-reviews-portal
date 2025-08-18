@@ -25,7 +25,6 @@ export function useGetMyReviews(count?: number): UseGetMyReviewsResult {
     }
 
     try {
-      // Build URL with optional count param
       const url = new URL("/api/reviews/mine", window.location.origin);
       if (count !== undefined) {
         url.searchParams.append("count", String(count));

@@ -6,7 +6,6 @@ export function useGetSongs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // fetch function
   const fetchSongs = useCallback(async () => {
     setLoading(true);
     try {

@@ -9,7 +9,6 @@ export default function Layout() {
   const location = useLocation();
   const isMobile = useMatchMedia("(max-width: 760px)");
 
-  // order must match
   const TAB_PATHS = useMemo(
     () => [
       "/",
@@ -25,7 +24,6 @@ export default function Layout() {
 
   const model = isMobile ? MOBILE_TABS_MENU : TABS_MENU;
 
-  // derive active tab from URL on every render/refresh
   const activeIndex = useMemo(() => {
     const i = TAB_PATHS.findIndex((playlist) => playlist === location.pathname);
     return i >= 0 ? i : 0;

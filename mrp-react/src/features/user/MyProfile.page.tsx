@@ -21,7 +21,6 @@ export default function MyProfilePage() {
   const logout = useLogout();
   const navigate = useNavigate();
 
-  // current user
   const {
     user,
     loading: userLoading,
@@ -29,7 +28,6 @@ export default function MyProfilePage() {
     refresh: refreshUser,
   } = useCurrentUser();
 
-  // reviews
   const {
     reviews,
     loading: reviewsLoading,
@@ -37,7 +35,6 @@ export default function MyProfilePage() {
     refresh: refreshRatings,
   } = useGetMyReviews();
 
-  // playlists (server-side pageable)
   const {
     data: playlists,
     loading: playlistsLoading,
@@ -80,7 +77,6 @@ export default function MyProfilePage() {
   };
 
   const onPlaylistsPage = (e: DataTablePageEvent) => {
-    // e.page is 0-based
     if (typeof e.page === "number") setPage(e.page);
     if (typeof e.rows === "number") setSize(e.rows);
   };

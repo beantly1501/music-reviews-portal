@@ -14,7 +14,6 @@ export function useGetMyPlaylists(options: Options = {}) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // local pagination state so callers can update page/size
   const [page, setPage] = useState<number>(initialPage);
   const [size, setSize] = useState<number>(initialSize);
 
@@ -52,7 +51,6 @@ export function useGetMyPlaylists(options: Options = {}) {
 
       const json = await res.json();
 
-      // Prefer Page<T>; support plain array as a fallback
       if (Array.isArray(json)) {
         const arr = json as PlaylistType[];
         setData(arr);
@@ -92,7 +90,6 @@ export function useGetMyPlaylists(options: Options = {}) {
     data,
     loading,
     error,
-    // pagination info
     page,
     size,
     totalElements,
@@ -101,7 +98,6 @@ export function useGetMyPlaylists(options: Options = {}) {
     isLast,
     hasPreviousPage: !isFirst && totalPages > 0,
     hasNextPage: !isLast && totalPages > 0,
-    // controls
     setPage,
     setSize,
     refetch: fetchData,

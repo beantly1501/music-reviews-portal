@@ -1,4 +1,3 @@
-// src/features/artists/components/ArtistMultiSelect.tsx
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
 import { Button } from "primereact/button";
 

@@ -19,7 +19,6 @@ export function useGetSongReviews(songId?: number) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // single & multiple sort state (PrimeReact supports both)
   const [sortField, setSortField] = useState<string>("creationDate");
   const [sortOrder, setSortOrder] = useState<1 | -1>(-1);
   const [multiSortMeta, setMultiSortMeta] = useState<SortMeta[]>([]);
@@ -90,7 +89,6 @@ export function useGetSongReviews(songId?: number) {
     [songId, page, rows, multiSortMeta, buildParams],
   );
 
-  // PrimeReact DataTable events
   const onPage = useCallback(
     (e: { first: number; rows: number; page?: number }) => {
       const nextPage =

@@ -1,4 +1,3 @@
-// auth.tsx
 import {
   createContext,
   useContext,
@@ -49,7 +48,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(t);
   }, []);
 
-  // optional: validate with server once on mount
   useEffect(() => {
     (async () => {
       if (!token) {
@@ -69,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           logout();
         }
       } catch {
-        // network error, optionally keep token or logout
+        //
       } finally {
         setChecking(false);
       }

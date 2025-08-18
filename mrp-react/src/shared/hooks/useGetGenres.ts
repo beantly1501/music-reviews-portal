@@ -1,4 +1,3 @@
-// hooks/useGetGenres.ts
 import { useEffect, useState, useCallback } from "react";
 import { extractErrorMessage, GenreType, getToken } from "@shared/utils";
 

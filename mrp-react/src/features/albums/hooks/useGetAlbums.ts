@@ -14,7 +14,6 @@ export function useGetAlbums(options: Options = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // local pagination state
   const [page, setPage] = useState<number>(initialPage);
   const [size, setSize] = useState<number>(initialSize);
 
@@ -83,7 +82,6 @@ export function useGetAlbums(options: Options = {}) {
     albums,
     loading,
     error,
-    // pagination
     page,
     size,
     totalElements,
@@ -92,7 +90,6 @@ export function useGetAlbums(options: Options = {}) {
     isLast,
     hasPreviousPage: !isFirst && totalPages > 0,
     hasNextPage: !isLast && totalPages > 0,
-    // controls
     setPage,
     setSize,
     refetch: fetchAlbums,

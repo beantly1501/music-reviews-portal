@@ -1,4 +1,3 @@
-// src/shared/components/CreateGenreDialog.tsx
 import { Dispatch, useCallback } from "react";
 import { Dialog } from "primereact/dialog";
 import {

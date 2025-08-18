@@ -356,12 +356,10 @@ export default function SongDetailsPage() {
             songId,
             formData: {
               name: song.name,
-              // narrow to File | undefined (avoid null)
               cover: imageExists && imageAsJsFile ? imageAsJsFile : undefined,
               file: audioExists && audioAsJsFile ? audioAsJsFile : undefined,
               year: song.year ?? undefined,
               link: song.link ?? undefined,
-              // move arrays INSIDE formData
               albumIds: song.albums?.map((a) => a.id) ?? [],
               artistIds: song.artists?.map((a) => a.id) ?? [],
               genreIds: song.genres?.map((g) => g.id) ?? [],

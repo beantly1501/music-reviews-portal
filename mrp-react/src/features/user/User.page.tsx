@@ -20,10 +20,8 @@ export default function UserPage() {
   const userId = userIdParam ? Number(userIdParam) : NaN;
   const navigate = useNavigate();
 
-  // viewed user info
   const { user: viewedUser, loading: userLoading } = useGetUserById(userId);
 
-  // reviews for this user (not paginated—mirrors your MyProfilePage)
   const {
     reviews,
     loading: reviewsLoading,
@@ -56,7 +54,6 @@ export default function UserPage() {
     () =>
       (reviews ?? []).map((r) => ({
         ...r,
-        // keep shape compatible if you later add a "name" column
         name: r.type === "SONG" ? (r.songName ?? "") : (r.albumName ?? ""),
       })),
     [reviews],

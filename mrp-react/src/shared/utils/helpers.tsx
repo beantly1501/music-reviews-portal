@@ -25,13 +25,10 @@ export async function checkServerTokenValidity(
 export async function ensureValidTokenOrRefresh() {
   const token = getToken();
   if (!token || isTokenExpired(token)) {
-    // attempt refresh or redirect to login-register
-    // e.g., call /api/auth/refresh and replace token
     return false;
   }
   const stillValid = await checkServerTokenValidity(token);
   if (!stillValid) {
-    // token was revoked/invalid on server
     return false;
   }
   return true;
@@ -48,7 +45,6 @@ export function useLogout() {
 export function extractErrorMessage(e: unknown): string {
   if (e instanceof Error) return e.message;
   try {
-    // try stringify in case it's some object
     return JSON.stringify(e);
   } catch {
     return String(e);
