@@ -13,14 +13,21 @@ public class CorsConfig {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        config.setAllowedHeaders(List.of("*")); // allows Authorization
-        config.setExposedHeaders(List.of("Authorization"));
+        CorsConfiguration cfg = new CorsConfiguration();
+
+        cfg.setAllowedOrigins(List.of(
+                "https://music-reviews-portal-react.onrender.com",
+                "http://localhost:5173"
+        ));
+
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setExposedHeaders(List.of("Authorization"));
+        cfg.setAllowCredentials(true);
+        cfg.setMaxAge(3600L);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/api/**", cfg);
         return source;
     }
-
 }
