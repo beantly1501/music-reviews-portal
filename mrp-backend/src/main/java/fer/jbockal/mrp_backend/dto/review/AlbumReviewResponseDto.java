@@ -1,0 +1,16 @@
+package fer.jbockal.mrp_backend.dto.review;
+
+import java.time.LocalDate;
+
+public record AlbumReviewResponseDto(
+        Long id,
+        Long albumId,
+        String albumName,
+        Long userId,
+        String username,
+        Integer grade,
+        String description,
+        LocalDate creationDate,
+        String image
+) implements ReviewResponseDto {
+}

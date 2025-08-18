@@ -1,4 +1,3 @@
-// RegisterPage.tsx
 import { useState } from "react";
 import {
   Controller,
@@ -8,10 +7,17 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InputText } from "primereact/inputtext";
+import { RadioButton } from "primereact/radiobutton";
 import { Button } from "primereact/button";
 import { jwtDecode } from "jwt-decode";
-import { RegisterForm, registerSchema } from "@shared/utils";
-import { Link, useNavigate } from "react-router";
+import {
+  extractErrorMessage,
+  RegisterForm,
+  registerSchema,
+} from "@shared/utils";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../shared/components/Auth.tsx";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type JwtPayload = { exp?: number; sub?: string };
 
@@ -27,6 +33,7 @@ function isTokenExpired(token: string): boolean {
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
   const methods = useForm<RegisterForm>({
@@ -35,6 +42,7 @@ export function RegisterPage() {
       username: "",
       password: "",
       email: "",
+      role: "USER",
     },
   });
 
@@ -47,14 +55,10 @@ export function RegisterPage() {
   const onSubmit: SubmitHandler<RegisterForm> = async (data) => {
     setError(null);
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch(`${VITE_BACKEND_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: data.username,
-          password: data.password,
-          email: data.email,
-        }),
+        body: JSON.stringify(data),
       });
       if (!res.ok) {
         const txt = await res.text();
@@ -64,16 +68,10 @@ export function RegisterPage() {
       const token: string = body.token;
       if (!token || isTokenExpired(token)) throw new Error("Invalid token");
 
-      localStorage.setItem("jwt", token);
-      navigate("/", { replace: true });
+      login(token);
+      navigate("/");
     } catch (e: unknown) {
-      const msg =
-        e instanceof Error
-          ? e.message
-          : typeof e === "string"
-            ? e
-            : "Login failed";
-      setError(msg || "Registration failed");
+      setError(extractErrorMessage(e));
     }
   };
 
@@ -119,6 +117,41 @@ export function RegisterPage() {
             />
             {errors.email && (
               <small className="p-error">{errors.email.message}</small>
+            )}
+          </div>
+
+          <div className="field">
+            <label className="block mb-2">Role</label>
+            <div className="flex items-center gap-6">
+              <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <label className="flex items-center gap-2">
+                      <RadioButton
+                        inputId="role-user"
+                        value="USER"
+                        onChange={(e) => field.onChange(e.value)}
+                        checked={field.value === "USER"}
+                      />
+                      <span>USER</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <RadioButton
+                        inputId="role-admin"
+                        value="ADMIN"
+                        onChange={(e) => field.onChange(e.value)}
+                        checked={field.value === "ADMIN"}
+                      />
+                      <span>ADMIN</span>
+                    </label>
+                  </>
+                )}
+              />
+            </div>
+            {errors.role && (
+              <small className="p-error">{errors.role.message}</small>
             )}
           </div>
 

@@ -1,30 +1,6 @@
 import { jwtDecode, JwtPayload } from "jwt-decode";
-import { useNavigate } from "react-router";
-import { UserInfo } from "./types.tsx";
-import { useCallback, useEffect, useState } from "react";
-
-export function formatDate(input: string): string {
-  const [d, M, y] = input.split("-").map(Number);
-  const utcDate = new Date(Date.UTC(y, M - 1, d));
-  return utcDate.toLocaleDateString("hr-HR", {
-    day: "numeric",
-    month: "narrow",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-}
-
-export const fileToBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      // reader.result is like "data:<mime>;base64,AAAABBBB..."
-      const base64 = (reader.result as string).split(",", 2)[1];
-      resolve(base64);
-    };
-    reader.onerror = (err) => reject(err);
-  });
+import { useNavigate } from "react-router-dom";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function isTokenExpired(token: string): boolean {
   try {
@@ -39,7 +15,7 @@ export function isTokenExpired(token: string): boolean {
 export async function checkServerTokenValidity(
   token: string,
 ): Promise<boolean> {
-  const res = await fetch("/api/auth/validate", {
+  const res = await fetch(`${VITE_BACKEND_URL}/auth/validate`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -48,15 +24,12 @@ export async function checkServerTokenValidity(
 }
 
 export async function ensureValidTokenOrRefresh() {
-  const token = localStorage.getItem("jwt");
+  const token = getToken();
   if (!token || isTokenExpired(token)) {
-    // attempt refresh or redirect to login-register
-    // e.g., call /api/auth/refresh and replace token
     return false;
   }
   const stillValid = await checkServerTokenValidity(token);
   if (!stillValid) {
-    // token was revoked/invalid on server
     return false;
   }
   return true;
@@ -70,74 +43,30 @@ export function useLogout() {
   };
 }
 
-export function useCurrentUser() {
-  const [state, setState] = useState<{
-    user: UserInfo | null;
-    loading: boolean;
-    error: string | null;
-  }>({
-    user: null,
-    loading: true,
-    error: null,
-  });
+export function extractErrorMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
+}
 
-  const fetchUser = useCallback(async () => {
-    setState({ user: null, loading: true, error: null });
+export const getToken = () => localStorage.getItem("jwt");
 
-    const token = localStorage.getItem("jwt");
-    if (!token) {
-      setState({ user: null, loading: false, error: "No auth token" });
-      return;
-    }
+export function parseIdList(input: string | undefined): number[] {
+  if (!input) return [];
+  return input
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s !== "")
+    .map(Number)
+    .filter((n) => !isNaN(n) && n > 0);
+}
 
-    try {
-      const res = await fetch("/api/user/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+export const truncate = (name: string, max = 15) =>
+  name.length > max ? name.slice(0, max) + "..." : name;
 
-      if (!res.ok) {
-        if (res.status === 401) {
-          setState({ user: null, loading: false, error: "Unauthorized" });
-        } else if (res.status === 404) {
-          setState({ user: null, loading: false, error: "User not found" });
-        } else {
-          const text = await res.text();
-          setState({
-            user: null,
-            loading: false,
-            error: text || `Request failed: ${res.status}`,
-          });
-        }
-        return;
-      }
-
-      const user: UserInfo = await res.json();
-      setState({ user, loading: false, error: null });
-    } catch (e: unknown) {
-      const msg =
-        e instanceof Error
-          ? e.message
-          : typeof e === "string"
-            ? e
-            : "Failed to fetch user";
-      setState({
-        user: null,
-        loading: false,
-        error: msg || "Failed to fetch user",
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
-
-  return {
-    user: state.user,
-    loading: state.loading,
-    error: state.error,
-    refresh: fetchUser,
-  };
+export function toCommaSeparated<T>(arr: T[]): string {
+  return arr.map(String).join(", ");
 }

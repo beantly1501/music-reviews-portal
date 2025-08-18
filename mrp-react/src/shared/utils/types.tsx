@@ -1,56 +1,212 @@
-import { SongOrAlbumEnum } from "./enums.tsx";
 import { z } from "zod";
-
-export type ReviewCardType = {
-  id: number;
-  name: string;
-  image: string; // base64 string
-  date: string;
-  description: string;
-  songOrAlbum: SongOrAlbumEnum;
-  rating: number;
-  username: string;
-};
+import { UserRoleEnum } from "./enums.tsx";
 
 export type SongType = {
   id: number;
   name: string;
-  cover?: string;
-  link?: string;
-  file?: string;
+  imageUrl?: string;
+  link: string;
+  fileUrl?: string;
+  genres?: GenreType[];
+  albums?: AlbumType[];
+  artists?: ArtistType[];
   year: number;
+  grade?: number;
+  averageRating?: number;
 };
+
+export type AlbumType = {
+  id: number;
+  name: string;
+  imageUrl?: string;
+  link: string;
+  songs?: SongType[];
+  genres?: GenreType[];
+  artists?: ArtistType[];
+  year: number;
+  grade?: number;
+  averageRating?: number;
+};
+
+export type ArtistType = {
+  id: number;
+  name: string;
+  imageUrl?: string;
+  description: string;
+  albums?: AlbumType[];
+  songs?: SongType[];
+};
+
+export type GenreType = {
+  id: number;
+  name: string;
+};
+
+const thisYear = new Date().getFullYear();
 
 export const songCreateSchema = z.object({
-  name: z.string().nonempty({ message: "Song name is required" }), // ← makes it required
+  name: z.string().min(1, { message: "Song name is required." }),
   cover: z.instanceof(File).optional(),
-  link: z.string().optional(),
   file: z.instanceof(File).optional(),
-  year: z
-    .number({ error: "Year must be a number" })
-    .int()
-    .min(0, { message: "Year is too small" })
-    .max(new Date().getFullYear(), {
-      message: `Year cannot exceed ${new Date().getFullYear()}`,
-    }),
+
+  link: z.url("Link must be a valid URL.").optional(),
+
+  year: z.number().int().max(thisYear).optional(),
+
+  albumIds: z.array(z.number()).default([]).optional(),
+  genreIds: z.array(z.number()).default([]).optional(),
+  artistIds: z.array(z.number()).default([]).optional(),
 });
+
 export type SongCreateForm = z.infer<typeof songCreateSchema>;
 
-export type UserInfo = {
+export const albumCreateSchema = z.object({
+  name: z.string().min(1, "Album name is required."),
+  link: z.url("Link must be a valid URL."),
+  year: z
+    .number({ error: "Year must be a number." })
+    .int("Year must be an integer.")
+    .positive("Year must be positive."),
+  cover: z
+    .instanceof(File, { message: "Cover must be a valid file." })
+    .optional(),
+
+  songIds: z.array(z.number()).default([]).optional(),
+  artistIds: z.array(z.number()).default([]).optional(),
+});
+
+export type AlbumCreateForm = z.infer<typeof albumCreateSchema>;
+
+export type UserInfoType = {
+  id: number;
   username: string;
+  password: string;
   email: string;
+  role: UserRoleEnum;
 };
 
-// --- auth-related schemas & types ---
 export const loginSchema = z.object({
-  username: z.string().nonempty({ message: "Username is required" }),
-  password: z.string().nonempty({ message: "Password is required" }),
+  username: z.string().nonempty({ message: "Username is required." }),
+  password: z.string().nonempty({ message: "Password is required." }),
 });
 export type LoginForm = z.infer<typeof loginSchema>;
 
 export const registerSchema = z.object({
-  username: z.string().nonempty({ message: "Username is required" }),
-  password: z.string().nonempty({ message: "Password is required" }),
-  email: z.email({ message: "Valid email is required" }),
+  username: z.string().nonempty({ message: "Username is required." }),
+  password: z.string().nonempty({ message: "Password is required." }),
+  email: z.email({ message: "Valid email is required." }),
+  role: z.enum(["USER", "ADMIN"], { error: "Role is required" }),
 });
 export type RegisterForm = z.infer<typeof registerSchema>;
+
+export type ReviewResponse = {
+  type: "SONG" | "ALBUM";
+  id: number;
+  songId?: number;
+  songName?: string;
+  albumName?: string;
+  albumId?: number;
+  userId: number;
+  username: string;
+  grade: number;
+  description: string;
+  creationDate: string;
+  image: string;
+};
+
+export const songReviewSchema = z.object({
+  songId: z.number(),
+  grade: z
+    .number()
+    .min(1, "Grade is required.")
+    .max(5, "Grade must be between 1 and 5."),
+  description: z.string().min(1, "Description is required."),
+});
+export type SongReviewFormData = z.infer<typeof songReviewSchema>;
+
+export const albumReviewSchema = z.object({
+  albumId: z.number(),
+  grade: z
+    .number()
+    .min(1, "Grade is required.")
+    .max(5, "Grade must be between 1 and 5."),
+  description: z.string().min(1, "Description is required."),
+});
+export type AlbumReviewFormData = z.infer<typeof albumReviewSchema>;
+
+export const artistCreateSchema = z.object({
+  name: z.string().min(1, { message: "Artist name is required." }),
+  description: z.string().min(1, { message: "Description is required." }),
+  image: z.instanceof(File).optional(),
+
+  songIds: z.array(z.number()).default([]).optional(),
+  albumIds: z.array(z.number()).default([]).optional(),
+});
+export type ArtistCreateForm = z.infer<typeof artistCreateSchema>;
+
+export type PlaylistType = {
+  id: number;
+  name: string;
+  image: string | null;
+  description: string | null;
+  isPrivate: boolean;
+  ownerId: number;
+  ownerUsername: string;
+  songs: SongType[];
+  collaborators: UserOption[];
+};
+
+export const playlistCreateSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().max(2000).optional().nullable(),
+  isPrivate: z.boolean(),
+  image: z
+    .instanceof(File, { message: "Image must be a valid file" })
+    .optional()
+    .nullable(),
+
+  songIds: z.array(z.number()).default([]).optional(),
+  collaboratorIds: z.array(z.number()).default([]).optional(),
+});
+export type PlaylistCreateForm = z.infer<typeof playlistCreateSchema>;
+
+export type UserOption = { id: number; username: string };
+
+export type SongRequestData = {
+  songId?: number;
+  formData: SongCreateForm;
+};
+
+export type AlbumRequestData = {
+  albumId?: number;
+  formData: AlbumCreateForm;
+};
+
+export type ArtistRequestData = {
+  artistId?: number;
+  formData: ArtistCreateForm;
+};
+
+export type PlaylistRequestData = {
+  playlistId?: number;
+  ownerId?: number;
+  formData: PlaylistCreateForm;
+};
+
+export type Options = {
+  page?: number;
+  size?: number;
+  sort?: string | string[];
+};
+
+export type PageResponse<T> = {
+  content: T[];
+  number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first?: boolean;
+  last?: boolean;
+  numberOfElements?: number;
+  empty?: boolean;
+};

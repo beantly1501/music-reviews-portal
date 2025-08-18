@@ -1,4 +1,3 @@
-// auth.tsx
 import {
   createContext,
   useContext,
@@ -8,6 +7,7 @@ import {
   useCallback,
 } from "react";
 import { jwtDecode } from "jwt-decode";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type JwtPayload = { exp?: number; sub?: string };
 
@@ -49,7 +49,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(t);
   }, []);
 
-  // optional: validate with server once on mount
   useEffect(() => {
     (async () => {
       if (!token) {
@@ -62,14 +61,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       try {
-        const res = await fetch("/api/auth/validate", {
+        const res = await fetch(`${VITE_BACKEND_URL}/auth/validate`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {
           logout();
         }
       } catch {
-        // network error, optionally keep token or logout
+        //
       } finally {
         setChecking(false);
       }
@@ -89,7 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const v = useContext(AuthContext);
-  console.log(v);
   if (!v) throw new Error("useAuth must be inside AuthProvider");
   return v;
 }

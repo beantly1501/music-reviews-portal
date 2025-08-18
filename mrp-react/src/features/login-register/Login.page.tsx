@@ -1,4 +1,3 @@
-// LoginPage.tsx
 import { useState } from "react";
 import {
   Controller,
@@ -10,8 +9,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { jwtDecode } from "jwt-decode";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { LoginForm, loginSchema } from "@shared/utils";
+import { useAuth } from "../../shared/components/Auth.tsx";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type JwtPayload = { exp?: number; sub?: string };
 
@@ -19,7 +20,7 @@ function isTokenExpired(token: string): boolean {
   try {
     const { exp } = jwtDecode<JwtPayload>(token);
     if (!exp) return true;
-    return Date.now() >= exp * 1000 - 30_000; // 30s leeway
+    return Date.now() >= exp * 1000 - 30_000;
   } catch {
     return true;
   }
@@ -27,6 +28,7 @@ function isTokenExpired(token: string): boolean {
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
   const methods = useForm<LoginForm>({
@@ -46,13 +48,10 @@ export function LoginPage() {
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     setError(null);
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch(`${VITE_BACKEND_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: data.username,
-          password: data.password,
-        }),
+        body: JSON.stringify(data),
       });
       if (!res.ok) {
         const txt = await res.text();
@@ -63,7 +62,7 @@ export function LoginPage() {
       if (!token || isTokenExpired(token))
         throw new Error("Invalid or expired token");
 
-      localStorage.setItem("jwt", token);
+      login(token);
       navigate("/", { replace: true });
     } catch {
       setError("Login failed");

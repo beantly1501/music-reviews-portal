@@ -1,8 +1,9 @@
 package fer.jbockal.mrp_backend.controller;
 
 import fer.jbockal.mrp_backend.dto.*;
+import fer.jbockal.mrp_backend.dto.auth.AuthRequest;
+import fer.jbockal.mrp_backend.dto.auth.AuthResponse;
 import fer.jbockal.mrp_backend.model.AppUser;
-import fer.jbockal.mrp_backend.model.Role;
 import fer.jbockal.mrp_backend.repository.AppUserRepository;
 import fer.jbockal.mrp_backend.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -33,11 +34,10 @@ public class AuthController {
                 dto.username(),
                 pwEncoder.encode(dto.password()),
                 dto.email(),
-                Role.USER
+                dto.role()
         );
         users.save(u);
 
-        // build UserDetails so we can generate token immediately
         UserDetails ud = org.springframework.security.core.userdetails.User
                 .builder()
                 .username(u.getUsername())

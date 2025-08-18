@@ -1,15 +1,21 @@
-import { Route, Routes } from "react-router";
+import { Route, Routes } from "react-router-dom";
 import Layout from "./pages/Layout.tsx";
-import ReviewsPage from "./pages/Reviews.page.tsx";
 import SongsPage from "./features/songs/Songs.page.tsx";
-import NewestReviewsPage from "./features/newest-reviews/NewestReviews.page";
+import NewestReviewsPage from "./features/newest-reviews/NewestReviews.page.tsx";
 import AlbumsPage from "./features/albums/Albums.page.tsx";
-import ProfilePage from "./features/profile/Profile.page.tsx";
 import { LoginPage } from "./features/login-register/Login.page.tsx";
-import UserReviewPage from "./pages/UserReview.page.tsx";
 import ErrorPage from "./pages/Error.page.tsx";
 import { ProtectedRoute } from "./shared/components/ProtectedRoute.tsx";
 import { RegisterPage } from "./features/login-register/Register.page.tsx";
+import AllReviewsPage from "./features/all-reviews/AllReviews.page.tsx";
+import ArtistsPage from "./features/artists/Artists.page.tsx";
+import PlaylistPage from "./features/playlists/Playlists.page.tsx";
+import SongDetailsPage from "./features/songs/SongDetails.page.tsx";
+import AlbumDetailsPage from "./features/albums/AlbumDetails.page.tsx";
+import ArtistDetailsPage from "./features/artists/ArtistDetails.page.tsx";
+import PlaylistDetailsPage from "./features/playlists/PlaylistDetails.page.tsx";
+import MyProfilePage from "./features/user/MyProfile.page.tsx";
+import UserPage from "./features/user/User.page.tsx";
 
 export default function App() {
   return (
@@ -27,7 +33,7 @@ export default function App() {
           path="all-reviews"
           element={
             <ProtectedRoute>
-              <ReviewsPage />
+              <AllReviewsPage />
             </ProtectedRoute>
           }
         />
@@ -51,7 +57,15 @@ export default function App() {
           path="artists"
           element={
             <ProtectedRoute>
-              <AlbumsPage />
+              <ArtistsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="playlists"
+          element={
+            <ProtectedRoute>
+              <PlaylistPage />
             </ProtectedRoute>
           }
         />
@@ -59,16 +73,27 @@ export default function App() {
           path="profile"
           element={
             <ProtectedRoute>
-              <ProfilePage />
+              <MyProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="user/:id"
+          element={
+            <ProtectedRoute>
+              <UserPage />
             </ProtectedRoute>
           }
         />
       </Route>
 
+      <Route path="/song/:id" element={<SongDetailsPage />} />
+      <Route path="/album/:id" element={<AlbumDetailsPage />} />
+      <Route path="/artist/:id" element={<ArtistDetailsPage />} />
+      <Route path="/playlist/:id" element={<PlaylistDetailsPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      <Route path="/user-review/:id" element={<UserReviewPage />} />
       <Route path="*" element={<ErrorPage />} />
     </Routes>
   );

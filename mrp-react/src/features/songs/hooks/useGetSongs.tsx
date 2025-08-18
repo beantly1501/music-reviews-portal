@@ -1,32 +1,38 @@
-import { SongType } from "@shared/utils";
-import { useEffect, useState } from "react";
+import { extractErrorMessage, getToken, SongType } from "@shared/utils";
+import { useEffect, useState, useCallback } from "react";
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function useGetSongs() {
   const [songs, setSongs] = useState<SongType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // 1) a plain async fetch function you’ll call on mount or on demand
-  async function fetchSongs() {
+  const fetchSongs = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`api/song/all`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const token = getToken();
+      const res = await fetch(`${VITE_BACKEND_URL}/song/all`, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `HTTP ${res.status}`);
+      }
       const data: SongType[] = await res.json();
       setSongs(data);
       setError(null);
-    } catch (err) {
-      setError(err as Error);
+    } catch (e: unknown) {
+      setError(extractErrorMessage(e));
     } finally {
       setLoading(false);
     }
-  }
-
-  // 2) run it once on mount
-  useEffect(() => {
-    fetchSongs();
   }, []);
 
-  // 3) expose it so your dialog can call it after a successful create
+  useEffect(() => {
+    void fetchSongs();
+  }, [fetchSongs]);
+
   return { songs, loading, error, refetch: fetchSongs };
 }
