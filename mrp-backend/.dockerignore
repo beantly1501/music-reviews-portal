@@ -1,0 +1,10 @@
+.git
+.gitignore
+target
+build
+.gradle
+node_modules
+Dockerfile*
+README*
+*.iml
+*.log
