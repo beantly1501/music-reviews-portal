@@ -1,38 +1,45 @@
 <script setup>
-import { ref } from "vue";
 import TabMenu from "primevue/tabmenu";
+import { MOBILE_TABS_MENU, TABS_MENU } from "@/shared/constants.ts";
+import { useMediaQuery } from "@vueuse/core";
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+import router from "@/router/index.ts";
 
-const isMobile = ref(false);
-const activeIndex = ref(0);
-const model = ref([
+const route = useRoute();
+const isMobile = useMediaQuery("(max-width: 850px)");
+
+const model = computed(() => (isMobile.value ? MOBILE_TABS_MENU : TABS_MENU));
+
+const TAB_PATHS = [
   "/",
   "/all-reviews",
   "/songs",
   "/albums",
   "/artists",
   "/playlists",
-  `/profile`,
-]);
+  "/profile",
+];
 
-const changeTab = (event) => {
-  activeIndex.value = event.index;
+const activeIndex = computed(() => {
+  const i = TAB_PATHS.findIndex((path) => path === route.path);
+  return i >= 0 ? i : 0;
+});
+
+const changeTab = (e) => {
+  const path = TAB_PATHS[e.index];
+  if (path) router.push(path);
 };
 </script>
 
 <template>
-  <div class="flex flex-column">
+  <div class="mt-3">
     <TabMenu
-      :pt="{
-        menu: { style: { justifyContent: isMobile ? 'space-between' : '' } },
-        icon: { style: { fontSize: isMobile ? '1.5rem' : '' } },
-      }"
       :model="model"
-      class="mx-auto text-center w-full md:w-auto"
       :active-index="activeIndex"
-      @tab-change="changeTab"
+      @tabChange="changeTab"
+      class="bg-transparent"
     />
-    <div class="m-5">
-      <router-view />
-    </div>
+    <router-view />
   </div>
 </template>

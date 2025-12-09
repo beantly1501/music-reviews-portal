@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@primevue/themes": "^4.5.2",
     "@vee-validate/zod": "^4.15.1",
+    "@vueuse/core": "^14.1.0",
     "jwt-decode": "^4.0.0",
     "prettier": "^3.7.4",
     "primeflex": "^4.0.0",
