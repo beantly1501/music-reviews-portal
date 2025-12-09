@@ -7,7 +7,7 @@ import { useMatchMedia } from "primereact/hooks";
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isMobile = useMatchMedia("(max-width: 760px)");
+  const isMobile = useMatchMedia("(max-width: 850px)");
 
   const TAB_PATHS = useMemo(
     () => [
