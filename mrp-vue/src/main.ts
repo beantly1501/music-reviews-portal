@@ -1,5 +1,5 @@
 import { createApp } from "vue";
-import router from "./router";
+import router from "./router/routes.ts";
 import PrimeVue from "primevue/config";
 import Aura from "@primevue/themes/aura";
 import { App } from "./index.ts";

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { Layout, Test } from "../components";
-import { Profile } from "../features";
+import { ProfilePage } from "../features";
+import { AllReviewsPage } from "../features/all-reviews";
 
 const routes = [
   {
@@ -8,12 +9,12 @@ const routes = [
     component: Layout,
     children: [
       { path: "", name: "home", component: Test },
-      { path: "all-reviews", name: "all-reviews", component: Test },
+      { path: "all-reviews", name: "all-reviews", component: AllReviewsPage },
       { path: "songs", name: "songs", component: Test },
       { path: "albums", name: "albums", component: Test },
       { path: "artists", name: "artists", component: Test },
       { path: "playlists", name: "playlists", component: Test },
-      { path: "profile", name: "profile", component: Profile },
+      { path: "profile", name: "profile", component: ProfilePage },
       { path: "user/:id", name: "user", component: Test },
     ],
   },
