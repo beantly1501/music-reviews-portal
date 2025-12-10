@@ -1,16 +1,25 @@
 <template>
-  <Card>
+  <Card class="max-w-[400px] mt-10">
     <template #content>
-      <p class="m-0">
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Inventore sed
-        consequuntur error repudiandae numquam deserunt quisquam repellat libero
-        asperiores earum nam nobis, culpa ratione quam perferendis esse,
-        cupiditate neque quas!
-      </p>
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center gap-2">
+          <span class="font-bold w-8rem">Username:</span>
+          <span>{user.username}</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="font-bold w-8rem">Email:</span>
+          <span>{user.email}</span>
+        </div>
+
+        <div class="flex justify-end">
+          <Button icon="pi pi-sign-out" label="Log out" />
+        </div>
+      </div>
     </template>
   </Card>
 </template>
 
 <script setup lang="ts">
-import { Card } from "primevue";
+import { Card, Button } from "primevue";
 </script>

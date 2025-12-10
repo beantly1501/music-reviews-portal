@@ -4,7 +4,7 @@ import { MOBILE_TABS_MENU, TABS_MENU } from "@/shared/constants.ts";
 import { useMediaQuery } from "@vueuse/core";
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import router from "@/router/index.ts";
+import router from "@/router/routes.ts";
 
 const route = useRoute();
 const isMobile = useMediaQuery("(max-width: 850px)");
@@ -33,12 +33,12 @@ const changeTab = (e) => {
 </script>
 
 <template>
-  <div class="mt-3">
+  <div>
     <TabMenu
+      class="flex justify-center mb-[2rem]"
       :model="model"
       :active-index="activeIndex"
       @tabChange="changeTab"
-      class="bg-transparent"
     />
     <router-view />
   </div>
