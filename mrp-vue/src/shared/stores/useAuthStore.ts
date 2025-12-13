@@ -14,10 +14,6 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.setItem("token", newToken);
   }
 
-  function setUser(newUser: User) {
-    user.value = newUser;
-  }
-
   async function fetchUser() {
     if (!token.value) return;
 
@@ -49,7 +45,7 @@ export const useAuthStore = defineStore("auth", () => {
 
     const data = await response.json();
     setToken(data.token);
-    setUser(userPayload);
+    await fetchUser();
     await router.push("/");
     return data;
   }
@@ -65,7 +61,7 @@ export const useAuthStore = defineStore("auth", () => {
 
     const data = await response.json();
     setToken(data.token);
-    setUser(userPayload);
+    await fetchUser();
     await router.push("/");
     return data;
   }

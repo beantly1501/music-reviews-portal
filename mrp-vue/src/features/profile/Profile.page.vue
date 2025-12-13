@@ -11,9 +11,28 @@
         :value="myReviews"
         removableSort
       >
-        <Column field="name" header="Name" :sortable="true" />
-        <Column field="type" header="Type" :sortable="true" />
-        <Column field="rating" header="Rating" :sortable="true" />
+        <Column field="name" header="Name" :sortable="true">
+          <template #body="{ data }: { data: ReviewResponse }">
+            <div>
+              {{
+                data.type === ReviewType.SONG ? data.songName : data.albumName
+              }}
+            </div>
+          </template>
+        </Column>
+
+        <Column field="type" header="Type" :sortable="true">
+          <template #body="{ data }: { data: ReviewResponse }">
+            <Tag :value="data.type" />
+          </template>
+        </Column>
+
+        <Column field="rating" header="Rating" :sortable="true">
+          <template #body="{ data }: { data: ReviewResponse }">
+            <Rating :modelValue="data.grade" readonly />
+          </template>
+        </Column>
+
         <Column field="description" header="Description" />
         <Column field="creationDate" header="Creation date" :sortable="true">
           <template #body="{ data }: { data: ReviewResponse }">
@@ -48,7 +67,8 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import UserInfo from "./UserInfo.vue";
 import { useGetMyReviews } from "@/features/profile/hooks";
-import type { ReviewResponse } from "@/shared";
+import { type ReviewResponse, ReviewType } from "@/shared";
+import { Tag, Rating } from "primevue";
 
 const { isLoading: isLoadingReviews, data: myReviews } = useGetMyReviews();
 </script>
