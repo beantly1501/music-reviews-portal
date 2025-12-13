@@ -3,3 +3,18 @@
     <router-view />
   </div>
 </template>
+
+<script setup lang="ts">
+import { useAuthStore } from "@/shared";
+import { onMounted, ref } from "vue";
+
+const authStore = useAuthStore();
+authStore.fetchUser();
+
+const isLoading = ref(true);
+
+onMounted(async () => {
+  await authStore.fetchUser();
+  isLoading.value = false;
+});
+</script>
