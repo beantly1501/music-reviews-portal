@@ -5,13 +5,43 @@
     <div class="flex flex-col w-full gap-4">
       <p class="flex justify-start text-4xl font-bold">My reviews</p>
 
-      <DataTable removableSort>
-        <Column field="name" header="Name" :sortable="true" />
-        <Column field="type" header="Type" :sortable="true" />
-        <Column field="rating" header="Rating" :sortable="true" />
+      <DataTable
+        v-if="myReviews"
+        :loading="isLoadingReviews"
+        :value="myReviews"
+        removableSort
+      >
+        <Column field="name" header="Name" :sortable="true">
+          <template #body="{ data }: { data: ReviewResponse }">
+            <div>
+              {{
+                data.type === ReviewType.SONG ? data.songName : data.albumName
+              }}
+            </div>
+          </template>
+        </Column>
+
+        <Column field="type" header="Type" :sortable="true">
+          <template #body="{ data }: { data: ReviewResponse }">
+            <Tag :value="data.type" />
+          </template>
+        </Column>
+
+        <Column field="rating" header="Rating" :sortable="true">
+          <template #body="{ data }: { data: ReviewResponse }">
+            <Rating :modelValue="data.grade" readonly />
+          </template>
+        </Column>
+
         <Column field="description" header="Description" />
-        <Column field="category" header="Category" :sortable="true" />
+        <Column field="creationDate" header="Creation date" :sortable="true">
+          <template #body="{ data }: { data: ReviewResponse }">
+            <div>{{ data.grade }}</div>
+          </template>
+        </Column>
       </DataTable>
+
+      <p v-else>Error loading reviews</p>
     </div>
 
     <div class="flex flex-col w-full gap-4">
@@ -35,6 +65,10 @@
 <script setup lang="ts">
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
-
 import UserInfo from "./UserInfo.vue";
+import { useGetMyReviews } from "@/features/profile/hooks";
+import { type ReviewResponse, ReviewType } from "@/shared";
+import { Tag, Rating } from "primevue";
+
+const { isLoading: isLoadingReviews, data: myReviews } = useGetMyReviews();
 </script>
