@@ -33,7 +33,7 @@ const changeTab = (e) => {
 </script>
 
 <template>
-  <div>
+  <div class="p-dark min-h-screen">
     <TabMenu
       class="flex justify-center mb-[2rem]"
       :model="model"
