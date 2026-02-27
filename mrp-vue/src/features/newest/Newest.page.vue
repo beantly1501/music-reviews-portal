@@ -1,0 +1,36 @@
+<template>
+  <div class="flex flex-col gap-6 p-4">
+    <h1 class="text-3xl font-bold text-center">Newest Reviews</h1>
+
+    <div v-if="isLoading" class="flex justify-center items-center h-64">
+      <i class="pi pi-spin pi-spinner text-4xl" />
+    </div>
+
+    <div v-else-if="error" class="text-center text-red-500">
+      <p>Error loading reviews: {{ error.message }}</p>
+    </div>
+
+    <div
+      v-else-if="reviews && reviews.length > 0"
+      class="flex flex-wrap gap-6 justify-center"
+    >
+      <ReviewCard
+        v-for="review in reviews"
+        :key="review.id"
+        :review="review"
+        @refetch="refetch"
+      />
+    </div>
+
+    <div v-else class="text-center text-gray-500">
+      <p>No reviews found.</p>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ReviewCard } from "@/shared";
+import { useGetNewestReviews } from "./hooks/useGetNewestReviews";
+
+const { data: reviews, isLoading, error, refetch } = useGetNewestReviews();
+</script>

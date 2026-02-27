@@ -6,17 +6,18 @@ import {
   type RouteRecordRaw,
 } from "vue-router";
 import { Layout, Test } from "@/shared/components";
-import { LoginPage, ProfilePage, RegisterPage } from "@/features";
+import { LoginPage, NewestPage, ProfilePage, RegisterPage } from "@/features";
 import { AllReviewsPage } from "@/features/all-reviews";
+import { SongsPage } from "@/features/songs";
 
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
     component: Layout,
     children: [
-      { path: "", name: "home", component: Test },
+      { path: "", name: "home", component: NewestPage },
       { path: "all-reviews", name: "all-reviews", component: AllReviewsPage },
-      { path: "songs", name: "songs", component: Test },
+      { path: "songs", name: "songs", component: SongsPage },
       { path: "albums", name: "albums", component: Test },
       { path: "artists", name: "artists", component: Test },
       { path: "playlists", name: "playlists", component: Test },

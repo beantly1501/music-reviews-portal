@@ -7,7 +7,10 @@ interface UseFetchOptions {
   immediate?: boolean;
 }
 
-export const useFetch = <T>(url: string, options: UseFetchOptions = {}) => {
+export const useFetch = <T>(
+  url: Ref<string | undefined> | string,
+  options: UseFetchOptions = {},
+) => {
   const { page, size, immediate = true } = options;
 
   const isLoading = ref(false);
@@ -26,15 +29,25 @@ export const useFetch = <T>(url: string, options: UseFetchOptions = {}) => {
     if (sizeValue !== undefined) params.append("size", String(sizeValue));
 
     const query = params.toString();
-    return query ? `${url}?${query}` : url;
+    const baseUrl = typeof url === "object" ? url.value : url;
+
+    if (!baseUrl) return null;
+
+    return query ? `${baseUrl}?${query}` : baseUrl;
   };
 
   const fetchData = async () => {
+    const finalUrl = buildUrl();
+    if (!finalUrl) {
+      data.value = null;
+      return;
+    }
+
     isLoading.value = true;
     error.value = null;
 
     try {
-      const response = await fetch(buildUrl(), {
+      const response = await fetch(finalUrl, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -56,6 +69,7 @@ export const useFetch = <T>(url: string, options: UseFetchOptions = {}) => {
 
   if (typeof page === "object") watch(page, fetchData);
   if (typeof size === "object") watch(size, fetchData);
+  if (typeof url === "object") watch(url, fetchData);
 
   return { isLoading, data, error, refetch: fetchData };
 };
