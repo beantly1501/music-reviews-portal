@@ -34,7 +34,7 @@ export const songCreateSchema = z.object({
   cover: z.instanceof(File).optional(),
   file: z.instanceof(File).optional(),
 
-  link: z.url("Link must be a valid URL.").optional(),
+  link: z.string().url("Link must be a valid URL.").optional(),
 
   year: z.number().int().max(thisYear).optional(),
 

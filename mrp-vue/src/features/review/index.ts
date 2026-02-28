@@ -4,3 +4,4 @@ export * from "./hooks/useGetReview";
 export * from "./hooks/useGetAllReviews";
 export * from "./hooks/useDeleteReview";
 export * from "./hooks/useUpdateReview";
+export * from "./hooks/useCreateReview";

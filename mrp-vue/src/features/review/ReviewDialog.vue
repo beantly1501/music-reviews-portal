@@ -126,6 +126,9 @@
                 class="text-xs"
               />
             </div>
+            <div v-else>
+              <p class="text-gray-400 h-2rem">No genres available.</p>
+            </div>
 
             <Button
               v-if="'link' in entity && entity.link"

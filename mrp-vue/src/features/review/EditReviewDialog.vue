@@ -18,9 +18,9 @@
             :invalid="!!errors.grade"
           />
         </div>
-        <small v-if="errors.grade" class="text-red-500 text-center">{{
-          errors.grade
-        }}</small>
+        <small v-if="errors.grade" class="text-red-500 text-center"
+          >Rating is required.</small
+        >
       </div>
 
       <div class="flex flex-col gap-2">
@@ -63,11 +63,11 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { songReviewSchema, albumReviewSchema } from "@/shared";
 import type { SongReviewForm, AlbumReviewForm } from "@/shared";
-import { useUpdateReview } from "./hooks/useUpdateReview";
+import { useUpdateReview, useCreateReview } from "@/features";
 
 const props = defineProps<{
   visible: boolean;
-  reviewId: number;
+  reviewId?: number;
   reviewType: "SONG" | "ALBUM";
   name: string;
   initialValues: {
@@ -84,6 +84,7 @@ const emit = defineEmits<{
 }>();
 
 const { updateSongReview, updateAlbumReview } = useUpdateReview();
+const { createSongReview, createAlbumReview } = useCreateReview();
 
 const validationSchema = computed(() => {
   return props.reviewType === "SONG"
@@ -99,26 +100,36 @@ const { handleSubmit, defineField, errors, isSubmitting, resetForm } = useForm({
 const [grade] = defineField("grade");
 const [description] = defineField("description");
 
-const headerTitle = computed(() => `Update ${props.name}`);
+const headerTitle = computed(() =>
+  props.reviewId ? `Update ${props.name}` : `Review ${props.name}`,
+);
 
 const onSubmit = handleSubmit(async (values) => {
   try {
     if (props.reviewType === "SONG") {
-      await updateSongReview(
-        props.reviewId,
-        values as unknown as SongReviewForm,
-      );
+      if (props.reviewId) {
+        await updateSongReview(
+          props.reviewId,
+          values as unknown as SongReviewForm,
+        );
+      } else {
+        await createSongReview(values as unknown as SongReviewForm);
+      }
     } else {
-      await updateAlbumReview(
-        props.reviewId,
-        values as unknown as AlbumReviewForm,
-      );
+      if (props.reviewId) {
+        await updateAlbumReview(
+          props.reviewId,
+          values as unknown as AlbumReviewForm,
+        );
+      } else {
+        await createAlbumReview(values as unknown as AlbumReviewForm);
+      }
     }
     emit("success");
     emit("update:visible", false);
     resetForm();
   } catch (error) {
-    console.error("Failed to update review:", error);
+    console.error("Failed to submit review:", error);
   }
 });
 </script>

@@ -8,8 +8,15 @@ import {
   songCreateDefaultValues,
   songCreateSchema,
 } from "@/shared";
+import { useCreateSong } from "@/features";
 
 const isDialogVisible = defineModel<boolean>();
+
+const emit = defineEmits<{
+  (e: "refetchSongs"): void;
+}>();
+
+const { createSong, isLoading: isSubmitting } = useCreateSong();
 
 const MOCK_OPTIONS: MultiSelectOptionType[] = [
   {
@@ -42,8 +49,12 @@ const [genreIds] = defineField("genreIds");
 const [albumIds] = defineField("albumIds");
 const [artistIds] = defineField("artistIds");
 
-const onSubmit = handleSubmit((values) => {
-  console.log(values, "values");
+const onSubmit = handleSubmit(async (values) => {
+  const result = await createSong(values);
+  if (result) {
+    isDialogVisible.value = false;
+    emit("refetchSongs");
+  }
 });
 </script>
 
@@ -153,7 +164,12 @@ const onSubmit = handleSubmit((values) => {
       </div>
 
       <div class="flex flex-col gap-2 w-full items-end">
-        <Button type="submit" label="Add new song" icon="pi pi-plus" />
+        <Button
+          type="submit"
+          label="Add new song"
+          icon="pi pi-plus"
+          :loading="isSubmitting"
+        />
       </div>
     </form>
   </Dialog>
