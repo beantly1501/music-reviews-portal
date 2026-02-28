@@ -189,7 +189,7 @@ import {
 } from "primevue";
 import { useAuthStore, useGetFile } from "@/shared";
 import { useGetReview } from "@/features";
-import { useGetSong } from "../songs/hooks/useGetSong";
+import { useGetSong } from "@/features";
 import { useDeleteReview } from "@/features";
 import EditReviewDialog from "./EditReviewDialog.vue";
 import { Role } from "@/features";
