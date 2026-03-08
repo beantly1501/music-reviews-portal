@@ -64,10 +64,7 @@
                 image-class="object-cover w-full h-full"
                 class="w-full h-full"
               />
-              <i
-                v-if="!displayImageUrl && isImageLoading"
-                class="pi pi-spin pi-spinner text-4xl"
-              />
+              <ProgressSpinner v-if="!displayImageUrl && isImageLoading" />
               <i
                 v-else-if="!displayImageUrl"
                 class="pi pi-image text-4xl text-gray-400"
@@ -126,6 +123,9 @@
                 class="text-xs"
               />
             </div>
+            <div v-else>
+              <p class="text-gray-400 h-2rem">No genres available.</p>
+            </div>
 
             <Button
               v-if="'link' in entity && entity.link"
@@ -139,7 +139,7 @@
 
             <div v-if="review.type === 'SONG'" class="mt-4">
               <div v-if="isSongLoading" class="flex justify-center p-4">
-                <i class="pi pi-spin pi-spinner" />
+                <ProgressSpinner />
               </div>
               <div v-else-if="songAudioUrl" class="w-full">
                 <audio controls :src="songAudioUrl" class="w-full" />
@@ -186,7 +186,7 @@ import {
 } from "primevue";
 import { useAuthStore, useGetFile } from "@/shared";
 import { useGetReview } from "@/features";
-import { useGetSong } from "../songs/hooks/useGetSong";
+import { useGetSong } from "@/features";
 import { useDeleteReview } from "@/features";
 import EditReviewDialog from "./EditReviewDialog.vue";
 import { Role } from "@/features";

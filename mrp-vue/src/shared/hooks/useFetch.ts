@@ -1,4 +1,4 @@
-import { ref, onMounted, watch, type Ref } from "vue";
+import { ref, onMounted, watch, nextTick, type Ref } from "vue";
 import { useAuthStore } from "@/shared";
 
 interface UseFetchOptions {
@@ -13,7 +13,7 @@ export const useFetch = <T>(
 ) => {
   const { page, size, immediate = true } = options;
 
-  const isLoading = ref(false);
+  const isLoading = ref(immediate);
   const data = ref<T | null>(null);
   const error = ref<Error | null>(null);
 
@@ -59,12 +59,15 @@ export const useFetch = <T>(
     } catch (e) {
       error.value = e as Error;
     } finally {
+      await nextTick();
       isLoading.value = false;
     }
   };
 
   onMounted(async () => {
-    if (immediate) await fetchData();
+    if (immediate) {
+      await fetchData();
+    }
   });
 
   if (typeof page === "object") watch(page, fetchData);

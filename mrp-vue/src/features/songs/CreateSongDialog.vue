@@ -7,9 +7,25 @@ import {
   type MultiSelectOptionType,
   songCreateDefaultValues,
   songCreateSchema,
+  type SongResponse,
 } from "@/shared";
+import { useCreateSong, useUpdateSong } from "@/features";
+import { computed } from "vue";
 
 const isDialogVisible = defineModel<boolean>();
+
+const props = defineProps<{
+  song?: SongResponse;
+}>();
+
+const emit = defineEmits<{
+  (e: "refetchSongs"): void;
+}>();
+
+const { createSong, isLoading: isCreating } = useCreateSong();
+const { updateSong, isLoading: isUpdating } = useUpdateSong();
+
+const isSubmitting = computed(() => isCreating.value || isUpdating.value);
 
 const MOCK_OPTIONS: MultiSelectOptionType[] = [
   {
@@ -28,10 +44,37 @@ const MOCK_OPTIONS: MultiSelectOptionType[] = [
 
 const validationSchema = toTypedSchema(songCreateSchema);
 
-const { handleSubmit, defineField, errors } = useForm({
-  validationSchema,
-  initialValues: songCreateDefaultValues,
+const initialValues = computed(() => {
+  if (props.song) {
+    return {
+      name: props.song.name,
+      year: props.song.year,
+      link: props.song.link,
+      genreIds: props.song.genres?.map((g) => g.id) || [],
+      albumIds: props.song.albums?.map((a) => a.id) || [],
+      artistIds: props.song.artists?.map((a) => a.id) || [],
+      cover: undefined,
+      file: undefined,
+    };
+  }
+  return songCreateDefaultValues;
 });
+
+const { handleSubmit, defineField, errors, resetForm } = useForm({
+  validationSchema,
+  initialValues: initialValues.value,
+  keepValuesOnUnmount: false,
+});
+
+// Watch initialValues and reset form when they change
+import { watch } from "vue";
+watch(
+  initialValues,
+  (newValues) => {
+    resetForm({ values: newValues });
+  },
+  { immediate: true },
+);
 
 const [name] = defineField("name");
 const [link] = defineField("link");
@@ -42,8 +85,18 @@ const [genreIds] = defineField("genreIds");
 const [albumIds] = defineField("albumIds");
 const [artistIds] = defineField("artistIds");
 
-const onSubmit = handleSubmit((values) => {
-  console.log(values, "values");
+const onSubmit = handleSubmit(async (values) => {
+  let result;
+  if (props.song) {
+    result = await updateSong(props.song.id, values);
+  } else {
+    result = await createSong(values);
+  }
+
+  if (result) {
+    isDialogVisible.value = false;
+    emit("refetchSongs");
+  }
 });
 </script>
 
@@ -52,7 +105,7 @@ const onSubmit = handleSubmit((values) => {
     modal
     class="w-160"
     v-model:visible="isDialogVisible"
-    header="Add a song"
+    :header="props.song ? 'Edit song' : 'Add a song'"
     :draggable="false"
   >
     <form @submit="onSubmit" class="flex flex-col gap-3 w-full">
@@ -153,7 +206,12 @@ const onSubmit = handleSubmit((values) => {
       </div>
 
       <div class="flex flex-col gap-2 w-full items-end">
-        <Button type="submit" label="Add new song" icon="pi pi-plus" />
+        <Button
+          type="submit"
+          :label="props.song ? 'Update song' : 'Add new song'"
+          :icon="props.song ? 'pi pi-check' : 'pi pi-plus'"
+          :loading="isSubmitting"
+        />
       </div>
     </form>
   </Dialog>

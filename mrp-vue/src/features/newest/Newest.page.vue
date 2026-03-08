@@ -1,9 +1,9 @@
 <template>
-  <div class="flex flex-col gap-6 p-4">
+  <div class="flex flex-col gap-2 p-4">
     <h1 class="text-3xl font-bold text-center">Newest Reviews</h1>
 
     <div v-if="isLoading" class="flex justify-center items-center h-64">
-      <i class="pi pi-spin pi-spinner text-4xl" />
+      <ProgressSpinner />
     </div>
 
     <div v-else-if="error" class="text-center text-red-500">
@@ -12,7 +12,7 @@
 
     <div
       v-else-if="reviews && reviews.length > 0"
-      class="flex flex-wrap gap-6 justify-center"
+      class="flex flex-wrap justify-center"
     >
       <ReviewCard
         v-for="review in reviews"
@@ -30,6 +30,7 @@
 
 <script setup lang="ts">
 import { ReviewCard } from "@/shared";
+import { ProgressSpinner } from "primevue";
 import { useGetNewestReviews } from "./hooks/useGetNewestReviews";
 
 const { data: reviews, isLoading, error, refetch } = useGetNewestReviews();

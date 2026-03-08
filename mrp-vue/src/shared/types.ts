@@ -34,7 +34,7 @@ export const songCreateSchema = z.object({
   cover: z.instanceof(File).optional(),
   file: z.instanceof(File).optional(),
 
-  link: z.url("Link must be a valid URL.").optional(),
+  link: z.string().url("Link must be a valid URL.").optional(),
 
   year: z.number().int().max(thisYear).optional(),
 
@@ -58,6 +58,18 @@ export interface ArtistPartialDto {
 export interface GenrePartialDto {
   id: number;
   name: string;
+}
+
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
 }
 
 export interface SongResponse {

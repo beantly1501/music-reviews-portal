@@ -14,10 +14,7 @@
           image-class="object-cover w-full h-full"
           class="w-full h-full"
         />
-        <i
-          v-if="!imageUrl && isLoading"
-          class="pi pi-spin pi-spinner text-4xl"
-        />
+        <ProgressSpinner v-if="!imageUrl && isLoading" />
         <i v-else-if="!imageUrl" class="pi pi-image text-4xl" />
       </div>
     </template>
@@ -74,7 +71,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Card, Tag, Rating, Image } from "primevue";
+import { Card, Tag, Rating, Image, ProgressSpinner } from "primevue";
 import type { ReviewResponse } from "@/shared";
 import { useGetFile } from "@/shared";
 import { ReviewDialog } from "@/features";
