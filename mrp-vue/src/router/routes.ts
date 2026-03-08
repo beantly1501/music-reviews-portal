@@ -9,6 +9,7 @@ import { Layout, Test } from "@/shared/components";
 import { LoginPage, NewestPage, ProfilePage, RegisterPage } from "@/features";
 import { AllReviewsPage } from "@/features/all-reviews";
 import { SongsPage } from "@/features/songs";
+import SongDetails from "@/features/songs/SongDetails.page.vue";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -25,7 +26,7 @@ const routes: RouteRecordRaw[] = [
       { path: "user/:id", name: "user", component: Test },
     ],
   },
-  { path: "/song/:id", name: "song-details", component: Test },
+  { path: "/song/:id", name: "song-details", component: SongDetails },
   { path: "/album/:id", name: "album-details", component: Test },
   { path: "/artist/:id", name: "artist-details", component: Test },
   { path: "/playlist/:id", name: "playlist-details", component: Test },

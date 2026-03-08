@@ -1,5 +1,8 @@
 <template>
-  <Card class="w-[320px] h-[560px] rounded-lg! shadow-md! shadow-black">
+  <Card
+    class="w-[320px] h-[560px] rounded-lg! shadow-md! shadow-black"
+    @click="$emit('song-click', song)"
+  >
     <template #header>
       <div
         class="w-full h-[180px] rounded-t-lg! object-cover bg-[#5f5f5f] flex justify-center items-center overflow-hidden"
@@ -10,7 +13,7 @@
           image-class="object-cover w-full h-full"
           class="w-full h-full"
         />
-        <i v-else-if="isImageLoading" class="pi pi-spin pi-spinner text-4xl" />
+        <ProgressSpinner v-else-if="isImageLoading" />
         <i v-else class="pi pi-image text-4xl" />
       </div>
     </template>
@@ -40,8 +43,8 @@
         </div>
 
         <div class="flex flex-col gap-4 justify-center items-center">
-          <audio v-if="audioUrl" controls :src="audioUrl" />
-          <i v-else-if="isAudioLoading" class="pi pi-spin pi-spinner" />
+          <audio v-if="audioUrl" controls :src="audioUrl" @click.stop />
+          <ProgressSpinner v-else-if="isAudioLoading" />
           <div v-else>
             <p class="text-gray-400 h-2rem">No audio file available.</p>
           </div>
@@ -52,7 +55,7 @@
               label="Open Spotify / Youtube link"
               class="w-full"
               icon="pi pi-external-link"
-              @click="openLink"
+              @click.stop="openLink"
             />
 
             <div v-else>
@@ -66,7 +69,7 @@
               label="Review Song"
               class="w-fit"
               v-if="!props.song.grade"
-              @click="$emit('review', props.song)"
+              @click.stop="$emit('review', props.song)"
             />
 
             <div class="flex items-center my-2.5" v-else>
@@ -93,7 +96,15 @@
 </template>
 
 <script setup lang="ts">
-import { Card, Image, Button, Tag, Chip, Rating } from "primevue";
+import {
+  Card,
+  Image,
+  Button,
+  Tag,
+  Chip,
+  Rating,
+  ProgressSpinner,
+} from "primevue";
 import type { SongResponse } from "@/shared";
 import { useGetFile } from "@/shared";
 
@@ -101,8 +112,9 @@ const props = defineProps<{
   song: SongResponse;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   (e: "review", song: SongResponse): void;
+  (e: "song-click", song: SongResponse): void;
 }>();
 
 const { fileUrl: imageUrl, isLoading: isImageLoading } = useGetFile(

@@ -13,6 +13,7 @@
         :key="song.id"
         :song="song"
         @review="onReviewSong"
+        @song-click="onSongClick"
       />
     </div>
   </div>
@@ -38,6 +39,7 @@ import { Button } from "primevue";
 import { CreateSongDialog, EditReviewDialog, Role, SongCard } from "@/features";
 import { storeToRefs } from "pinia";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { useGetAllSongs } from "@/features";
 import type { SongResponse } from "@/shared";
 
@@ -45,6 +47,8 @@ const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 
 const { data: songs, refetch: refetchSongs } = useGetAllSongs();
+
+const router = useRouter();
 
 const isDialogVisible = ref(false);
 const isReviewDialogVisible = ref(false);
@@ -57,5 +61,9 @@ const onReviewSong = (song: SongResponse) => {
 
 const onReviewSuccess = () => {
   refetchSongs();
+};
+
+const onSongClick = (song: SongResponse) => {
+  router.push(`/song/${song.id}`);
 };
 </script>

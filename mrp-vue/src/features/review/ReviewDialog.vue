@@ -64,10 +64,7 @@
                 image-class="object-cover w-full h-full"
                 class="w-full h-full"
               />
-              <i
-                v-if="!displayImageUrl && isImageLoading"
-                class="pi pi-spin pi-spinner text-4xl"
-              />
+              <ProgressSpinner v-if="!displayImageUrl && isImageLoading" />
               <i
                 v-else-if="!displayImageUrl"
                 class="pi pi-image text-4xl text-gray-400"
@@ -142,7 +139,7 @@
 
             <div v-if="review.type === 'SONG'" class="mt-4">
               <div v-if="isSongLoading" class="flex justify-center p-4">
-                <i class="pi pi-spin pi-spinner" />
+                <ProgressSpinner />
               </div>
               <div v-else-if="songAudioUrl" class="w-full">
                 <audio controls :src="songAudioUrl" class="w-full" />
