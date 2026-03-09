@@ -5,6 +5,7 @@ import type { MultiSelectOptionType } from "@/shared";
 defineProps<{
   options: MultiSelectOptionType[];
   invalid?: boolean;
+  loading?: boolean;
 }>();
 
 const model = defineModel<number[]>();
@@ -18,5 +19,7 @@ const model = defineModel<number[]>();
     option-value="value"
     display="chip"
     filter
+    :loading="loading"
+    :invalid="invalid"
   />
 </template>

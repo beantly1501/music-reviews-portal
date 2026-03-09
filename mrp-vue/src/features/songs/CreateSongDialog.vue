@@ -8,6 +8,7 @@ import {
   songCreateDefaultValues,
   songCreateSchema,
   type SongResponse,
+  useGetAllGenres,
 } from "@/shared";
 import { useCreateSong, useUpdateSong } from "@/features";
 import { computed } from "vue";
@@ -24,23 +25,18 @@ const emit = defineEmits<{
 
 const { createSong, isLoading: isCreating } = useCreateSong();
 const { updateSong, isLoading: isUpdating } = useUpdateSong();
+const { data: genres, isLoading: isGenresLoading } = useGetAllGenres();
 
 const isSubmitting = computed(() => isCreating.value || isUpdating.value);
 
-const MOCK_OPTIONS: MultiSelectOptionType[] = [
-  {
-    label: "Indie",
-    value: 1,
-  },
-  {
-    label: "Rock",
-    value: 2,
-  },
-  {
-    label: "Rap",
-    value: 3,
-  },
-];
+const genreOptions = computed<MultiSelectOptionType[]>(() => {
+  return (
+    genres.value?.map((genre) => ({
+      label: genre.name,
+      value: genre.id,
+    })) || []
+  );
+});
 
 const validationSchema = toTypedSchema(songCreateSchema);
 
@@ -172,7 +168,8 @@ const onSubmit = handleSubmit(async (values) => {
       <div class="flex flex-col gap-2">
         <label>Genres (optional)</label>
         <ModifiedMultiSelect
-          :options="MOCK_OPTIONS"
+          :options="genreOptions"
+          :loading="isGenresLoading"
           v-model="genreIds"
           :invalid="!!errors.genreIds"
         />
@@ -184,7 +181,7 @@ const onSubmit = handleSubmit(async (values) => {
       <div class="flex flex-col gap-2">
         <label>Albums (optional)</label>
         <ModifiedMultiSelect
-          :options="MOCK_OPTIONS"
+          :options="[]"
           v-model="albumIds"
           :invalid="!!errors.albumIds"
         />
@@ -196,7 +193,7 @@ const onSubmit = handleSubmit(async (values) => {
       <div class="flex flex-col gap-2">
         <label>Artists (optional)</label>
         <ModifiedMultiSelect
-          :options="MOCK_OPTIONS"
+          :options="[]"
           v-model="artistIds"
           :invalid="!!errors.artistIds"
         />

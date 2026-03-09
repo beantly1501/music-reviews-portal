@@ -86,6 +86,21 @@ export interface SongResponse {
   averageRating: number;
 }
 
+export interface SongPartialDto {
+  id: number;
+  name: string;
+  imageUrl: string;
+  fileUrl: string;
+  link: string;
+  year: number;
+}
+
+export interface GenreResponseDto {
+  id: number;
+  name: string;
+  songs: SongPartialDto[];
+}
+
 export const songReviewSchema = z.object({
   songId: z.number(),
   grade: z.number().min(1, { message: "Grade must be at least 1." }),
