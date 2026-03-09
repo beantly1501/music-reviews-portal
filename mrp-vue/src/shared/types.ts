@@ -45,6 +45,21 @@ export const songCreateSchema = z.object({
 
 export type SongCreateForm = z.infer<typeof songCreateSchema>;
 
+export const albumCreateSchema = z.object({
+  name: z.string().min(1, { message: "Album name is required." }),
+  cover: z.instanceof(File).optional(),
+
+  link: z.string().url("Link must be a valid URL.").optional(),
+
+  year: z.number().int().max(thisYear).optional(),
+
+  songIds: z.array(z.number()).default([]).optional(),
+  genreIds: z.array(z.number()).default([]).optional(),
+  artistIds: z.array(z.number()).default([]).optional(),
+});
+
+export type AlbumCreateForm = z.infer<typeof albumCreateSchema>;
+
 export interface AlbumPartialDto {
   id: number;
   name: string;
@@ -95,6 +110,19 @@ export interface SongPartialDto {
   year: number;
 }
 
+export interface AlbumResponseDto {
+  id: number;
+  name: string;
+  imageUrl: string;
+  link: string;
+  year: number;
+  songs: SongPartialDto[];
+  artists: ArtistPartialDto[];
+  genres: GenrePartialDto[];
+  grade?: number;
+  averageRating?: number;
+}
+
 export interface GenreResponseDto {
   id: number;
   name: string;
@@ -124,6 +152,16 @@ export const songCreateDefaultValues: SongCreateForm = {
   link: undefined,
   year: new Date(Date.now()).getFullYear(),
   albumIds: [],
+  genreIds: [],
+  artistIds: [],
+};
+
+export const albumCreateDefaultValues: AlbumCreateForm = {
+  name: "",
+  cover: undefined,
+  link: undefined,
+  year: new Date(Date.now()).getFullYear(),
+  songIds: [],
   genreIds: [],
   artistIds: [],
 };
