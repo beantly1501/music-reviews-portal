@@ -12,13 +12,14 @@ import {
 import { useGetAllSongs } from "@/features/songs";
 import { useCreatePlaylist } from "./hooks/useCreatePlaylist";
 import { useUpdatePlaylist } from "./hooks/useUpdatePlaylist";
-import { useGetOtherUsers } from "./hooks/useGetOtherUsers";
 import { computed, watch } from "vue";
+import { useGetAllUsers } from "./hooks/useGetAllUsers";
 
 const isDialogVisible = defineModel<boolean>();
 
 const props = defineProps<{
   playlist?: PlaylistResponseDto;
+  isCollaboratorOnly?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -28,7 +29,7 @@ const emit = defineEmits<{
 const { createPlaylist, isLoading: isCreating } = useCreatePlaylist();
 const { updatePlaylist, isLoading: isUpdating } = useUpdatePlaylist();
 const { data: songsData, isLoading: isSongsLoading } = useGetAllSongs();
-const { data: usersData, isLoading: isUsersLoading } = useGetOtherUsers();
+const { data: usersData, isLoading: isUsersLoading } = useGetAllUsers();
 
 const isSubmitting = computed(() => isCreating.value || isUpdating.value);
 
@@ -113,7 +114,7 @@ const onSubmit = handleSubmit(async (values) => {
     <form @submit="onSubmit" class="flex flex-col gap-3 w-full">
       <div class="flex flex-col gap-2">
         <label>Playlist Name</label>
-        <InputText v-model="name" type="text" :invalid="!!errors.name" />
+        <InputText v-model="name" type="text" :invalid="!!errors.name" :disabled="props.isCollaboratorOnly" />
         <small v-if="errors.name" class="text-red-500">{{ errors.name }}</small>
       </div>
 
@@ -126,6 +127,7 @@ const onSubmit = handleSubmit(async (values) => {
             icon="pi pi-plus"
             accept="image/*"
             :invalid="!!errors.image"
+            :disabled="props.isCollaboratorOnly"
             @select="(e) => (image = e.files[0])"
           />
           <small v-if="errors.image" class="text-red-500">{{ errors.image }}</small>
@@ -134,13 +136,13 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="flex flex-col gap-2">
         <label>Description (optional)</label>
-        <Textarea v-model="description" rows="3" :invalid="!!errors.description" />
+        <Textarea v-model="description" rows="3" :invalid="!!errors.description" :disabled="props.isCollaboratorOnly" />
         <small v-if="errors.description" class="text-red-500">{{ errors.description }}</small>
       </div>
 
       <div class="flex items-center gap-3">
         <label>Private</label>
-        <ToggleSwitch v-model="isPrivate" />
+        <ToggleSwitch v-model="isPrivate" :disabled="props.isCollaboratorOnly" />
       </div>
 
       <div class="flex flex-col gap-2">
@@ -161,6 +163,7 @@ const onSubmit = handleSubmit(async (values) => {
           :loading="isUsersLoading"
           v-model="collaboratorIds"
           :invalid="!!errors.collaboratorIds"
+          :disabled="props.isCollaboratorOnly"
         />
         <small v-if="errors.collaboratorIds" class="text-red-500">{{ errors.collaboratorIds }}</small>
       </div>

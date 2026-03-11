@@ -6,9 +6,10 @@
     <ConfirmDialog />
     <div class="flex justify-between">
       <CreatePlaylistDialog
-        v-if="playlist"
+        v-if="playlist && canEdit"
         v-model="isEditDialogVisible"
         :playlist="playlist"
+        :is-collaborator-only="isCollaboratorOnly"
         @refetchPlaylists="onEditSuccess"
       />
       <Button
@@ -20,6 +21,7 @@
 
       <div class="flex gap-3">
         <Button
+          v-if="canEdit"
           label="Edit"
           icon="pi pi-pencil"
           class="p-button-outlined"
@@ -27,6 +29,7 @@
           @click="isEditDialogVisible = true"
         />
         <Button
+          v-if="isAdmin || isOwner"
           label="Delete"
           icon="pi pi-trash"
           class="p-button-outlined"
@@ -81,7 +84,7 @@
                 </span>
               </div>
               <div class="text-gray-500 text-xs">
-                Created {{ playlist.creationDate }}
+                Created {{ new Date(playlist.creationDate).toLocaleDateString('hr-HR') }}
                 <span v-if="playlist.lastEditedBy">
                   · Last edited by {{ playlist.lastEditedBy.username }}
                 </span>
@@ -138,14 +141,23 @@ import {
 import { useConfirm } from "primevue/useconfirm";
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref } from "vue";
-import { useGetFile } from "@/shared";
+import { useGetFile, useAuthStore } from "@/shared";
 import { useGetPlaylist } from "./hooks/useGetPlaylist";
 import { useDeletePlaylist } from "./hooks/useDeletePlaylist";
 import CreatePlaylistDialog from "./CreatePlaylistDialog.vue";
+import { Role } from "@/features";
+import { storeToRefs } from "pinia";
 
 const route = useRoute();
 const router = useRouter();
 const confirm = useConfirm();
+
+const { user } = storeToRefs(useAuthStore());
+const isAdmin = computed(() => user.value?.role === Role.ADMIN);
+const isOwner = computed(() => !!user.value && user.value.username === playlist.value?.ownerUsername);
+const isCollaborator = computed(() => playlist.value?.collaborators?.some(c => c.username === user.value?.username) ?? false);
+const isCollaboratorOnly = computed(() => isCollaborator.value && !isAdmin.value && !isOwner.value);
+const canEdit = computed(() => isAdmin.value || isOwner.value || isCollaborator.value);
 
 const playlistId = computed(() => {
   const id = route.params.id;

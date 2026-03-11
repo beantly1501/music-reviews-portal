@@ -20,6 +20,7 @@
 
       <div class="flex gap-3">
         <Button
+          v-if="isAdmin"
           label="Edit"
           icon="pi pi-pencil"
           class="p-button-outlined"
@@ -27,6 +28,7 @@
           @click="isEditDialogVisible = true"
         />
         <Button
+          v-if="isAdmin"
           label="Delete"
           icon="pi pi-trash"
           class="p-button-outlined"
@@ -132,14 +134,19 @@ import {
 import { useConfirm } from "primevue/useconfirm";
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref } from "vue";
-import { useGetFile } from "@/shared";
+import { useGetFile, useAuthStore } from "@/shared";
 import { useGetArtist } from "./hooks/useGetArtist";
 import { useDeleteArtist } from "./hooks/useDeleteArtist";
 import CreateArtistDialog from "./CreateArtistDialog.vue";
+import { Role } from "@/features";
+import { storeToRefs } from "pinia";
 
 const route = useRoute();
 const router = useRouter();
 const confirm = useConfirm();
+
+const { user } = storeToRefs(useAuthStore());
+const isAdmin = computed(() => user.value?.role === Role.ADMIN);
 
 const artistId = computed(() => {
   const id = route.params.id;

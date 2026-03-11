@@ -20,6 +20,7 @@
 
       <div class="flex gap-3">
         <Button
+          v-if="isAdmin"
           label="Edit"
           icon="pi pi-pencil"
           class="p-button-outlined"
@@ -27,6 +28,7 @@
           @click="onEditAlbum"
         />
         <Button
+          v-if="isAdmin"
           label="Delete"
           icon="pi pi-trash"
           class="p-button-outlined"
@@ -195,13 +197,17 @@ import {
 import { useConfirm } from "primevue/useconfirm";
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref } from "vue";
-import { useGetAlbum, useDeleteAlbum, CreateAlbumDialog } from "@/features";
-import { useGetFile } from "@/shared";
+import { useGetAlbum, useDeleteAlbum, CreateAlbumDialog, Role } from "@/features";
+import { useGetFile, useAuthStore } from "@/shared";
+import { storeToRefs } from "pinia";
 import { useGetAlbumReviews } from "@/features/review";
 
 const route = useRoute();
 const router = useRouter();
 const confirm = useConfirm();
+
+const { user } = storeToRefs(useAuthStore());
+const isAdmin = computed(() => user.value?.role === Role.ADMIN);
 
 const albumId = computed(() => {
   const id = route.params.id;

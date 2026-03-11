@@ -8,3 +8,4 @@ export * from "./hooks/useGetPlaylist";
 export * from "./hooks/useCreatePlaylist";
 export * from "./hooks/useUpdatePlaylist";
 export * from "./hooks/useDeletePlaylist";
+export * from "./hooks/useGetAllUsers";
