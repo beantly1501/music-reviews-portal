@@ -135,7 +135,7 @@ export interface ArtistResponseDto {
 export const artistCreateSchema = z.object({
   name: z.string().min(1, { message: "Artist name is required." }),
   image: z.instanceof(File).optional(),
-  description: z.string().optional(),
+  description: z.string().max(255, { message: "Description must be at most 255 characters." }).optional(),
   songIds: z.array(z.number()).default([]).optional(),
   albumIds: z.array(z.number()).default([]).optional(),
 });
