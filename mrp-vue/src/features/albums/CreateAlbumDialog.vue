@@ -5,27 +5,28 @@ import { ModifiedMultiSelect } from "@/shared/components";
 import { toTypedSchema } from "@vee-validate/zod";
 import {
   type MultiSelectOptionType,
-  songCreateDefaultValues,
-  songCreateSchema,
-  type SongResponse,
+  albumCreateDefaultValues,
+  albumCreateSchema,
+  type AlbumResponseDto,
   useGetAllGenres,
 } from "@/shared";
-import { useCreateSong, useUpdateSong } from "@/features";
-import { computed } from "vue";
+import { useCreateAlbum, useUpdateAlbum, useGetAllSongs } from "@/features";
+import { computed, watch } from "vue";
 
 const isDialogVisible = defineModel<boolean>();
 
 const props = defineProps<{
-  song?: SongResponse;
+  album?: AlbumResponseDto;
 }>();
 
 const emit = defineEmits<{
-  (e: "refetchSongs"): void;
+  (e: "refetchAlbums"): void;
 }>();
 
-const { createSong, isLoading: isCreating } = useCreateSong();
-const { updateSong, isLoading: isUpdating } = useUpdateSong();
+const { createAlbum, isLoading: isCreating } = useCreateAlbum();
+const { updateAlbum, isLoading: isUpdating } = useUpdateAlbum();
 const { data: genres, isLoading: isGenresLoading } = useGetAllGenres();
+const { data: songsData, isLoading: isSongsLoading } = useGetAllSongs();
 
 const isSubmitting = computed(() => isCreating.value || isUpdating.value);
 
@@ -38,22 +39,30 @@ const genreOptions = computed<MultiSelectOptionType[]>(() => {
   );
 });
 
-const validationSchema = toTypedSchema(songCreateSchema);
+const songOptions = computed<MultiSelectOptionType[]>(() => {
+  return (
+    songsData.value?.map((song) => ({
+      label: song.name,
+      value: song.id,
+    })) || []
+  );
+});
+
+const validationSchema = toTypedSchema(albumCreateSchema);
 
 const initialValues = computed(() => {
-  if (props.song) {
+  if (props.album) {
     return {
-      name: props.song.name,
-      year: props.song.year,
-      link: props.song.link,
-      genreIds: props.song.genres?.map((g) => g.id) || [],
-      albumIds: props.song.albums?.map((a) => a.id) || [],
-      artistIds: props.song.artists?.map((a) => a.id) || [],
+      name: props.album.name,
+      year: props.album.year,
+      link: props.album.link,
+      genreIds: props.album.genres?.map((g) => g.id) || [],
+      songIds: props.album.songs?.map((s) => s.id) || [],
+      artistIds: props.album.artists?.map((a) => a.id) || [],
       cover: undefined,
-      file: undefined,
     };
   }
-  return songCreateDefaultValues;
+  return albumCreateDefaultValues;
 });
 
 const { handleSubmit, defineField, errors, resetForm } = useForm({
@@ -62,8 +71,6 @@ const { handleSubmit, defineField, errors, resetForm } = useForm({
   keepValuesOnUnmount: false,
 });
 
-// Watch initialValues and reset form when they change
-import { watch } from "vue";
 watch(
   initialValues,
   (newValues) => {
@@ -75,23 +82,22 @@ watch(
 const [name] = defineField("name");
 const [link] = defineField("link");
 const [year] = defineField("year");
-const [file] = defineField("file");
 const [cover] = defineField("cover");
 const [genreIds] = defineField("genreIds");
-const [albumIds] = defineField("albumIds");
+const [songIds] = defineField("songIds");
 const [artistIds] = defineField("artistIds");
 
 const onSubmit = handleSubmit(async (values) => {
   let result;
-  if (props.song) {
-    result = await updateSong(props.song.id, values);
+  if (props.album) {
+    result = await updateAlbum(props.album.id, values);
   } else {
-    result = await createSong(values);
+    result = await createAlbum(values);
   }
 
   if (result) {
     isDialogVisible.value = false;
-    emit("refetchSongs");
+    emit("refetchAlbums");
   }
 });
 </script>
@@ -101,32 +107,17 @@ const onSubmit = handleSubmit(async (values) => {
     modal
     class="w-160"
     v-model:visible="isDialogVisible"
-    :header="props.song ? 'Edit song' : 'Add a song'"
+    :header="props.album ? 'Edit album' : 'Add an album'"
     :draggable="false"
   >
     <form @submit="onSubmit" class="flex flex-col gap-3 w-full">
       <div class="flex flex-col gap-2">
-        <label>Song Name</label>
+        <label>Album Name</label>
         <InputText v-model="name" type="text" :invalid="!!errors.name" />
         <small v-if="errors.name" class="text-red-500">{{ errors.name }}</small>
       </div>
 
       <div class="flex flex-col w-fit gap-3">
-        <div class="flex flex-col gap-2">
-          <label for="file">Audio File</label>
-          <FileUpload
-            label="Choose"
-            mode="basic"
-            icon="pi pi-plus"
-            accept="audio/*"
-            :invalid="!!errors.file"
-            @select="(e) => (file = e.files[0])"
-          />
-          <small v-if="errors.file" class="text-red-500">{{
-            errors.file
-          }}</small>
-        </div>
-
         <div class="flex flex-col gap-2">
           <label for="cover">Cover Image</label>
           <FileUpload
@@ -144,7 +135,7 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
 
       <div class="flex flex-col gap-2">
-        <label for="link">Link to song</label>
+        <label for="link">Link to album</label>
         <InputText
           id="link"
           v-model="link"
@@ -179,14 +170,15 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
 
       <div class="flex flex-col gap-2">
-        <label>Albums (optional)</label>
+        <label>Songs (optional)</label>
         <ModifiedMultiSelect
-          :options="[]"
-          v-model="albumIds"
-          :invalid="!!errors.albumIds"
+          :options="songOptions"
+          :loading="isSongsLoading"
+          v-model="songIds"
+          :invalid="!!errors.songIds"
         />
-        <small v-if="errors.albumIds" class="text-red-500">{{
-          errors.albumIds
+        <small v-if="errors.songIds" class="text-red-500">{{
+          errors.songIds
         }}</small>
       </div>
 
@@ -205,8 +197,8 @@ const onSubmit = handleSubmit(async (values) => {
       <div class="flex flex-col gap-2 w-full items-end">
         <Button
           type="submit"
-          :label="props.song ? 'Update song' : 'Add new song'"
-          :icon="props.song ? 'pi pi-check' : 'pi pi-plus'"
+          :label="props.album ? 'Update album' : 'Add new album'"
+          :icon="props.album ? 'pi pi-check' : 'pi pi-plus'"
           :loading="isSubmitting"
         />
       </div>
