@@ -123,6 +123,33 @@ export interface AlbumResponseDto {
   averageRating?: number;
 }
 
+export interface ArtistResponseDto {
+  id: number;
+  name: string;
+  imageUrl: string;
+  description: string;
+  albums: AlbumPartialDto[];
+  songs: SongPartialDto[];
+}
+
+export const artistCreateSchema = z.object({
+  name: z.string().min(1, { message: "Artist name is required." }),
+  image: z.instanceof(File).optional(),
+  description: z.string().optional(),
+  songIds: z.array(z.number()).default([]).optional(),
+  albumIds: z.array(z.number()).default([]).optional(),
+});
+
+export type ArtistCreateForm = z.infer<typeof artistCreateSchema>;
+
+export const artistCreateDefaultValues: ArtistCreateForm = {
+  name: "",
+  image: undefined,
+  description: undefined,
+  songIds: [],
+  albumIds: [],
+};
+
 export interface GenreResponseDto {
   id: number;
   name: string;

@@ -1,3 +1,4 @@
+export * from "./artists";
 export * from "./profile";
 export * from "./login-register";
 export * from "./all-reviews";
