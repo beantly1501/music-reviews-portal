@@ -124,7 +124,7 @@
             <template #body="slotProps">
               {{
                 slotProps.data.artists?.map((a: any) => a.name).join(", ") ||
-                "N/A"
+                "-"
               }}
             </template>
           </Column>
