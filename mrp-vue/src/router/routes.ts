@@ -18,6 +18,7 @@ import { AllReviewsPage } from "@/features/all-reviews";
 import { SongsPage } from "@/features/songs";
 import SongDetails from "@/features/songs/SongDetails.page.vue";
 import { ArtistsPage, ArtistDetailsPage } from "@/features/artists";
+import { PlaylistsPage, PlaylistDetailsPage } from "@/features/playlists";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -29,7 +30,7 @@ const routes: RouteRecordRaw[] = [
       { path: "songs", name: "songs", component: SongsPage },
       { path: "albums", name: "albums", component: AlbumsPage },
       { path: "artists", name: "artists", component: ArtistsPage },
-      { path: "playlists", name: "playlists", component: Test },
+      { path: "playlists", name: "playlists", component: PlaylistsPage },
       { path: "profile", name: "profile", component: ProfilePage },
       { path: "user/:id", name: "user", component: Test },
     ],
@@ -37,7 +38,7 @@ const routes: RouteRecordRaw[] = [
   { path: "/song/:id", name: "song-details", component: SongDetails },
   { path: "/album/:id", name: "album-details", component: AlbumDetailsPage },
   { path: "/artist/:id", name: "artist-details", component: ArtistDetailsPage },
-  { path: "/playlist/:id", name: "playlist-details", component: Test },
+  { path: "/playlist/:id", name: "playlist-details", component: PlaylistDetailsPage },
   { path: "/login", name: "login", component: LoginPage },
   { path: "/register", name: "register", component: RegisterPage },
   { path: "/:pathMatch(.*)*", name: "error", component: Test },
