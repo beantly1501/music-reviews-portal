@@ -49,7 +49,7 @@
         </Column>
         <Column field="creationDate" header="Last updated" :sortable="true">
           <template #body="slotProps">
-            {{ new Date(slotProps.data.creationDate).toLocaleDateString() }}
+            {{ new Date(slotProps.data.creationDate).toLocaleDateString('hr-HR') }}
           </template>
         </Column>
       </DataTable>

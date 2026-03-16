@@ -6,3 +6,4 @@ export * from "./songs";
 export * from "./albums";
 export * from "./newest";
 export * from "./review";
+export * from "./playlists";

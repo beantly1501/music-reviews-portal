@@ -47,16 +47,39 @@
     <div class="flex flex-col w-full gap-4">
       <div class="flex justify-between items-center">
         <p class="flex justify-start text-4xl font-bold">My playlists</p>
-        <p>{totalElements} total</p>
+        <p>{{ myPlaylists?.totalElements }} total</p>
       </div>
 
-      <DataTable removableSort>
+      <DataTable
+        :loading="isLoadingPlaylists"
+        :value="myPlaylists?.content"
+        removableSort
+        selectionMode="single"
+        @row-click="(e) => router.push({ name: 'playlist-details', params: { id: e.data.id } })"
+        class="cursor-pointer"
+      >
         <Column field="name" header="Name" :sortable="true" />
-        <Column field="visibility" header="Visibility" :sortable="true" />
-        <Column field="owner" header="Owner" :sortable="true" />
-        <Column field="songs" header="Songs" :sortable="true" />
-        <Column field="collaborators" header="Collaborators" :sortable="true" />
-        <Column field="description" header="Description" />
+        <Column field="isPrivate" header="Visibility" :sortable="true">
+          <template #body="{ data }: { data: PlaylistResponseDto }">
+            <Tag :value="data.isPrivate ? 'Private' : 'Public'" :severity="data.isPrivate ? 'danger' : 'success'" />
+          </template>
+        </Column>
+        <Column field="ownerUsername" header="Owner" :sortable="true" />
+        <Column field="songs" header="Songs" :sortable="true">
+          <template #body="{ data }: { data: PlaylistResponseDto }">
+            {{ data.songs.length }}
+          </template>
+        </Column>
+        <Column field="collaborators" header="Collaborators" :sortable="true">
+          <template #body="{ data }: { data: PlaylistResponseDto }">
+            {{ data.collaborators.length }}
+          </template>
+        </Column>
+        <Column field="description" header="Description">
+          <template #body="{ data }: { data: PlaylistResponseDto }">
+            <div>{{ data.description ?? '-' }}</div>
+          </template>
+        </Column>
       </DataTable>
     </div>
   </div>
@@ -66,9 +89,12 @@
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import UserInfo from "./UserInfo.vue";
-import { useGetMyReviews } from "@/features/profile/hooks";
-import { type ReviewResponse, ReviewType } from "@/shared";
+import { useRouter } from "vue-router";
+import { useGetMyReviews, useGetMyPlaylists } from "@/features/profile/hooks";
+import { type ReviewResponse, ReviewType, type PlaylistResponseDto } from "@/shared";
 import { Tag, Rating } from "primevue";
 
+const router = useRouter();
 const { isLoading: isLoadingReviews, data: myReviews } = useGetMyReviews();
+const { isLoading: isLoadingPlaylists, data: myPlaylists } = useGetMyPlaylists();
 </script>

@@ -16,7 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -180,7 +180,7 @@ public class ReviewService {
         Song song = songRepository.findById(dto.getSongId())
                 .orElseThrow(() -> new IllegalArgumentException("Song not found: " + dto.getSongId()));
         SongReview rev = new SongReview(
-                null, song, user, dto.getGrade(), dto.getDescription(), java.time.LocalDate.now()
+                null, song, user, dto.getGrade(), dto.getDescription(), java.time.LocalDateTime.now()
         );
         songReviewRepository.save(rev);
         return new SongReviewResponseDto(
@@ -203,7 +203,7 @@ public class ReviewService {
         Song song = rev.getSong();
         return new SongReviewResponseDto(
                 rev.getId(), song.getId(), song.getName(), user.getId(), user.getUsername(), rev.getGrade(),
-                rev.getDescription(), LocalDate.now(), "/images/song/" + song.getId()
+                rev.getDescription(), LocalDateTime.now(), "/images/song/" + song.getId()
         );
     }
 
@@ -271,7 +271,7 @@ public class ReviewService {
         Album album = albumRepository.findById(dto.getAlbumId())
                 .orElseThrow(() -> new IllegalArgumentException("Album not found: " + dto.getAlbumId()));
         AlbumReview rev = new AlbumReview(
-                null, album, user, dto.getGrade(), dto.getDescription(), java.time.LocalDate.now()
+                null, album, user, dto.getGrade(), dto.getDescription(), java.time.LocalDateTime.now()
         );
         albumReviewRepository.save(rev);
         return new AlbumReviewResponseDto(
@@ -294,7 +294,7 @@ public class ReviewService {
         Album album = rev.getAlbum();
         return new AlbumReviewResponseDto(
                 rev.getId(), album.getId(), album.getName(), user.getId(), user.getUsername(), rev.getGrade(),
-                rev.getDescription(), LocalDate.now(), "/images/album/" + album.getId()
+                rev.getDescription(), LocalDateTime.now(), "/images/album/" + album.getId()
         );
     }
 

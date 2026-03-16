@@ -150,6 +150,45 @@ export const artistCreateDefaultValues: ArtistCreateForm = {
   albumIds: [],
 };
 
+export interface UserPartialDto {
+  id: number;
+  username: string;
+}
+
+export interface PlaylistResponseDto {
+  id: number;
+  name: string;
+  image: string;
+  description: string;
+  isPrivate: boolean;
+  ownerId: number;
+  ownerUsername: string;
+  creationDate: string;
+  lastEditedBy: UserPartialDto;
+  songs: SongPartialDto[];
+  collaborators: UserPartialDto[];
+}
+
+export const playlistCreateSchema = z.object({
+  name: z.string().min(1, { message: "Playlist name is required." }),
+  image: z.instanceof(File).optional(),
+  description: z.string().max(255, { message: "Description must be at most 255 characters." }).optional(),
+  isPrivate: z.boolean().default(false),
+  songIds: z.array(z.number()).default([]).optional(),
+  collaboratorIds: z.array(z.number()).default([]).optional(),
+});
+
+export type PlaylistCreateForm = z.infer<typeof playlistCreateSchema>;
+
+export const playlistCreateDefaultValues: PlaylistCreateForm = {
+  name: "",
+  image: undefined,
+  description: undefined,
+  isPrivate: false,
+  songIds: [],
+  collaboratorIds: [],
+};
+
 export interface GenreResponseDto {
   id: number;
   name: string;

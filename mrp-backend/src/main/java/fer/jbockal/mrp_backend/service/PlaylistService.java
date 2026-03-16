@@ -72,7 +72,9 @@ public class PlaylistService {
     }
 
     public PlaylistResponseDto update(Object principal, Long id, PlaylistRequestDto dto) {
-        Playlist p = checkIsOwnerOrAdmin(principal, id);
+//        Playlist p = checkIsOwnerOrAdmin(principal, id);
+        Playlist p = playlistRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Playlist not found: " + id));
 
         if (dto.getName() != null) p.setName(dto.getName());
         if (dto.getImage() != null) p.setImage(dto.getImage());
@@ -150,6 +152,12 @@ public class PlaylistService {
 
     public Page<PlaylistResponseDto> listPublic(Pageable pageable) {
         Page<PlaylistRow> rows = playlistRepository.findPublicRows(pageable);
+        return toDtosFromRows(rows);
+    }
+
+    public Page<PlaylistResponseDto> listPublicAndMine(Object principal, Pageable pageable) {
+        AppUser u = appUserService.resolveAppUserFromPrincipal(principal);
+        Page<PlaylistRow> rows = playlistRepository.findPublicAndUserRows(u, pageable);
         return toDtosFromRows(rows);
     }
 
