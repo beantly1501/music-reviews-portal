@@ -3,7 +3,7 @@ package fer.jbockal.mrp_backend.dto.review;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -24,7 +24,7 @@ public sealed interface ReviewResponseDto permits SongReviewResponseDto, AlbumRe
 
     String description();
 
-    LocalDate creationDate();
+    LocalDateTime creationDate();
 
     String image();
 }

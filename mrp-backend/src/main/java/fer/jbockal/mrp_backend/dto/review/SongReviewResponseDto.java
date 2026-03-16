@@ -1,6 +1,6 @@
 package fer.jbockal.mrp_backend.dto.review;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record SongReviewResponseDto(
         Long id,
@@ -10,7 +10,7 @@ public record SongReviewResponseDto(
         String username,
         Integer grade,
         String description,
-        LocalDate creationDate,
+        LocalDateTime creationDate,
         String image
 ) implements ReviewResponseDto {
 }

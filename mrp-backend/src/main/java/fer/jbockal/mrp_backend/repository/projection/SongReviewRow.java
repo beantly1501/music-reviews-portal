@@ -1,6 +1,6 @@
 package fer.jbockal.mrp_backend.repository.projection;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface SongReviewRow {
     Long getId();
@@ -17,5 +17,5 @@ public interface SongReviewRow {
 
     String getDescription();
 
-    LocalDate getCreationDate();
+    LocalDateTime getCreationDate();
 }
