@@ -36,20 +36,20 @@
 </template>
 
 <script setup lang="ts">
+import type { PlaylistResponseDto } from "@/shared";
+import { Button, ProgressSpinner } from "primevue";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { ProgressSpinner, Button } from "primevue";
-import type { PlaylistResponseDto } from "@/shared";
-import PlaylistCard from "./PlaylistCard.vue";
 import CreatePlaylistDialog from "./CreatePlaylistDialog.vue";
-import { useGetPublicPlaylists } from "./hooks/useGetAllPlaylists";
+import { useGetPublicAndMyPlaylists } from "./hooks/useGetAllPlaylists";
+import PlaylistCard from "./PlaylistCard.vue";
 
 const {
   data: playlists,
   isLoading,
   error,
   refetch: refetchPlaylists,
-} = useGetPublicPlaylists();
+} = useGetPublicAndMyPlaylists();
 
 const router = useRouter();
 const isDialogVisible = ref(false);

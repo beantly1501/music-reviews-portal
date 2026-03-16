@@ -11,7 +11,7 @@ type Options = {
   page?: number;
   size?: number;
   sort?: string | string[];
-  scope?: "public" | "mine" | "admin";
+  scope?: "public-and-mine" | "mine" | "admin";
 };
 
 export function useGetPlaylists(options: Options = {}) {
@@ -19,7 +19,7 @@ export function useGetPlaylists(options: Options = {}) {
     page: initialPage = 0,
     size: initialSize = 100,
     sort,
-    scope = "public",
+    scope = "public-and-mine",
   } = options;
 
   const [data, setData] = useState<PlaylistType[]>([]);

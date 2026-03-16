@@ -117,7 +117,15 @@
     <Card v-if="playlist.collaborators?.length" class="w-full">
       <template #title>Collaborators</template>
       <template #content>
-        <DataTable :value="playlist.collaborators">
+        <DataTable
+          :value="playlist.collaborators"
+          selectionMode="single"
+          row-hover
+          class="cursor-pointer"
+          @row-click="(e) => e.data.username === user?.username
+            ? router.push({ name: 'profile' })
+            : router.push({ name: 'user', params: { id: e.data.id } })"
+        >
           <Column field="username" header="Username" />
         </DataTable>
       </template>

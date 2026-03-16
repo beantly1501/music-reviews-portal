@@ -57,7 +57,7 @@ const initialValues = computed(() => {
   if (props.playlist) {
     return {
       name: props.playlist.name,
-      description: props.playlist.description,
+      description: props.playlist.description ?? undefined,
       isPrivate: props.playlist.isPrivate,
       songIds: props.playlist.songs?.map((s) => s.id) || [],
       collaboratorIds: props.playlist.collaborators?.map((c) => c.id) || [],

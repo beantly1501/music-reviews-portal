@@ -155,6 +155,12 @@ public class PlaylistService {
         return toDtosFromRows(rows);
     }
 
+    public Page<PlaylistResponseDto> listPublicAndMine(Object principal, Pageable pageable) {
+        AppUser u = appUserService.resolveAppUserFromPrincipal(principal);
+        Page<PlaylistRow> rows = playlistRepository.findPublicAndUserRows(u, pageable);
+        return toDtosFromRows(rows);
+    }
+
     public Page<PlaylistResponseDto> listAllAsAdmin(Object principal, Pageable pageable) {
         AppUser u = appUserService.resolveAppUserFromPrincipal(principal);
         if (u.getRole() != Role.ADMIN) throw new SecurityException("Admin required");
