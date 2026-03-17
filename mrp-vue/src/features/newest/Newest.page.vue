@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-2 p-4">
+  <div class="flex flex-col gap-2">
     <h1 class="text-3xl font-bold text-center">Newest Reviews</h1>
 
     <div v-if="isLoading" class="flex justify-center items-center h-64">
