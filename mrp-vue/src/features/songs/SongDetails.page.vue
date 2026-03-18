@@ -116,6 +116,26 @@
       </template>
     </Card>
 
+    <Card v-if="song.albums?.length" class="w-full">
+      <template #title>Albums</template>
+      <template #content>
+        <DataTable :value="song.albums" removableSort :row-hover="true" class="cursor-pointer" @row-click="(e) => router.push({ name: 'album-details', params: { id: e.data.id } })">
+          <Column field="name" header="Name" sortable>
+            <template #body="slotProps">
+              <span
+              >{{ slotProps.data.name }}</span>
+            </template>
+          </Column>
+          <Column field="year" header="Year" sortable>
+            <template #body="slotProps">
+              <span
+              >{{ slotProps.data.year }}</span>
+            </template>
+          </Column>
+        </DataTable>
+      </template>
+    </Card>
+
     <Card class="w-full">
       <template #title>Reviews</template>
       <template #content>

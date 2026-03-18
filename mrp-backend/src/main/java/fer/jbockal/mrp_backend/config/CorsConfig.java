@@ -17,6 +17,7 @@ public class CorsConfig {
 
         cfg.setAllowedOrigins(List.of(
                 "https://music-reviews-portal-react.onrender.com",
+                "https://music-reviews-portal-vue.onrender.com",
                 "http://localhost:5173",
                 "http://localhost:5174"
         ));

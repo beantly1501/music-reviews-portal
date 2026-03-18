@@ -155,6 +155,13 @@ export interface UserPartialDto {
   username: string;
 }
 
+export interface UserResponseDto {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+}
+
 export interface PlaylistResponseDto {
   id: number;
   name: string;

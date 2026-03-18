@@ -1,6 +1,6 @@
 <template>
   <Card
-    class="w-[300px] rounded-lg! shadow-md! shadow-black m-4 overflow-hidden cursor-pointer"
+    class="w-[300px] rounded-lg! shadow-md! shadow-black m-3 overflow-hidden cursor-pointer"
     @click="onCardClick"
   >
     <template #header>
@@ -51,11 +51,13 @@
         <span class="text-xs text-gray-400">
           {{ new Date(review.creationDate).toLocaleDateString("hr-HR") }}
         </span>
-        <Tag
-          :value="review.username"
-          severity="warn"
-          class="font-semibold px-3 py-1"
-        />
+        <span @click.stop="router.push(`/user/${review.userId}`)">
+          <Tag
+            :value="review.username"
+            severity="warn"
+            class="font-semibold px-3 py-1 cursor-pointer"
+          />
+        </span>
       </div>
     </template>
   </Card>
@@ -71,10 +73,13 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { useRouter } from "vue-router";
 import { Card, Tag, Rating, Image, ProgressSpinner } from "primevue";
 import type { ReviewResponse } from "@/shared";
 import { useGetFile } from "@/shared";
 import { ReviewDialog } from "@/features";
+
+const router = useRouter();
 
 const props = defineProps<{
   review: ReviewResponse;

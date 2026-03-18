@@ -12,6 +12,7 @@ import {
   LoginPage,
   NewestPage,
   ProfilePage,
+  UserPage,
   RegisterPage,
 } from "@/features";
 import { AllReviewsPage } from "@/features/all-reviews";
@@ -32,7 +33,7 @@ const routes: RouteRecordRaw[] = [
       { path: "artists", name: "artists", component: ArtistsPage },
       { path: "playlists", name: "playlists", component: PlaylistsPage },
       { path: "profile", name: "profile", component: ProfilePage },
-      { path: "user/:id", name: "user", component: Test },
+      { path: "user/:id", name: "user", component: UserPage },
     ],
   },
   { path: "/song/:id", name: "song-details", component: SongDetails },

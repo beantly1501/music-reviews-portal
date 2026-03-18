@@ -204,6 +204,7 @@ public class PlaylistService {
                 .orElseThrow(() -> new IllegalArgumentException("Playlist not found: " + playlistId));
         if (actor.getRole() == Role.ADMIN) return p;
         if (p.getOwner().getId().equals(actor.getId())) return p;
+        if (p.getCollaborators().contains(actor)) return p;
         if (!p.isPrivate()) return p;
         throw new SecurityException("Only owner or admin can perform this action");
     }
