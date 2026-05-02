@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col mt-20 mx-6">
+  <div class="max-w-md mx-auto mt-20 p-6 border border-white/20 rounded shadow">
     <p class="text-2xl font-bold mb-4">Login</p>
 
     <form @submit="onSubmit" class="flex flex-col gap-4">
@@ -16,12 +16,10 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <Button type="submit" class="font-bold">Login</Button>
-        <div class="flex gap-1.5">
+        <Button type="submit" label="Login" class="font-bold" />
+        <div class="flex gap-1.5 mt-2 text-sm">
           Don't have an account?
-          <p class="underline cursor-pointer" @click="navigateToRegister">
-            Register here.
-          </p>
+          <p class="underline cursor-pointer" @click="navigateToRegister">Register here.</p>
         </div>
       </div>
     </form>
