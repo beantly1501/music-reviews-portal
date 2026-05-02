@@ -29,7 +29,6 @@ export default function UserPage() {
     refetch: refreshRatings,
   } = useGetUserReviews(userId);
 
-  // public playlists for this user (server-side pageable)
   const {
     data: playlists,
     loading: playlistsLoading,
@@ -72,7 +71,7 @@ export default function UserPage() {
   };
 
   const onPlaylistsPage = (e: DataTablePageEvent) => {
-    if (typeof e.page === "number") setPage(e.page); // 0-based
+    if (typeof e.page === "number") setPage(e.page);
     if (typeof e.rows === "number") setSize(e.rows);
   };
 
@@ -84,16 +83,16 @@ export default function UserPage() {
 
   if (loadingAny && totalElements === 0 && (!reviews || reviews.length === 0)) {
     return (
-      <div className="page-status">
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
         <ProgressSpinner />
-        <div className="page-status__text">Loading…</div>
+        <div className="text-[#6b7280] text-[0.95rem]">Loading…</div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-column gap-4">
-      <div className="flex align-items-center justify-content-end">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-end">
         <UserInfo user={viewedUser} />
         <Button
           label="Back"
@@ -105,7 +104,7 @@ export default function UserPage() {
       </div>
 
       <div>
-        <div className="flex align-items-center justify-content-between">
+        <div className="flex items-center justify-between">
           <h2 className="m-0 mb-3">{viewedUser?.username}'s Reviews</h2>
           {reviewsError && (
             <div className="my-2">
@@ -170,14 +169,14 @@ export default function UserPage() {
       </div>
 
       <div className="mt-5">
-        <div className="flex align-items-center justify-content-between">
+        <div className="flex items-center justify-between">
           <h2 className="m-0 mb-3">
             {viewedUser && `${viewedUser.username}'s public playlists`}
           </h2>
         </div>
 
         {playlistsError && (
-          <div className="my-3 flex align-items-center gap-2">
+          <div className="my-3 flex items-center gap-2">
             <Message severity="error" text={`Error: ${playlistsError}`} />
             <Button
               label="Retry"
@@ -206,7 +205,7 @@ export default function UserPage() {
           <Column
             header="Name"
             body={(row: PlaylistType) => (
-              <div className="flex align-items-center gap-3">
+              <div className="flex items-center gap-3">
                 <span className="font-medium">{row.name}</span>
               </div>
             )}
@@ -237,9 +236,9 @@ export default function UserPage() {
         </DataTable>
 
         {playlistsLoading && (playlists?.length ?? 0) > 0 && (
-          <div className="flex align-items-center gap-2 mt-3">
+          <div className="flex items-center gap-2 mt-3">
             <ProgressSpinner style={{ width: 24, height: 24 }} />
-            <span className="text-500">Loading page…</span>
+            <span className="text-gray-500">Loading page…</span>
           </div>
         )}
       </div>

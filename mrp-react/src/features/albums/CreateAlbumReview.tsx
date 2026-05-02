@@ -78,7 +78,7 @@ export const CreateAlbumReview = ({
             name="grade"
             control={control}
             render={({ field }) => (
-              <div className="flex flex-column gap-1 mb-3">
+              <div className="flex flex-col gap-1 mb-3">
                 <label htmlFor="grade" style={{ width: "100px" }}>
                   Grade
                 </label>
@@ -88,7 +88,7 @@ export const CreateAlbumReview = ({
                   value={field.value}
                   onChange={(e) => field.onChange(e.value)}
                   cancel={false}
-                  className="w-full justify-content-center"
+                  className="w-full justify-center"
                   stars={5}
                 />
                 {errors.grade && (
@@ -102,7 +102,7 @@ export const CreateAlbumReview = ({
             name="description"
             control={control}
             render={({ field }) => (
-              <div className="flex flex-column gap-2">
+              <div className="flex flex-col gap-2">
                 <label htmlFor="description">Description</label>
                 <InputTextarea
                   id="description"

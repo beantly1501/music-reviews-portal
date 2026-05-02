@@ -15,45 +15,40 @@ export default function SongsPage() {
 
   if (loading) {
     return (
-      <div className="page-status">
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
         <ProgressSpinner />
-        <div className="page-status__text">Loading…</div>
+        <div className="text-[#6b7280] text-[0.95rem]">Loading…</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="page-status">
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
         <Message severity="error" text={`Error: ${error}`} />
-        <Button
-          label="Retry"
-          icon="pi pi-refresh"
-          onClick={refetch}
-          className="page-status__action"
-        />
+        <Button label="Retry" icon="pi pi-refresh" onClick={refetch} className="mt-1" />
       </div>
     );
   }
 
   return (
     <>
-      <div className="flex flex-column justify-content-center align-items-center gap-4">
+      <div className="flex flex-col justify-center items-center gap-4">
         {user?.role === UserRoleEnum.ADMIN && (
           <Button
             label="Add New Song"
             icon="pi pi-plus"
-            className="w-15rem"
+            className="w-[15rem]"
             onClick={() => setVisibleDialog(true)}
           />
         )}
-        <div className="flex flex flex-wrap gap-4 justify-content-center">
+        <div className="flex flex-wrap gap-4 justify-center">
           {songs.map((song) => (
             <SongCard key={`song${song.id}`} song={song} refetch={refetch} />
           ))}
 
           {!loading && !error && songs.length === 0 && (
-            <div className="text-empty">No songs found.</div>
+            <div className="text-[#6b7280] text-[0.95rem]">No songs found.</div>
           )}
         </div>
       </div>

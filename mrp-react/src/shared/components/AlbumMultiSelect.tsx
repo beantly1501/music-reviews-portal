@@ -46,13 +46,13 @@ export default function AlbumMultiSelect({
       appendTo={appendTo}
       className={className}
       itemTemplate={(opt: AlbumOption) => (
-        <div className="flex align-items-center justify-content-between w-full gap-2">
+        <div className="flex items-center justify-between w-full gap-2">
           <span>{opt.name}</span>
-          <small className="text-500">{opt.year}</small>
+          <small className="text-gray-500">{opt.year}</small>
         </div>
       )}
       panelFooterTemplate={() => (
-        <div className="flex justify-content-center p-2">
+        <div className="flex justify-center p-2">
           <Button
             label="Create New Album"
             icon="pi pi-plus"

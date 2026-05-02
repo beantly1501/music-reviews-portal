@@ -147,15 +147,15 @@ export default function ReviewDialog({
   };
 
   const header = review && !loading && (
-    <div className="rdialog__header">
-      <div className="rdialog__header-left">
-        <span className="rdialog__title">
+    <div className="flex items-center justify-between gap-3 w-full">
+      <div className="ml-[5px]">
+        <span className="text-[1.2rem] font-bold">
           {review?.type === "SONG"
             ? (review?.songName ?? "Song")
             : (review?.albumName ?? "Album")}
         </span>
       </div>
-      <div className="rdialog__header-right flex gap-2">
+      <div className="flex items-center gap-5 mr-5">
         {canEdit && (
           <Button
             label="Edit"
@@ -199,28 +199,28 @@ export default function ReviewDialog({
       style={{ width: "60vw", maxWidth: 980 }}
     >
       {!reviewId && (
-        <div className="rdialog__center">
+        <div className="min-h-[30vh] flex flex-col items-center justify-center gap-[10px]">
           <Message severity="error" text="Invalid review id." />
         </div>
       )}
 
       {reviewId && loading && (
-        <div className="rdialog__center">
+        <div className="min-h-[30vh] flex flex-col items-center justify-center gap-[10px]">
           <ProgressSpinner />
-          <div className="rdialog__loading-text">Loading…</div>
+          <div className="text-[#6b7280]">Loading…</div>
         </div>
       )}
 
       {reviewId && !loading && (error || !review) && (
-        <div className="rdialog__center">
+        <div className="min-h-[30vh] flex flex-col items-center justify-center gap-[10px]">
           <Message severity="error" text={error ?? "Review not found."} />
         </div>
       )}
 
       {reviewId && !loading && review && (
-        <Card className="rdialog__card p-shadow-2">
-          <div className="rdialog__hero">
-            <div className="rdialog__hero-media">
+        <Card className="rdialog__card shadow-md">
+          <div className="rdialog__hero" style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 20, padding: "16px 16px 0 16px" }}>
+            <div className="w-full h-[220px] bg-[#f5f5f5] overflow-hidden rounded-[10px]">
               <Image
                 src={
                   !loadingReviewImg && reviewImgExists
@@ -232,14 +232,14 @@ export default function ReviewDialog({
                     ? (review.songName ?? "Song")
                     : (review.albumName ?? "Album")
                 }
-                imageClassName="rdialog__hero-img"
+                imageClassName="w-full h-full object-cover"
               />
             </div>
 
-            <div className="rdialog__hero-info">
-              <div className="rdialog__meta">
+            <div className="flex flex-col gap-[10px]">
+              <div className="flex items-center gap-2 text-[#6b7280] text-[0.95rem]">
                 <span
-                  className="rdialog__meta-item cursor-pointer select-none"
+                  className="inline-flex items-center gap-[6px] cursor-pointer select-none"
                   onClick={() => {
                     if (user?.id === review?.userId) {
                       navigate(`/profile`);
@@ -250,47 +250,47 @@ export default function ReviewDialog({
                 >
                   <i className="pi pi-user" /> {review.username}
                 </span>
-                <span className="rdialog__meta-sep">•</span>
-                <span className="rdialog__meta-item">
+                <span className="opacity-70">•</span>
+                <span className="inline-flex items-center gap-[6px]">
                   <i className="pi pi-calendar" /> {createdAt}
                 </span>
               </div>
 
-              <div className="rdialog__rating">
+              <div className="mt-1">
                 <Rating value={review.grade} cancel={false} readOnly />
               </div>
 
-              <p className="rdialog__text">{review.description}</p>
+              <p className="m-0 text-[#374151] leading-[1.65] text-[0.98rem]">{review.description}</p>
             </div>
           </div>
 
           <Divider />
 
-          <div className="rdialog__section">
-            <div className="rdialog__entity">
-              <div className="rdialog__entity-body">
+          <div className="px-4 pb-4">
+            <div className="rdialog__entity" style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 16, alignItems: "start" }}>
+              <div className="flex flex-col gap-[10px]">
                 {review.type === "SONG" && entity && (
                   <>
-                    <div className="rdialog__entity-title">
+                    <div className="font-bold text-[1.1rem]">
                       {(entity as SongType).name}
                     </div>
                     {(entity as SongType).year ? (
-                      <div className="rdialog__entity-sub">
+                      <div className="text-[#6b7280] text-[0.95rem]">
                         Released {(entity as SongType).year}
                       </div>
                     ) : null}
 
-                    <div className="rdialog__entity-tags">
+                    <div className="flex gap-2 flex-wrap my-[6px]">
                       {(entity as SongType).genres?.map((g) => (
                         <Chip
                           key={g.id}
                           label={g.name}
-                          className="rdialog__tag"
+                          className="text-[0.85rem]"
                         />
                       ))}
                     </div>
 
-                    <div className="rdialog__entity-actions">
+                    <div className="mt-1">
                       {(entity as SongType).link && (
                         <Button
                           label="Open Song Link"
@@ -306,16 +306,16 @@ export default function ReviewDialog({
 
                 {review.type === "ALBUM" && entity && (
                   <>
-                    <div className="rdialog__entity-title">
+                    <div className="font-bold text-[1.1rem]">
                       {(entity as AlbumType).name}
                     </div>
                     {(entity as AlbumType).year ? (
-                      <div className="rdialog__entity-sub">
+                      <div className="text-[#6b7280] text-[0.95rem]">
                         Released {(entity as AlbumType).year}
                       </div>
                     ) : null}
 
-                    <div className="rdialog__entity-actions">
+                    <div className="mt-1">
                       {(entity as AlbumType).link && (
                         <Button
                           label="Open Album Link"
@@ -330,13 +330,13 @@ export default function ReviewDialog({
                 )}
 
                 {(loadingSong || loadingAlbum) && (
-                  <div className="rdialog__entity-loading">
+                  <div className="text-[#6b7280] text-[0.95rem]">
                     <i className="pi pi-spin pi-spinner" /> Loading details…
                   </div>
                 )}
                 {(songError || albumError) && (
-                  <div className="rdialog__entity-error">
-                    <i className="pi pi-exclamation-triangle" /> Couldn’t load
+                  <div className="text-[#6b7280] text-[0.95rem]">
+                    <i className="pi pi-exclamation-triangle" /> Couldn't load
                     details.
                   </div>
                 )}
@@ -348,7 +348,7 @@ export default function ReviewDialog({
                   ) : songAudioExists && songAudio ? (
                     <audio controls src={songAudio} className="w-full" />
                   ) : (
-                    <div className="song-card__placeholder">
+                    <div className="w-full h-full">
                       No audio file available.
                     </div>
                   )}

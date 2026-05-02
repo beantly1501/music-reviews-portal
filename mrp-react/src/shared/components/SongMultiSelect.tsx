@@ -50,16 +50,16 @@ export default function SongMultiSelect({
       appendTo={appendTo}
       className={className}
       itemTemplate={(opt: SongOption) => (
-        <div className="flex align-items-center justify-content-between w-full gap-2">
+        <div className="flex items-center justify-between w-full gap-2">
           <span>{opt.name}</span>
-          {opt.year ? <small className="text-500">{opt.year}</small> : null}
+          {opt.year ? <small className="text-gray-500">{opt.year}</small> : null}
         </div>
       )}
       /* keep PrimeReact header (with built-in filter) and add our button to the footer */
       panelFooterTemplate={() => {
         if (user?.role === UserRoleEnum.ADMIN) {
           return (
-            <div className="flex justify-content-center p-2">
+            <div className="flex justify-center p-2">
               <Button
                 label="Create New Song"
                 icon="pi pi-plus"

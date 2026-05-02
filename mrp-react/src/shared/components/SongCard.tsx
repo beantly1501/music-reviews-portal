@@ -60,9 +60,9 @@ export default function SongCard({ song, refetch }: Props) {
   };
 
   const header = (
-    <div className="song-card__img-wrap">
+    <div className="w-full h-[180px] bg-[#f5f5f5] overflow-hidden">
       {loadingImage ? (
-        <div className="song-card__img placeholder flex align-items-center justify-content-center">
+        <div className="w-full h-full flex items-center justify-center">
           <i className="pi pi-spin pi-spinner" />
         </div>
       ) : (
@@ -77,13 +77,14 @@ export default function SongCard({ song, refetch }: Props) {
   return (
     <>
       <Card
-        className="song-card p-card p-shadow-2 select-none cursor-pointer"
+        className="song-card shadow-md select-none cursor-pointer"
+        style={{ width: 320, height: 560, display: "flex", flexDirection: "column" }}
         header={header}
         onClick={() => navigate(`/song/${song.id}`)}
       >
-        <div className="song-card__content">
-          <div className="song-card__title-row">
-            <h3 className="song-card__title">{song.name}</h3>
+        <div className="flex flex-col px-5 py-5 flex-1">
+          <div className="flex items-center justify-between min-h-[40px] mb-1">
+            <h3 className="m-0 text-xl leading-tight line-clamp-2">{song.name}</h3>
             <Tag
               value="Reviewed"
               severity="success"
@@ -91,19 +92,14 @@ export default function SongCard({ song, refetch }: Props) {
             />
           </div>
 
-          <div className="song-card__subtitle">Released {song.year}.</div>
+          <div className="min-h-[22px] text-[#6b6b6b]">Released {song.year}.</div>
 
-          <div className="song-card__chips">
+          <div className="min-h-[44px] flex flex-wrap gap-2 mt-2">
             {visibleGenres.map((g) => (
-              <Chip
-                key={g.id}
-                label={truncate(g.name, 10)}
-                className="h-2rem"
-              />
+              <Chip key={g.id} label={truncate(g.name, 10)} className="h-8" />
             ))}
             {hasMoreGenres && (
               <span
-                className="song-card__chips-more"
                 title={hiddenGenresTitle}
                 aria-label={`and ${genres.length - MAX_GENRES} more genres`}
               >
@@ -112,22 +108,20 @@ export default function SongCard({ song, refetch }: Props) {
             )}
           </div>
 
-          <div className="song-card__spacer" />
+          <div className="flex-1" />
 
-          <div className="song-card__controls">
-            <div className="song-card__audio">
+          <div className="flex flex-col gap-[25px] pt-2">
+            <div className="h-[42px] flex items-center">
               {loadingAudio ? (
                 <i className="pi pi-spin pi-spinner" />
               ) : audioExists && audioUrl ? (
-                <audio controls src={audioUrl} />
+                <audio controls src={audioUrl} className="w-full" />
               ) : (
-                <div className="song-card__placeholder">
-                  No audio file available.
-                </div>
+                <div className="w-full h-full">No audio file available.</div>
               )}
             </div>
 
-            <div className="song-card__link">
+            <div className="h-[44px] flex items-center justify-center">
               <Button
                 label="Open Spotify / Youtube link"
                 icon="pi pi-external-link"
@@ -139,7 +133,7 @@ export default function SongCard({ song, refetch }: Props) {
               />
             </div>
 
-            <div className="song-card__review">
+            <div className="h-[44px] flex items-center justify-center">
               {song.grade ? (
                 <Rating value={song.grade} cancel={false} />
               ) : (
@@ -155,7 +149,7 @@ export default function SongCard({ song, refetch }: Props) {
             </div>
 
             {song.averageRating && (
-              <div className="flex justify-content-center gap-2">
+              <div className="flex justify-center gap-2">
                 Average:
                 <i className="pi pi-star my-auto" />
                 {`${song.averageRating} / 5`}

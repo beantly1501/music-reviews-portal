@@ -183,7 +183,7 @@ export default function CreateAlbumDialog({
             )}
           </div>
 
-          <div className="flex justify-content-around gap-3">
+          <div className="flex justify-around gap-3">
             <div className="field">
               <label htmlFor="cover">Cover Image</label>
               <Controller

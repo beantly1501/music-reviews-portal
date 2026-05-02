@@ -8,7 +8,7 @@ interface Props {
 
 export default function WIPInputText({ label, name, required = false }: Props) {
   return (
-    <div className="flex flex-column gap-2">
+    <div className="flex flex-col gap-2">
       <label htmlFor={name}>{label}</label>
       <PrimeReactInputText name={name} required={required} />
     </div>

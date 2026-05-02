@@ -45,23 +45,18 @@ export default function AllReviewsPage() {
 
   if (loading) {
     return (
-      <div className="page-status">
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
         <ProgressSpinner />
-        <div className="page-status__text">Loading…</div>
+        <div className="text-[#6b7280] text-[0.95rem]">Loading…</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="page-status">
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
         <Message severity="error" text={`Error: ${error}`} />
-        <Button
-          label="Retry"
-          icon="pi pi-refresh"
-          onClick={refetch}
-          className="page-status__action"
-        />
+        <Button label="Retry" icon="pi pi-refresh" onClick={refetch} className="mt-1" />
       </div>
     );
   }

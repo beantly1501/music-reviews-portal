@@ -93,7 +93,7 @@ export default function CreateSongDialog({
             )}
           </div>
 
-          <div className="flex justify-content-around gap-3">
+          <div className="flex justify-around gap-3">
             <div className="field">
               <label htmlFor="file">Audio File</label>
               <Controller

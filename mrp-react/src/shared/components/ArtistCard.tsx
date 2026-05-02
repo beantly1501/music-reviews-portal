@@ -18,16 +18,16 @@ export default function ArtistCard({ artist }: Props) {
   );
 
   const header = (
-    <div className="artist-card__img-wrap">
+    <div className="mb-4 w-full h-[180px] bg-[#f5f5f5]">
       {loading ? (
-        <div className="artist-card__spinner">
+        <div className="w-full h-full flex items-center justify-center">
           <i className="pi pi-spin pi-spinner" />
         </div>
       ) : (
         <Image
           src={exists && image ? image : undefined}
-          imageClassName="artist-card__img"
-          className="artist-card__img-container"
+          imageClassName="w-full h-full object-cover block"
+          className="block w-full h-full"
         />
       )}
     </div>
@@ -40,18 +40,19 @@ export default function ArtistCard({ artist }: Props) {
     <Card
       header={header}
       title={artist.name}
-      className="artist-card p-shadow-2 cursor-pointer select-none"
+      className="artist-card shadow-md cursor-pointer select-none"
+      style={{ width: 300 }}
       onClick={() => navigate(`/artist/${artist.id}`)}
     >
       {artist.description && (
-        <p className="artist-card__desc">{artist.description}</p>
+        <p className="mt-5 text-sm text-[#374151]">{artist.description}</p>
       )}
-      <div className="flex gap-2 justify-content-end">
-        <span className="card-stat">
+      <div className="flex gap-2 justify-end">
+        <span className="inline-flex items-center gap-[6px]">
           <i className="pi pi-headphones" />
           <Badge value={songsCount} />
         </span>
-        <span className="card-stat">
+        <span className="inline-flex items-center gap-[6px]">
           <i className="pi pi-folder-open" />
           <Badge value={albumsCount} />
         </span>

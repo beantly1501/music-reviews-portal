@@ -131,9 +131,9 @@ export default function SongDetailsPage() {
 
   if (loadingSong) {
     return (
-      <div className="page-status">
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
         <ProgressSpinner />
-        <div className="page-status__text">Loading song…</div>
+        <div className="text-[#6b7280] text-[0.95rem]">Loading song…</div>
       </div>
     );
   }
@@ -150,8 +150,8 @@ export default function SongDetailsPage() {
   };
 
   return (
-    <div className="song-details-page p-3">
-      <div className="flex justify-content-between">
+    <div className="p-3">
+      <div className="flex justify-between">
         <div>
           <Button
             label="Home"
@@ -161,7 +161,7 @@ export default function SongDetailsPage() {
             outlined
           />
         </div>
-        <div className="flex justify-content-end mb-3 gap-3">
+        <div className="flex justify-end mb-3 gap-3">
           {canModify && (
             <div className="flex gap-3">
               <Button
@@ -190,14 +190,11 @@ export default function SongDetailsPage() {
         </div>
       </div>
 
-      <Card
-        className="p-shadow-2"
-        style={{ overflow: "hidden", borderRadius: 12 }}
-      >
-        <div className="flex gap-4 flex-column md:flex-row">
+      <Card className="shadow-md" style={{ overflow: "hidden", borderRadius: 12 }}>
+        <div className="flex gap-4 flex-col md:flex-row">
           <div style={{ width: 300, maxWidth: "100%" }}>
             {loadingImage ? (
-              <div className="song-card__img placeholder flex align-items-center justify-content-center">
+              <div className="flex items-center justify-center">
                 <i className="pi pi-spin pi-spinner" />
               </div>
             ) : (
@@ -215,19 +212,13 @@ export default function SongDetailsPage() {
             </div>
 
             {song.year ? (
-              <div className="text-color-secondary mb-2">
-                Released {song.year}
-              </div>
+              <div className="text-gray-500 mb-2">Released {song.year}</div>
             ) : null}
 
             {Array.isArray(song.genres) && song.genres.length > 0 && (
               <div className="flex gap-2 flex-wrap mb-3">
                 {song.genres.map((g: GenreType) => (
-                  <Chip
-                    key={g.id ?? g.name}
-                    label={g.name}
-                    className="rdialog__tag"
-                  />
+                  <Chip key={g.id ?? g.name} label={g.name} className="text-[0.85rem]" />
                 ))}
               </div>
             )}
@@ -246,7 +237,7 @@ export default function SongDetailsPage() {
                 ) : audioExists && audioUrl ? (
                   <audio controls src={audioUrl} className="my-auto" />
                 ) : (
-                  <div className="song-card__placeholder my-auto">
+                  <div className="my-auto">
                     <p>No audio file available.</p>
                   </div>
                 )}
@@ -259,7 +250,7 @@ export default function SongDetailsPage() {
       <Divider />
 
       <Card>
-        <div className="flex align-items-center justify-content-between mb-2">
+        <div className="flex items-center justify-between mb-2">
           <h2 className="m-0">Albums</h2>
         </div>
 
@@ -280,7 +271,7 @@ export default function SongDetailsPage() {
       <Divider />
 
       <Card>
-        <div className="flex align-items-center justify-content-between mb-2">
+        <div className="flex items-center justify-between mb-2">
           <h2 className="m-0">Reviews</h2>
           {reviewsError && <Message severity="error" text={reviewsError} />}
         </div>

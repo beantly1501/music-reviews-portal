@@ -102,7 +102,7 @@ export default function MyProfilePage() {
   }
 
   return (
-    <div className="flex flex-column gap-4">
+    <div className="flex flex-col gap-4">
       <UserInfo user={user} logout={logout} />
 
       <div>
@@ -153,24 +153,24 @@ export default function MyProfilePage() {
         </DataTable>
         {dialogVisible && selectedReviewId !== undefined && (
           <ReviewDialog
-            key={selectedReviewId} // force remount when a different row is clicked
+            key={selectedReviewId}
             visible={dialogVisible}
             onHide={closeDialog}
             reviewId={selectedReviewId}
             reviewType={selectedReviewType}
-            refetch={refreshRatings} // refresh list after edit/delete
+            refetch={refreshRatings}
           />
         )}
       </div>
 
       <div className="mt-5">
-        <div className="flex align-items-center justify-content-between">
+        <div className="flex items-center justify-between">
           <h1 className="m-0 mb-3">My playlists</h1>
-          <div className="text-500">{totalElements} total</div>
+          <div className="text-gray-500">{totalElements} total</div>
         </div>
 
         {playlistsError && (
-          <div className="my-3 flex align-items-center gap-2">
+          <div className="my-3 flex items-center gap-2">
             <Message severity="error" text={`Error: ${playlistsError}`} />
             <Button
               label="Retry"
@@ -199,7 +199,7 @@ export default function MyProfilePage() {
           <Column
             header="Name"
             body={(row: PlaylistType) => (
-              <div className="flex align-items-center gap-3">
+              <div className="flex items-center gap-3">
                 <span className="font-medium">{row.name}</span>
               </div>
             )}
@@ -230,9 +230,9 @@ export default function MyProfilePage() {
         </DataTable>
 
         {playlistsLoading && (playlists?.length ?? 0) > 0 && (
-          <div className="flex align-items-center gap-2 mt-3">
+          <div className="flex items-center gap-2 mt-3">
             <ProgressSpinner style={{ width: 24, height: 24 }} />
-            <span className="text-500">Loading page…</span>
+            <span className="text-gray-500">Loading page…</span>
           </div>
         )}
       </div>

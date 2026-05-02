@@ -45,7 +45,7 @@ export default function ArtistMultiSelect({
       appendTo={appendTo}
       className={className}
       panelFooterTemplate={() => (
-        <div className="flex justify-content-center p-2">
+        <div className="flex justify-center p-2">
           <Button
             label="Create New Artist"
             icon="pi pi-plus"
