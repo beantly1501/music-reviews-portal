@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/playlists")
+@RequestMapping({"/api/playlists", "/playlists"})
 public class PlaylistController {
 
     private final PlaylistService playlistService;

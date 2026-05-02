@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/health")
+@RequestMapping({"/api/health", "/health"})
 public class HealthCheckController {
 
     @GetMapping
