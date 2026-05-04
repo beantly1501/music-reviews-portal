@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { Dialog, Button, Rating, Textarea } from "primevue";
+import { Dialog, Button, Rating, Textarea, useToast } from "primevue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { songReviewSchema, albumReviewSchema } from "@/shared";
@@ -83,6 +83,7 @@ const emit = defineEmits<{
   (e: "success"): void;
 }>();
 
+const toast = useToast();
 const { updateSongReview, updateAlbumReview } = useUpdateReview();
 const { createSongReview, createAlbumReview } = useCreateReview();
 
@@ -125,6 +126,7 @@ const onSubmit = handleSubmit(async (values) => {
         await createAlbumReview(values as unknown as AlbumReviewForm);
       }
     }
+    toast.add({ severity: "success", summary: "Reviewed successfully" });
     emit("success");
     emit("update:visible", false);
     resetForm();
