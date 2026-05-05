@@ -7,7 +7,13 @@
       class="w-fit"
       @click="isDialogVisible = true"
     />
-    <div :class="isMobile ? 'flex flex-wrap gap-2' : 'flex flex-wrap gap-4'">
+    <div
+      :class="
+        isMobile
+          ? 'flex flex-wrap gap-2 justify-center'
+          : 'flex flex-wrap gap-4 justify-center'
+      "
+    >
       <SongCard
         v-for="song in songs"
         :key="song.id"

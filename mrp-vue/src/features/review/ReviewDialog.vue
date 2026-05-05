@@ -173,7 +173,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, toRef } from "vue";
 import {
   Dialog,
   Button,
@@ -220,7 +220,7 @@ const {
   isLoading,
   error,
   refetch: refetchReview,
-} = useGetReview(props.reviewId, props.reviewType);
+} = useGetReview(toRef(props, "reviewId"), toRef(props, "reviewType"));
 
 // Fetch Entity (Song or Album)
 const songId = computed(() =>

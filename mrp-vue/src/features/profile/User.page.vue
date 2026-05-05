@@ -30,6 +30,9 @@
           :loading="isLoadingReviews"
           :value="userReviews ?? []"
           removableSort
+          selectionMode="single"
+          class="cursor-pointer"
+          @row-click="(e) => openReviewDialog(e.data)"
         >
           <Column field="name" header="Name" :sortable="true">
             <template #body="{ data }: { data: ReviewResponse }">
@@ -54,6 +57,12 @@
           </Column>
         </DataTable>
       </div>
+
+      <ReviewDialog
+        v-model:visible="isReviewDialogVisible"
+        :review-id="selectedReview?.id"
+        :review-type="selectedReview?.type"
+      />
 
       <div class="flex flex-col w-full gap-4">
         <div class="flex justify-between items-center">
@@ -101,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Card, ProgressSpinner, Tag, Rating, Button } from "primevue";
 import DataTable from "primevue/datatable";
@@ -113,6 +122,7 @@ import {
   useGetReviewsByUserId,
   useGetPublicPlaylistsByUserId,
 } from "./hooks";
+import ReviewDialog from "@/features/review/ReviewDialog.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -122,4 +132,12 @@ const userId = computed(() => route.params.id);
 const { data: userData, isLoading: isLoadingUser } = useGetUserById(userId);
 const { data: userReviews, isLoading: isLoadingReviews } = useGetReviewsByUserId(userId);
 const { data: userPlaylists, isLoading: isLoadingPlaylists } = useGetPublicPlaylistsByUserId(userId);
+
+const isReviewDialogVisible = ref(false);
+const selectedReview = ref<ReviewResponse | null>(null);
+
+const openReviewDialog = (review: ReviewResponse) => {
+  selectedReview.value = review;
+  isReviewDialogVisible.value = true;
+};
 </script>
