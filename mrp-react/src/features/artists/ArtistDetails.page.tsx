@@ -78,9 +78,9 @@ export default function ArtistDetailsPage() {
 
   if (loadingArtist) {
     return (
-      <div className="page-status">
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
         <ProgressSpinner />
-        <div className="page-status__text">Loading artist…</div>
+        <div className="text-[#6b7280] text-[0.95rem]">Loading artist…</div>
       </div>
     );
   }
@@ -94,8 +94,8 @@ export default function ArtistDetailsPage() {
   const canModify = !!user && user.role === UserRoleEnum.ADMIN;
 
   return (
-    <div className="artist-details-page p-3">
-      <div className="flex justify-content-between mb-3">
+    <div className="p-3">
+      <div className="flex justify-between mb-3">
         <Button
           label="Home"
           icon="pi pi-home"
@@ -132,17 +132,11 @@ export default function ArtistDetailsPage() {
         </div>
       </div>
 
-      <Card
-        className="p-shadow-2"
-        style={{ overflow: "hidden", borderRadius: 12 }}
-      >
-        <div className="flex gap-4 flex-column md:flex-row">
+      <Card className="shadow-md" style={{ overflow: "hidden", borderRadius: 12 }}>
+        <div className="flex gap-4 flex-col md:flex-row">
           <div style={{ width: 300, maxWidth: "100%" }}>
             {loadingImage ? (
-              <div
-                className="placeholder flex align-items-center justify-content-center"
-                style={{ height: 280 }}
-              >
+              <div className="flex items-center justify-center" style={{ height: 280 }}>
                 <i className="pi pi-spin pi-spinner" />
               </div>
             ) : (
@@ -168,7 +162,7 @@ export default function ArtistDetailsPage() {
       <Divider />
 
       <Card>
-        <div className="flex align-items-center justify-content-between mb-2">
+        <div className="flex items-center justify-between mb-2">
           <h2 className="m-0">Songs this artist appears on</h2>
         </div>
 
@@ -195,7 +189,7 @@ export default function ArtistDetailsPage() {
       <Divider />
 
       <Card>
-        <div className="flex align-items-center justify-content-between mb-2">
+        <div className="flex items-center justify-between mb-2">
           <h2 className="m-0">Albums this artist appears on</h2>
         </div>
 

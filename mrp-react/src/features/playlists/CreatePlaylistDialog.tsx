@@ -232,7 +232,7 @@ export default function CreatePlaylistDialog({
             )}
           </div>
 
-          <div className="field flex align-items-center gap-2">
+          <div className="field flex items-center gap-2">
             <Controller
               name="isPrivate"
               control={control}
@@ -296,7 +296,7 @@ export default function CreatePlaylistDialog({
             />
           </div>
 
-          <div className="flex justify-content-end gap-2 mt-3">
+          <div className="flex justify-end gap-2 mt-3">
             <Button type="submit" label="Create" loading={isSubmitting} />
           </div>
         </form>

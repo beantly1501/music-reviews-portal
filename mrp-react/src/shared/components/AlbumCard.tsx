@@ -4,7 +4,6 @@ import { Button } from "primereact/button";
 import { Rating } from "primereact/rating";
 import { Toast } from "primereact/toast";
 import { Image } from "primereact/image";
-import "primeflex/primeflex.css";
 
 import {
   AlbumReviewFormData,
@@ -50,16 +49,16 @@ export default function AlbumCard({ album, refetch }: Props) {
   const songsCount = album.songs?.length ?? 0;
 
   const header = (
-    <div className="album-card__img-wrap">
+    <div className="w-full aspect-video overflow-hidden bg-[#f5f5f5] rounded-tl-[14px] rounded-tr-[14px]">
       {loadingImage ? (
-        <div className="album-card__img placeholder flex align-items-center justify-content-center">
+        <div className="w-full h-full flex items-center justify-center">
           <i className="pi pi-spin pi-spinner" />
         </div>
       ) : (
         <Image
           src={imageExists && image ? image : undefined}
-          imageClassName="album-card__img"
-          className="album-card__img-container"
+          imageClassName="w-full h-full object-cover block"
+          className="block w-full h-full"
         />
       )}
     </div>
@@ -78,32 +77,28 @@ export default function AlbumCard({ album, refetch }: Props) {
   return (
     <>
       <Card
-        className="album-card p-shadow-2 select-none cursor-pointer"
+        className="album-card shadow-md select-none cursor-pointer"
+        style={{ width: 320, borderRadius: 14 }}
         header={header}
         onClick={() => navigate(`/album/${album.id}`)}
       >
-        <div className="album-card__body">
-          <div className="album-card__title-row">
-            <h3 className="album-card__title">{album.name}</h3>
-            <span className="card-stat">
+        <div className="mt-2 px-4 pt-3 pb-4 flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="m-0 text-lg font-bold">{album.name}</h3>
+            <span className="inline-flex items-center gap-[6px]">
               <i className="pi pi-headphones" />
               <Badge value={songsCount} />
             </span>
           </div>
 
-          <div className="album-card__subtitle">Released {album.year}.</div>
+          <div className="text-[#6b7280] text-[0.95rem]">Released {album.year}.</div>
 
-          <div className="song-card__chips">
+          <div className="min-h-[44px] flex flex-wrap gap-2 mt-2">
             {visibleGenres.map((g) => (
-              <Chip
-                key={g.id}
-                label={truncate(g.name, 10)}
-                className="h-2rem"
-              />
+              <Chip key={g.id} label={truncate(g.name, 10)} className="h-8" />
             ))}
             {hasMoreGenres && (
               <span
-                className="song-card__chips-more"
                 title={hiddenGenresTitle}
                 aria-label={`and ${genres.length - MAX_GENRES} more genres`}
               >
@@ -112,9 +107,9 @@ export default function AlbumCard({ album, refetch }: Props) {
             )}
           </div>
 
-          <div className="flex flex-column align-items-center gap-4 mb-2">
+          <div className="flex flex-col items-center gap-4 mb-2">
             {album.link && (
-              <div className="album-card__actions">
+              <div className="mt-2">
                 <Button
                   label="Open Album Link"
                   icon="pi pi-external-link"
@@ -126,7 +121,7 @@ export default function AlbumCard({ album, refetch }: Props) {
               </div>
             )}
 
-            <div className="album-card__rating">
+            <div className="mt-2">
               {typeof album.grade === "number" ? (
                 <Rating value={album.grade} cancel={false} />
               ) : (
@@ -142,7 +137,7 @@ export default function AlbumCard({ album, refetch }: Props) {
             </div>
 
             {album.averageRating && (
-              <div className="flex justify-content-center gap-2">
+              <div className="flex justify-center gap-2">
                 Average:
                 <i className="pi pi-star my-auto" />
                 {`${album.averageRating} / 5`}

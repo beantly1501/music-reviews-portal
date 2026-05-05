@@ -38,7 +38,7 @@ export default function UserMultiSelect({
       appendTo={appendTo}
       className={className}
       itemTemplate={(opt: UserOption) => (
-        <div className="flex align-items-center justify-content-between w-full gap-2">
+        <div className="flex items-center justify-between w-full gap-2">
           <span>{opt.username}</span>
         </div>
       )}

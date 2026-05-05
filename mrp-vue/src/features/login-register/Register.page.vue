@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col mt-20 mx-6">
+  <div class="max-w-md mx-auto mt-20 p-6 border border-white/20 rounded shadow">
     <p class="text-2xl font-bold mb-4">Register</p>
 
     <form @submit="onSubmit" class="flex flex-col gap-4">
@@ -23,29 +23,24 @@
 
       <div class="flex flex-col gap-2">
         <label>Role</label>
-
         <div class="flex gap-3">
           <div class="flex gap-2 items-center">
             <RadioButton inputId="user" v-model="role" value="USER" />
             <label for="user">USER</label>
           </div>
-
           <div class="flex gap-2 items-center">
             <RadioButton inputId="admin" v-model="role" value="ADMIN" />
             <label for="admin">ADMIN</label>
           </div>
         </div>
-
         <span class="text-sm text-red-500">{{ errors.role }}</span>
       </div>
 
       <div class="flex flex-col gap-1">
-        <Button type="submit" class="font-bold">Register</Button>
-        <div class="flex gap-1.5">
+        <Button type="submit" label="Register" class="font-bold" />
+        <div class="flex gap-1.5 mt-2 text-sm">
           Already have an account?
-          <p class="underline cursor-pointer" @click="navigateToLogin">
-            Login here.
-          </p>
+          <p class="underline cursor-pointer" @click="navigateToLogin">Login here.</p>
         </div>
       </div>
     </form>

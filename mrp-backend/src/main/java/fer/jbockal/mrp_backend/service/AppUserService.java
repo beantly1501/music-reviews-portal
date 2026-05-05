@@ -1,5 +1,6 @@
 package fer.jbockal.mrp_backend.service;
 
+import fer.jbockal.mrp_backend.dto.RegisterDto;
 import fer.jbockal.mrp_backend.model.AppUser;
 import fer.jbockal.mrp_backend.repository.AppUserRepository;
 import fer.jbockal.mrp_backend.repository.projection.UserRow;
@@ -51,5 +52,19 @@ public class AppUserService {
         }
         return appUserRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+    }
+
+    public AppUser register(RegisterDto dto, String encodedPassword) {
+        AppUser u = new AppUser(
+                dto.username(),
+                encodedPassword,
+                dto.email(),
+                dto.role()
+        );
+        return appUserRepository.save(u);
+    }
+
+    public boolean existsByUsername(String username) {
+        return appUserRepository.existsByUsername(username);
     }
 }

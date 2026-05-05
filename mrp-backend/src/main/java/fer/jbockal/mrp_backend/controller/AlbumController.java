@@ -62,6 +62,7 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.findById(id, user));
     }
 
+
     @GetMapping(value = "/image/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<ByteArrayResource> image(@PathVariable Long id) {
         byte[] bytes = albumService.getAlbumImage(id);

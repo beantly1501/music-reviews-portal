@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/reviews")
+@RequestMapping({"/api/reviews", "/reviews"})
 @AllArgsConstructor
 @Slf4j
 public class ReviewController {

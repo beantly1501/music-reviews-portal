@@ -28,48 +28,43 @@ export default function AlbumsPage() {
   const [visibleDialog, setVisibleDialog] = useState<boolean>(false);
 
   const onPageChange = (e: PaginatorPageChangeEvent) => {
-    if (typeof e.page === "number") setPage(e.page); // 0-based
+    if (typeof e.page === "number") setPage(e.page);
     if (typeof e.rows === "number") setSize(e.rows);
   };
 
   if (loading && totalElements === 0) {
     return (
-      <div className="page-status">
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
         <ProgressSpinner />
-        <div className="page-status__text">Loading…</div>
+        <div className="text-[#6b7280] text-[0.95rem]">Loading…</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="page-status">
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
         <Message severity="error" text={`Error: ${error}`} />
-        <Button
-          label="Retry"
-          icon="pi pi-refresh"
-          onClick={refetch}
-          className="page-status__action"
-        />
+        <Button label="Retry" icon="pi pi-refresh" onClick={refetch} className="mt-1" />
       </div>
     );
   }
 
   return (
     <>
-      <div className="flex flex-column justify-content-center align-items-center gap-4 w-full">
+      <div className="flex flex-col justify-center items-center gap-4 w-full">
         {user?.role === UserRoleEnum.ADMIN && (
           <Button
             label="Add New Album"
             icon="pi pi-plus"
-            className="w-15rem"
+            className="w-[15rem]"
             onClick={() => setVisibleDialog(true)}
           />
         )}
 
         {albums.length > 0 ? (
           <>
-            <div className="flex flex-wrap gap-4 justify-content-center w-full">
+            <div className="flex flex-wrap gap-4 justify-center w-full">
               {albums.map((album) => (
                 <AlbumCard
                   key={`album${album.id}`}
@@ -80,7 +75,7 @@ export default function AlbumsPage() {
             </div>
 
             {totalPages > 1 && (
-              <div className="w-full flex justify-content-center mt-4">
+              <div className="w-full flex justify-center mt-4">
                 <Paginator
                   first={page * size}
                   rows={size}
@@ -93,14 +88,14 @@ export default function AlbumsPage() {
             )}
 
             {loading && albums.length > 0 && (
-              <div className="flex align-items-center gap-2 mt-3">
+              <div className="flex items-center gap-2 mt-3">
                 <ProgressSpinner style={{ width: 24, height: 24 }} />
-                <span className="text-500">Loading page…</span>
+                <span className="text-gray-500">Loading page…</span>
               </div>
             )}
           </>
         ) : (
-          <div className="text-empty">No albums found.</div>
+          <div className="text-[#6b7280] text-[0.95rem]">No albums found.</div>
         )}
       </div>
 

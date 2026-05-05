@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping({"/song"})
+@RequestMapping({"/api/song", "/song"})
 @AllArgsConstructor
 @Slf4j
 public class SongController {
@@ -63,6 +63,7 @@ public class SongController {
                 .body(resource);
     }
 
+
     @GetMapping(value = "/image/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<ByteArrayResource> image(@PathVariable Long id) {
         byte[] bytes = songService.getSongImage(id);
@@ -89,7 +90,7 @@ public class SongController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @RolesAllowed({"ADMIN"})
+    @RolesAllowed({"ROLE_ADMIN"})
     public ResponseEntity<SongResponseDto> updateJson(@PathVariable Long id,
                                                       @AuthenticationPrincipal Object principal,
                                                       @RequestBody SongRequestDto body) {
@@ -99,7 +100,7 @@ public class SongController {
 
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @RolesAllowed({"ADMIN"})
+    @RolesAllowed({"ROLE_ADMIN"})
     public ResponseEntity<SongResponseDto> createMultipart(
             @AuthenticationPrincipal Object principal,
             @RequestParam("name") String name,

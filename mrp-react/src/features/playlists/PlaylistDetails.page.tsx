@@ -92,9 +92,9 @@ export default function PlaylistDetailsPage() {
 
   if (loadingPlaylist) {
     return (
-      <div className="page-status">
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
         <ProgressSpinner />
-        <div className="page-status__text">Loading playlist…</div>
+        <div className="text-[#6b7280] text-[0.95rem]">Loading playlist…</div>
       </div>
     );
   }
@@ -114,7 +114,7 @@ export default function PlaylistDetailsPage() {
 
     return (
       <div
-        className="flex align-items-center justify-content-between px-3 cursor-pointer"
+        className="flex items-center justify-between px-3 cursor-pointer"
         style={{
           height: `${options.props.itemSize}px`,
           background: isEven ? "var(--surface-50)" : "transparent",
@@ -139,10 +139,10 @@ export default function PlaylistDetailsPage() {
             : "transparent")
         }
       >
-        <div className="flex align-items-center gap-2">
+        <div className="flex items-center gap-2">
           <i className="pi pi-user" />
           <span
-            className="text-900"
+            className="text-gray-900"
             style={{
               maxWidth: 200,
               overflow: "hidden",
@@ -153,14 +153,14 @@ export default function PlaylistDetailsPage() {
             {username}
           </span>
         </div>
-        <i className="pi pi-angle-right text-500" />
+        <i className="pi pi-angle-right text-gray-400" />
       </div>
     );
   };
 
   return (
-    <div className="playlist-details-page p-3">
-      <div className="flex justify-content-between mb-3">
+    <div className="p-3">
+      <div className="flex justify-between mb-3">
         <Button
           label="Home"
           icon="pi pi-home"
@@ -197,17 +197,11 @@ export default function PlaylistDetailsPage() {
         </div>
       </div>
 
-      <Card
-        className="p-shadow-2"
-        style={{ overflow: "hidden", borderRadius: 12 }}
-      >
-        <div className="flex gap-4 flex-column md:flex-row">
+      <Card className="shadow-md" style={{ overflow: "hidden", borderRadius: 12 }}>
+        <div className="flex gap-4 flex-col md:flex-row">
           <div style={{ width: 300, maxWidth: "100%" }}>
             {loadingImage ? (
-              <div
-                className="placeholder flex align-items-center justify-content-center"
-                style={{ height: 280 }}
-              >
+              <div className="flex items-center justify-center" style={{ height: 280 }}>
                 <i className="pi pi-spin pi-spinner" />
               </div>
             ) : (
@@ -218,9 +212,9 @@ export default function PlaylistDetailsPage() {
             )}
           </div>
 
-          <div className="flex-1 flex justify-content-between gap-2">
-            <div className="flex flex-column gap-4">
-              <div className="flex align-items-center gap-2">
+          <div className="flex-1 flex justify-between gap-2">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-2">
                 <div className="text-2xl font-semibold">{playlist.name}</div>
                 <Tag
                   value={playlist.isPrivate ? "Private" : "Public"}
@@ -229,7 +223,7 @@ export default function PlaylistDetailsPage() {
               </div>
 
               <div
-                className="text-color-secondary cursor-pointer select-none"
+                className="text-gray-500 cursor-pointer select-none"
                 onClick={() => {
                   if (user?.id === playlist?.ownerId) {
                     navigate("/profile");
@@ -249,18 +243,18 @@ export default function PlaylistDetailsPage() {
             </div>
 
             {playlist.collaborators.length > 0 ? (
-              <div className="mt-2 w-fit flex flex-column gap-2">
+              <div className="mt-2 w-fit flex flex-col gap-2">
                 <div className="mb-1 font-medium">Collaborators</div>
                 <VirtualScroller
                   items={playlist.collaborators}
                   itemSize={52}
                   style={{ height: 240, width: 340 }}
-                  className="border-1 surface-border border-round overflow-hidden surface-card shadow-1"
+                  className="border border-[var(--surface-border)] rounded overflow-hidden shadow-sm bg-[var(--surface-card)]"
                   itemTemplate={collaboratorTemplate}
                 />
               </div>
             ) : (
-              <div className="text-color-secondary">No collaborators.</div>
+              <div className="text-gray-500">No collaborators.</div>
             )}
           </div>
         </div>
@@ -269,9 +263,9 @@ export default function PlaylistDetailsPage() {
       <Divider />
 
       <Card>
-        <div className="flex align-items-center justify-content-between mb-2">
+        <div className="flex items-center justify-between mb-2">
           <h2 className="m-0">Songs</h2>
-          <div className="text-color-secondary">
+          <div className="text-gray-500">
             {playlist.songs?.length ?? 0} total
           </div>
         </div>

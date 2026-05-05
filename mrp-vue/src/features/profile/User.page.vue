@@ -5,6 +5,9 @@
     </div>
 
     <template v-else-if="userData">
+      <div class="flex justify-end w-full">
+        <Button icon="pi pi-arrow-left" label="Back" outlined @click="router.go(-1)" />
+      </div>
       <Card class="max-w-[400px] w-full mt-10">
         <template #content>
           <div class="flex flex-col gap-3">
@@ -100,7 +103,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { Card, ProgressSpinner, Tag, Rating } from "primevue";
+import { Card, ProgressSpinner, Tag, Rating, Button } from "primevue";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import type { ReviewResponse, PlaylistResponseDto } from "@/shared";

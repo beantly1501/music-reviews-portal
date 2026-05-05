@@ -30,9 +30,9 @@ export const ReviewCard = ({ review, refetch }: ReviewCardProps) => {
   );
 
   const header = (
-    <div className="song-card__img-wrap">
+    <div className="w-full h-[180px] bg-[#f5f5f5] overflow-hidden">
       {loading ? (
-        <div className="song-card__img placeholder flex align-items-center justify-content-center">
+        <div className="w-full h-full flex items-center justify-center">
           <i className="pi pi-spin pi-spinner" />
         </div>
       ) : (
@@ -45,15 +45,8 @@ export const ReviewCard = ({ review, refetch }: ReviewCardProps) => {
   );
 
   const footer = (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginTop: "1rem",
-      }}
-    >
-      <span style={{ fontSize: "0.875rem", color: "#6b6b6b" }}>
+    <div className="flex justify-between items-center mt-4">
+      <span className="text-sm text-[#6b6b6b]">
         {new Date(review.creationDate).toLocaleDateString("hr-HR")}
       </span>
       <Tag
@@ -80,10 +73,7 @@ export const ReviewCard = ({ review, refetch }: ReviewCardProps) => {
         }}
         onClick={() => setVisible(true)}
       >
-        <div
-          className="flex flex-wrap justify-content-between"
-          style={{ marginBottom: "0.5rem" }}
-        >
+        <div className="flex flex-wrap justify-between mb-2">
           <Rating value={review.grade} readOnly cancel={false} stars={5} />
           <Tag
             value={review.type === "SONG" ? "Song" : "Album"}
@@ -91,9 +81,7 @@ export const ReviewCard = ({ review, refetch }: ReviewCardProps) => {
             style={{ fontWeight: 600, padding: "0.25rem 0.75rem" }}
           />
         </div>
-        <p style={{ fontSize: "0.875rem", lineHeight: 1.5 }}>
-          {review.description}
-        </p>
+        <p className="text-sm leading-relaxed">{review.description}</p>
       </Card>
 
       {visible && (

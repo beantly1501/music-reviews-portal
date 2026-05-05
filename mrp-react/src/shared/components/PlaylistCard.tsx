@@ -25,17 +25,17 @@ export default function PlaylistCard({ playlist }: { playlist: PlaylistType }) {
     : 0;
 
   const header = (
-    <div className="media-img-wrap">
+    <div className="w-full h-[180px] bg-[#f5f5f5] overflow-hidden relative">
       {loadingImage ? (
-        <div className="media-spinner">
+        <div className="w-full h-full flex items-center justify-center">
           <i className="pi pi-spin pi-spinner" />
         </div>
       ) : (
         <Image
           src={imageExists && image ? image : undefined}
           alt={`${playlist.name} cover`}
-          imageClassName="media-img"
-          className="media-img-container"
+          imageClassName="w-full h-full object-cover block"
+          className="block w-full h-full"
         />
       )}
     </div>
@@ -44,12 +44,13 @@ export default function PlaylistCard({ playlist }: { playlist: PlaylistType }) {
   return (
     <Card
       className="playlist-card select-none cursor-pointer"
+      style={{ width: 320, display: "flex", flexDirection: "column" }}
       header={header}
       onClick={() => navigate(`/playlist/${playlist.id}`)}
     >
-      <div className="card-body">
-        <div className="card-title-row">
-          <h3 className="card-title">{playlist.name}</h3>
+      <div className="flex flex-col p-5 gap-2">
+        <div className="flex items-center justify-between min-h-[40px] mb-1">
+          <h3 className="m-0 text-xl leading-tight line-clamp-2">{playlist.name}</h3>
           <Tag
             value={isPublic ? "Public" : "Private"}
             severity={isPublic ? "success" : "secondary"}
@@ -58,17 +59,17 @@ export default function PlaylistCard({ playlist }: { playlist: PlaylistType }) {
         </div>
 
         {playlist.description && (
-          <p className="card-desc">{playlist.description}</p>
+          <p className="text-[#374151] leading-relaxed">{playlist.description}</p>
         )}
 
-        <div className="card-meta-row">
+        <div className="flex items-center justify-between pt-[6px]">
           <Tag value={playlist.ownerUsername} severity="warning" />
-          <div className="card-stats">
-            <span className="card-stat">
+          <div className="flex gap-3">
+            <span className="inline-flex items-center gap-[6px]">
               <i className="pi pi-headphones" />
               <Badge value={songsCount} />
             </span>
-            <span className="card-stat">
+            <span className="inline-flex items-center gap-[6px]">
               <i className="pi pi-users" />
               <Badge value={collaboratorsCount} />
             </span>

@@ -16,47 +16,42 @@ export default function ArtistsPage() {
 
   if (loading) {
     return (
-      <div className="page-status">
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
         <ProgressSpinner />
-        <div className="page-status__text">Loading…</div>
+        <div className="text-[#6b7280] text-[0.95rem]">Loading…</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="page-status">
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
         <Message severity="error" text={`Error: ${error}`} />
-        <Button
-          label="Retry"
-          icon="pi pi-refresh"
-          onClick={refetch}
-          className="page-status__action"
-        />
+        <Button label="Retry" icon="pi pi-refresh" onClick={refetch} className="mt-1" />
       </div>
     );
   }
 
   return (
     <>
-      <div className="artists-page">
+      <div className="flex flex-col items-center gap-4">
         {user?.role === UserRoleEnum.ADMIN && (
           <Button
             label="Add New Artist"
             icon="pi pi-plus"
             onClick={() => setVisibleDialog(true)}
-            className="artists-page__add-btn"
+            className="w-[15rem]"
           />
         )}
 
         {artists.length > 0 ? (
-          <div className="artists-grid">
+          <div className="flex flex-wrap gap-4 justify-center">
             {artists.map((artist) => (
               <ArtistCard key={`artist${artist.id}`} artist={artist} />
             ))}
           </div>
         ) : (
-          <div className="text-empty">No artists found.</div>
+          <div className="text-[#6b7280] text-[0.95rem]">No artists found.</div>
         )}
       </div>
 

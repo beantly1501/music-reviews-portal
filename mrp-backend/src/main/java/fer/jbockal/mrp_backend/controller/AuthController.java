@@ -4,7 +4,7 @@ import fer.jbockal.mrp_backend.dto.*;
 import fer.jbockal.mrp_backend.dto.auth.AuthRequest;
 import fer.jbockal.mrp_backend.dto.auth.AuthResponse;
 import fer.jbockal.mrp_backend.model.AppUser;
-import fer.jbockal.mrp_backend.repository.AppUserRepository;
+import fer.jbockal.mrp_backend.service.AppUserService;
 import fer.jbockal.mrp_backend.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +15,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping({"/api/auth", "/auth"})
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AppUserRepository users;
+    private final AppUserService userService;
     private final PasswordEncoder pwEncoder;
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
@@ -27,16 +27,10 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterDto dto) {
-        if (users.existsByUsername(dto.username())) {
+        if (userService.existsByUsername(dto.username())) {
             return ResponseEntity.badRequest().body("Username is already taken");
         }
-        AppUser u = new AppUser(
-                dto.username(),
-                pwEncoder.encode(dto.password()),
-                dto.email(),
-                dto.role()
-        );
-        users.save(u);
+        AppUser u = userService.register(dto, pwEncoder.encode(dto.password()));
 
         UserDetails ud = org.springframework.security.core.userdetails.User
                 .builder()
@@ -54,7 +48,7 @@ public class AuthController {
         authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.username(), dto.password())
         );
-        UserDetails ud = users.findByUsername(dto.username())
+        UserDetails ud = userService.getUserByUsername(dto.username())
                 .map(user -> org.springframework.security.core.userdetails.User
                         .builder()
                         .username(user.getUsername())
