@@ -18,7 +18,7 @@
 
     <div
       v-else-if="albums && albums.content.length > 0"
-      class="flex flex-wrap gap-4 justify-center"
+      :class="isMobile ? 'flex flex-wrap gap-2 justify-center' : 'flex flex-wrap gap-4 justify-center'"
     >
       <AlbumCard
         v-for="album in albums.content"
@@ -54,6 +54,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { ProgressSpinner, Button } from "primevue";
+import { useMediaQuery } from "@vueuse/core";
 import {
   AlbumCard,
   useGetAllAlbums,
@@ -67,6 +68,7 @@ import { storeToRefs } from "pinia";
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
+const isMobile = useMediaQuery("(max-width: 850px)");
 
 const {
   data: albums,

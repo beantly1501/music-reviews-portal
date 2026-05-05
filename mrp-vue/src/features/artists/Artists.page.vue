@@ -18,7 +18,7 @@
 
     <div
       v-else-if="artists && artists.length > 0"
-      class="flex flex-wrap gap-4 justify-center"
+      :class="isMobile ? 'flex flex-wrap gap-2 justify-center' : 'flex flex-wrap gap-4 justify-center'"
     >
       <ArtistCard
         v-for="artist in artists"
@@ -40,6 +40,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { ProgressSpinner, Button } from "primevue";
+import { useMediaQuery } from "@vueuse/core";
 import { useAuthStore } from "@/shared";
 import { storeToRefs } from "pinia";
 import type { ArtistResponseDto } from "@/shared";
@@ -50,6 +51,7 @@ import { Role } from "@/features";
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
+const isMobile = useMediaQuery("(max-width: 850px)");
 
 const {
   data: artists,

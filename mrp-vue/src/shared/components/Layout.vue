@@ -35,7 +35,16 @@ const changeTab = (e) => {
 <template>
   <div class="p-dark min-h-screen">
     <TabMenu
-      class="flex justify-center mb-[2rem]"
+      :class="['mb-[2rem]', isMobile ? 'w-full' : 'flex justify-center']"
+      :pt="
+        isMobile
+          ? {
+              tablist: { class: 'flex w-full' },
+              item: { class: 'flex-1' },
+              itemLink: { class: 'flex justify-center' },
+            }
+          : {}
+      "
       :model="model"
       :active-index="activeIndex"
       @tabChange="changeTab"

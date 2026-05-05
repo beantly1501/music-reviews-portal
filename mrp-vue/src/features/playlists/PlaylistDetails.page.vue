@@ -70,7 +70,12 @@
             <div class="flex flex-col gap-1">
               <h2 class="text-3xl font-bold m-0">{{ playlist.name }}</h2>
               <div class="flex items-center gap-2 text-gray-400 text-sm">
-                <span class="flex items-center gap-1">
+                <span
+                  class="flex items-center gap-1 cursor-pointer hover:text-white transition-colors"
+                  @click="playlist.ownerUsername === user?.username
+                    ? router.push({ name: 'profile' })
+                    : router.push({ name: 'user', params: { id: playlist.ownerId } })"
+                >
                   <i class="pi pi-user" /> {{ playlist.ownerUsername }}
                 </span>
                 <span>•</span>

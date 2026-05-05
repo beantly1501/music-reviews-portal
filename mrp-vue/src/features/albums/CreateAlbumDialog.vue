@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, Dialog, InputText, FileUpload, InputNumber } from "primevue";
+import { Button, Dialog, InputText, FileUpload, InputNumber, useToast } from "primevue";
 import { useForm } from "vee-validate";
 import { ModifiedMultiSelect } from "@/shared/components";
 import { toTypedSchema } from "@vee-validate/zod";
@@ -23,6 +23,7 @@ const emit = defineEmits<{
   (e: "refetchAlbums"): void;
 }>();
 
+const toast = useToast();
 const { createAlbum, isLoading: isCreating } = useCreateAlbum();
 const { updateAlbum, isLoading: isUpdating } = useUpdateAlbum();
 const { data: genres, isLoading: isGenresLoading } = useGetAllGenres();
@@ -96,6 +97,7 @@ const onSubmit = handleSubmit(async (values) => {
   }
 
   if (result) {
+    toast.add({ severity: "success", summary: props.album ? "Album updated successfully" : "Album added successfully" });
     isDialogVisible.value = false;
     emit("refetchAlbums");
   }

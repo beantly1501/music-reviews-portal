@@ -7,7 +7,7 @@
       class="w-fit"
       @click="isDialogVisible = true"
     />
-    <div class="flex flex-wrap gap-4">
+    <div :class="isMobile ? 'flex flex-wrap gap-2' : 'flex flex-wrap gap-4'">
       <SongCard
         v-for="song in songs"
         :key="song.id"
@@ -42,6 +42,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useGetAllSongs } from "@/features";
 import type { SongResponse } from "@/shared";
+import { useMediaQuery } from "@vueuse/core";
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
@@ -49,6 +50,8 @@ const { user } = storeToRefs(authStore);
 const { data: songs, refetch: refetchSongs } = useGetAllSongs();
 
 const router = useRouter();
+
+const isMobile = useMediaQuery("(max-width: 850px)");
 
 const isDialogVisible = ref(false);
 const isReviewDialogVisible = ref(false);

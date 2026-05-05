@@ -17,7 +17,7 @@
 
     <div
       v-else-if="playlists && playlists.content.length > 0"
-      class="flex flex-wrap gap-4 justify-center"
+      :class="isMobile ? 'flex flex-wrap gap-2 justify-center' : 'flex flex-wrap gap-4 justify-center'"
     >
       <PlaylistCard
         v-for="playlist in playlists.content"
@@ -38,6 +38,7 @@
 <script setup lang="ts">
 import type { PlaylistResponseDto } from "@/shared";
 import { Button, ProgressSpinner } from "primevue";
+import { useMediaQuery } from "@vueuse/core";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import CreatePlaylistDialog from "./CreatePlaylistDialog.vue";
@@ -51,6 +52,7 @@ const {
   refetch: refetchPlaylists,
 } = useGetPublicAndMyPlaylists();
 
+const isMobile = useMediaQuery("(max-width: 850px)");
 const router = useRouter();
 const isDialogVisible = ref(false);
 

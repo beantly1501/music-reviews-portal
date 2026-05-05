@@ -1,6 +1,6 @@
 <template>
   <Card
-    class="w-[300px] rounded-lg! shadow-md! shadow-black m-3 overflow-hidden cursor-pointer"
+    class="w-[300px] rounded-lg! shadow-md! shadow-black overflow-hidden cursor-pointer"
     @click="onCardClick"
   >
     <template #header>
