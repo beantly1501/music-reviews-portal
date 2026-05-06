@@ -163,9 +163,13 @@ export default function CreateArtistDialog({
       }}
       resizable={false}
       draggable={false}
+      className="md:w-[550px] w-[400px]"
     >
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="p-fluid flex flex-col gap-2"
+        >
           <div className="field">
             <label htmlFor="name">Artist Name</label>
             <Controller

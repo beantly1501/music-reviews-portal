@@ -182,9 +182,13 @@ export default function CreateSongDialog({
       }}
       resizable={false}
       draggable={false}
+      className="md:w-[550px] w-[400px]"
     >
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="p-fluid flex flex-col gap-1"
+        >
           <div className="field">
             <label htmlFor="name">Song Name</label>
             <Controller
@@ -357,7 +361,7 @@ export default function CreateSongDialog({
             />
           </div>
 
-          <div className="field">
+          <div className="field mb-3">
             <label htmlFor="artistIdsSelect">Artists (optional)</label>
             <Controller
               name="artistIds"
@@ -378,12 +382,7 @@ export default function CreateSongDialog({
             />
           </div>
 
-          <Button
-            type="submit"
-            label="Submit"
-            loading={isSubmitting}
-            className="mt-3"
-          />
+          <Button type="submit" label="Submit" loading={isSubmitting} />
         </form>
       </FormProvider>
 

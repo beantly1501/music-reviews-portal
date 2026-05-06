@@ -56,6 +56,7 @@
       v-model:visible="isReviewDialogVisible"
       :review-id="selectedReview?.id"
       :review-type="selectedReview?.type"
+      @refetch="refetchMyReviews"
     />
 
     <div class="flex flex-col w-full gap-4">
@@ -121,7 +122,7 @@ import { Tag, Rating } from "primevue";
 import ReviewDialog from "@/features/review/ReviewDialog.vue";
 
 const router = useRouter();
-const { isLoading: isLoadingReviews, data: myReviews } = useGetMyReviews();
+const { isLoading: isLoadingReviews, data: myReviews, refetch: refetchMyReviews } = useGetMyReviews();
 const { isLoading: isLoadingPlaylists, data: myPlaylists } =
   useGetMyPlaylists();
 

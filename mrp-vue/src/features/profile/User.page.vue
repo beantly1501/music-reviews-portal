@@ -62,6 +62,7 @@
         v-model:visible="isReviewDialogVisible"
         :review-id="selectedReview?.id"
         :review-type="selectedReview?.type"
+        @refetch="refetchUserReviews"
       />
 
       <div class="flex flex-col w-full gap-4">
@@ -130,7 +131,7 @@ const router = useRouter();
 const userId = computed(() => route.params.id);
 
 const { data: userData, isLoading: isLoadingUser } = useGetUserById(userId);
-const { data: userReviews, isLoading: isLoadingReviews } = useGetReviewsByUserId(userId);
+const { data: userReviews, isLoading: isLoadingReviews, refetch: refetchUserReviews } = useGetReviewsByUserId(userId);
 const { data: userPlaylists, isLoading: isLoadingPlaylists } = useGetPublicPlaylistsByUserId(userId);
 
 const isReviewDialogVisible = ref(false);

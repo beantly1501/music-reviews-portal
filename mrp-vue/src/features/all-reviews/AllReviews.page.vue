@@ -61,6 +61,7 @@
       :key="`${selectedReview.type}-${selectedReview.id}`"
       :review-id="selectedReview.id"
       :review-type="selectedReview.type"
+      @refetch="refetchReviews"
     />
   </div>
 </template>
@@ -76,7 +77,7 @@ import { useGetAllReviews } from "@/features/review";
 import { ReviewDialog } from "@/features/review";
 import type { ReviewResponse } from "@/shared";
 
-const { data: reviews, isLoading } = useGetAllReviews();
+const { data: reviews, isLoading, refetch: refetchReviews } = useGetAllReviews();
 
 const showDialog = ref(false);
 const selectedReview = ref<ReviewResponse | null>(null);

@@ -1,5 +1,4 @@
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
-import { Button } from "primereact/button";
 
 export type ArtistOption = {
   id: number;
@@ -24,7 +23,6 @@ export default function ArtistMultiSelect({
   options,
   loading,
   onChange,
-  onCreateNew,
   appendTo,
   className,
   placeholder = "Select artists",
@@ -44,19 +42,19 @@ export default function ArtistMultiSelect({
       loading={loading}
       appendTo={appendTo}
       className={className}
-      panelFooterTemplate={() => (
-        <div className="flex justify-center p-2">
-          <Button
-            label="Create New Artist"
-            icon="pi pi-plus"
-            className="p-button-text p-button-sm"
-            onClick={(e) => {
-              e.preventDefault();
-              onCreateNew?.();
-            }}
-          />
-        </div>
-      )}
+      // panelFooterTemplate={() => (
+      //   <div className="flex justify-center p-2">
+      //     <Button
+      //       label="Create New Artist"
+      //       icon="pi pi-plus"
+      //       className="p-button-text p-button-sm"
+      //       onClick={(e) => {
+      //         e.preventDefault();
+      //         onCreateNew?.();
+      //       }}
+      //     />
+      //   </div>
+      // )}
     />
   );
 }

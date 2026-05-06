@@ -160,11 +160,13 @@ export default function CreatePlaylistDialog({
       }}
       resizable={false}
       draggable={false}
-      className="w-30rem"
-      breakpoints={{ "960px": "40vw", "640px": "95vw" }}
+      className="md:w-[550px] w-[400px]"
     >
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="p-fluid flex flex-col gap-2"
+        >
           <div className="field">
             <label htmlFor="name">Name</label>
             <Controller

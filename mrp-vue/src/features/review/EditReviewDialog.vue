@@ -126,7 +126,11 @@ const onSubmit = handleSubmit(async (values) => {
         await createAlbumReview(values as unknown as AlbumReviewForm);
       }
     }
-    toast.add({ severity: "success", summary: "Reviewed successfully" });
+    toast.add({
+      severity: "success",
+      summary: "Reviewed successfully",
+      life: 3000,
+    });
     emit("success");
     emit("update:visible", false);
     resetForm();
