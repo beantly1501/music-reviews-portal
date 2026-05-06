@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { Dialog } from "primereact/dialog";
+import { toast } from "../../shared/components/ToastContext.tsx";
 import {
   Controller,
   FormProvider,
@@ -23,7 +24,6 @@ import {
 import { InputText } from "primereact/inputtext";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
-import { useGetGenres } from "../../shared/hooks/useGetGenres.ts";
 import { useGetArtists } from "../artists/hooks/useGetArtists.ts";
 import { useGetAlbums } from "../albums/hooks/useGetAlbums.ts";
 import CreateLimitedAlbumDialog from "../../shared/components/CreateLimitedAlbumDialog.tsx";
@@ -34,10 +34,7 @@ import AlbumMultiSelect, {
 import ArtistMultiSelect, {
   ArtistOption,
 } from "../../shared/components/ArtistMultiSelect.tsx";
-import GenresMultiSelect, {
-  GenreOption,
-} from "../../shared/components/GenresMultiSelect.tsx";
-import CreateGenreDialog from "../../shared/components/CreateGenreDialog.tsx";
+import GenresMultiSelect from "../../shared/components/GenresMultiSelect.tsx";
 import { createSong, updateSong } from "./utils/helpers.tsx";
 
 interface Props {
@@ -65,11 +62,6 @@ export default function CreateSongDialog({
   existingSongData,
 }: Props) {
   const {
-    genres,
-    loading: genresLoading,
-    refetch: refetchGenres,
-  } = useGetGenres();
-  const {
     artists,
     loading: artistsLoading,
     refetch: refetchArtists,
@@ -82,7 +74,6 @@ export default function CreateSongDialog({
 
   const [artistDialogVisible, setArtistDialogVisible] = useState(false);
   const [albumDialogVisible, setAlbumDialogVisible] = useState(false);
-  const [genreDialogVisible, setGenreDialogVisible] = useState(false);
 
   const audioUploadRef = useRef<FileUpload>(null);
   const coverUploadRef = useRef<FileUpload>(null);
@@ -99,11 +90,6 @@ export default function CreateSongDialog({
     setAlbumDialogVisible(false);
   }, [refetchAlbums]);
 
-  const handleGenreCreated = useCallback(() => {
-    refetchGenres?.();
-    setGenreDialogVisible(false);
-  }, [refetchGenres]);
-
   const artistOptions: ArtistOption[] = useMemo(
     () => (artists as ArtistOption[]) ?? [],
     [artists],
@@ -111,10 +97,6 @@ export default function CreateSongDialog({
   const albumOptions: AlbumOption[] = useMemo(
     () => (albums as AlbumOption[]) ?? [],
     [albums],
-  );
-  const genreOptions: GenreOption[] = useMemo(
-    () => (genres as GenreOption[]) ?? [],
-    [genres],
   );
 
   const methods = useForm<SongCreateForm>({
@@ -155,17 +137,27 @@ export default function CreateSongDialog({
 
   const onSubmit: SubmitHandler<SongCreateForm> = useCallback(
     async (data) => {
-      if (existingSongData?.songId) {
-        await updateSong({
-          songId: existingSongData.songId,
-          formData: data,
-        });
-      } else {
-        await createSong({ formData: data });
+      try {
+        if (existingSongData?.songId) {
+          await updateSong({
+            songId: existingSongData.songId,
+            formData: data,
+          });
+          toast.success("Song updated.");
+        } else {
+          await createSong({ formData: data });
+          toast.success("Song created.");
+        }
+        reset(EMPTY_FORM);
+        onCreated();
+        setVisible(false);
+      } catch {
+        toast.error(
+          existingSongData?.songId
+            ? "Failed to update song."
+            : "Failed to create song.",
+        );
       }
-      reset(EMPTY_FORM);
-      onCreated();
-      setVisible(false);
     },
     [existingSongData, onCreated, reset, setVisible],
   );
@@ -182,9 +174,13 @@ export default function CreateSongDialog({
       }}
       resizable={false}
       draggable={false}
+      className="md:w-[650px] w-[400px]"
     >
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="p-fluid flex flex-col gap-1"
+        >
           <div className="field">
             <label htmlFor="name">Song Name</label>
             <Controller
@@ -323,10 +319,7 @@ export default function CreateSongDialog({
               render={({ field }) => (
                 <GenresMultiSelect
                   value={field.value ?? []}
-                  options={genreOptions}
-                  loading={genresLoading}
                   onChange={(ids) => field.onChange(ids)}
-                  onCreateNew={() => setGenreDialogVisible(true)}
                   appendTo={
                     typeof document !== "undefined" ? document.body : undefined
                   }
@@ -357,7 +350,7 @@ export default function CreateSongDialog({
             />
           </div>
 
-          <div className="field">
+          <div className="field mb-3">
             <label htmlFor="artistIdsSelect">Artists (optional)</label>
             <Controller
               name="artistIds"
@@ -378,12 +371,7 @@ export default function CreateSongDialog({
             />
           </div>
 
-          <Button
-            type="submit"
-            label="Submit"
-            loading={isSubmitting}
-            className="mt-3"
-          />
+          <Button type="submit" label="Submit" loading={isSubmitting} />
         </form>
       </FormProvider>
 
@@ -396,11 +384,6 @@ export default function CreateSongDialog({
         visible={artistDialogVisible}
         setVisible={setArtistDialogVisible}
         onCreated={handleArtistCreated}
-      />
-      <CreateGenreDialog
-        visible={genreDialogVisible}
-        setVisible={setGenreDialogVisible}
-        onCreated={handleGenreCreated}
       />
     </Dialog>
   );

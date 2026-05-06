@@ -21,6 +21,7 @@ import { useGetAlbum } from "../../shared/hooks/useGetAlbum.ts";
 import { useGetImage } from "../../shared/hooks/useGetImage.ts";
 import { useGetAlbumReviews } from "../../shared/hooks/useGetAlbumReviews.ts";
 import {
+  ArtistType,
   GenreType,
   ReviewResponse,
   SongType,
@@ -203,6 +204,23 @@ export default function AlbumDetailsPage() {
 
           <div className="flex flex-col gap-3 w-fit">
             <div className="text-2xl font-semibold mb-2">{album.name}</div>
+
+            {Array.isArray(album.artists) && album.artists.length > 0 && (
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <i className="pi pi-user text-gray-500" />
+                {album.artists.map((a: ArtistType, i) => (
+                  <span key={a.id} className="flex items-center gap-2">
+                    <span
+                      className="cursor-pointer text-[0.95rem] hover:underline"
+                      onClick={() => navigate(`/artist/${a.id}`)}
+                    >
+                      {a.name}
+                    </span>
+                    {i < album.artists!.length - 1 && <span className="text-gray-400">·</span>}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {album.year ? (
               <div className="text-gray-500 mb-2">Released {album.year}</div>

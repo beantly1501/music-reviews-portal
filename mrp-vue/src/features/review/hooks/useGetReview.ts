@@ -1,15 +1,15 @@
 import { type ReviewResponse, useFetch } from "@/shared";
-import { computed } from "vue";
+import { computed, type Ref } from "vue";
 
 export const useGetReview = (
-  reviewId: number | undefined,
-  type: "SONG" | "ALBUM" | undefined,
+  reviewId: Ref<number | undefined>,
+  type: Ref<"SONG" | "ALBUM" | undefined>,
 ) => {
   const url = computed(() => {
-    if (!reviewId || !type) return undefined;
-    return type === "SONG"
-      ? `/api/reviews/song/${reviewId}`
-      : `/api/reviews/album/${reviewId}`;
+    if (!reviewId.value || !type.value) return undefined;
+    return type.value === "SONG"
+      ? `/api/reviews/song/${reviewId.value}`
+      : `/api/reviews/album/${reviewId.value}`;
   });
 
   return useFetch<ReviewResponse>(url, { immediate: true });

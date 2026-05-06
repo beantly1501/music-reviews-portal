@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { Button, Dialog, InputText, FileUpload, InputNumber, useToast } from "primevue";
 import { useForm } from "vee-validate";
-import { ModifiedMultiSelect } from "@/shared/components";
+import { ModifiedMultiSelect, GenreMultiSelect } from "@/shared/components";
 import { toTypedSchema } from "@vee-validate/zod";
 import {
   type MultiSelectOptionType,
   albumCreateDefaultValues,
   albumCreateSchema,
   type AlbumResponseDto,
-  useGetAllGenres,
 } from "@/shared";
-import { useCreateAlbum, useUpdateAlbum, useGetAllSongs } from "@/features";
+import { useCreateAlbum, useUpdateAlbum, useGetAllSongs, useGetAllArtists } from "@/features";
 import { computed, watch } from "vue";
 
 const isDialogVisible = defineModel<boolean>();
@@ -26,16 +25,16 @@ const emit = defineEmits<{
 const toast = useToast();
 const { createAlbum, isLoading: isCreating } = useCreateAlbum();
 const { updateAlbum, isLoading: isUpdating } = useUpdateAlbum();
-const { data: genres, isLoading: isGenresLoading } = useGetAllGenres();
 const { data: songsData, isLoading: isSongsLoading } = useGetAllSongs();
+const { data: artistsData, isLoading: isArtistsLoading } = useGetAllArtists();
 
 const isSubmitting = computed(() => isCreating.value || isUpdating.value);
 
-const genreOptions = computed<MultiSelectOptionType[]>(() => {
+const artistOptions = computed<MultiSelectOptionType[]>(() => {
   return (
-    genres.value?.map((genre) => ({
-      label: genre.name,
-      value: genre.id,
+    artistsData.value?.map((artist) => ({
+      label: artist.name,
+      value: artist.id,
     })) || []
   );
 });
@@ -160,12 +159,7 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="flex flex-col gap-2">
         <label>Genres (optional)</label>
-        <ModifiedMultiSelect
-          :options="genreOptions"
-          :loading="isGenresLoading"
-          v-model="genreIds"
-          :invalid="!!errors.genreIds"
-        />
+        <GenreMultiSelect v-model="genreIds" :invalid="!!errors.genreIds" />
         <small v-if="errors.genreIds" class="text-red-500">{{
           errors.genreIds
         }}</small>
@@ -187,7 +181,8 @@ const onSubmit = handleSubmit(async (values) => {
       <div class="flex flex-col gap-2">
         <label>Artists (optional)</label>
         <ModifiedMultiSelect
-          :options="[]"
+          :options="artistOptions"
+          :loading="isArtistsLoading"
           v-model="artistIds"
           :invalid="!!errors.artistIds"
         />

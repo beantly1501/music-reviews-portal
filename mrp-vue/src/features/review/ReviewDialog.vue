@@ -170,28 +170,29 @@
     }"
     @success="onEditSuccess"
   />
+  <ConfirmDialog />
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import {
-  Dialog,
-  Button,
-  Tag,
-  Card,
-  Rating,
-  Chip,
-  ProgressSpinner,
-  Image,
-} from "primevue";
-import { useAuthStore, useGetFile } from "@/shared";
-import { useGetReview } from "@/features";
-import { useGetSong } from "@/features";
-import { useDeleteReview } from "@/features";
-import EditReviewDialog from "./EditReviewDialog.vue";
-import { Role } from "@/features";
-import { storeToRefs } from "pinia";
+import { Role, useDeleteReview, useGetReview, useGetSong } from "@/features";
 import router from "@/router/routes";
+import { useAuthStore, useGetFile } from "@/shared";
+import { storeToRefs } from "pinia";
+import {
+  Button,
+  Card,
+  Chip,
+  ConfirmDialog,
+  Dialog,
+  Image,
+  ProgressSpinner,
+  Rating,
+  Tag,
+} from "primevue";
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
+import { computed, ref, toRef } from "vue";
+import EditReviewDialog from "./EditReviewDialog.vue";
 
 const props = defineProps<{
   visible: boolean;
@@ -210,6 +211,8 @@ const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 
 const { deleteReview } = useDeleteReview();
+const confirm = useConfirm();
+const toast = useToast();
 
 const isEditDialogVisible = ref(false);
 const isDeleting = ref(false);
@@ -220,7 +223,7 @@ const {
   isLoading,
   error,
   refetch: refetchReview,
-} = useGetReview(props.reviewId, props.reviewType);
+} = useGetReview(toRef(props, "reviewId"), toRef(props, "reviewType"));
 
 // Fetch Entity (Song or Album)
 const songId = computed(() =>
@@ -297,21 +300,34 @@ const onEditSuccess = () => {
   emit("refetch");
 };
 
-const onDelete = async () => {
+const onDelete = () => {
   if (!props.reviewId || !props.reviewType) return;
 
-  if (confirm("Are you sure you want to delete this review?")) {
-    try {
-      isDeleting.value = true;
-      await deleteReview(props.reviewId, props.reviewType);
-      emit("refetch");
-      emit("update:visible", false);
-    } catch (e) {
-      console.error("Failed to delete review:", e);
-    } finally {
-      isDeleting.value = false;
-    }
-  }
+  confirm.require({
+    message: "Are you sure you want to delete this review?",
+    header: "Delete Review",
+    icon: "pi pi-exclamation-triangle",
+    rejectProps: { label: "Cancel", severity: "secondary", outlined: true },
+    acceptProps: { label: "Delete", severity: "danger" },
+    accept: async () => {
+      try {
+        isDeleting.value = true;
+        await deleteReview(props.reviewId!, props.reviewType!);
+        toast.add({
+          severity: "success",
+          summary: "Review Deleted",
+          detail: "The review has been successfully deleted.",
+          life: 3000,
+        });
+        emit("refetch");
+        emit("update:visible", false);
+      } catch (e) {
+        console.error("Failed to delete review:", e);
+      } finally {
+        isDeleting.value = false;
+      }
+    },
+  });
 };
 
 const openExternalLink = (link: string) => {

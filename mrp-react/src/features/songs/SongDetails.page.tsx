@@ -22,9 +22,9 @@ import { useGetSong } from "../../shared/hooks/useGetSong.ts";
 import { useGetImage } from "../../shared/hooks/useGetImage.ts";
 import { useGetSongReviews } from "../../shared/hooks/useGetSongReviews.ts";
 import {
+  ArtistType,
   GenreType,
   ReviewResponse,
-  toCommaSeparated,
   UserRoleEnum,
 } from "@shared/utils";
 import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
@@ -207,9 +207,23 @@ export default function SongDetailsPage() {
 
           <div className="flex-1">
             <div className="text-2xl font-semibold mb-2">{song.name}</div>
-            <div className="text-lg font-semibold mb-2">
-              {toCommaSeparated(song.artists?.map((a) => a.name) ?? [])}
-            </div>
+
+            {Array.isArray(song.artists) && song.artists.length > 0 && (
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <i className="pi pi-user text-gray-500" />
+                {song.artists.map((a: ArtistType, i) => (
+                  <span key={a.id} className="flex items-center gap-2">
+                    <span
+                      className="cursor-pointer text-[0.95rem] hover:underline"
+                      onClick={() => navigate(`/artist/${a.id}`)}
+                    >
+                      {a.name}
+                    </span>
+                    {i < song.artists!.length - 1 && <span className="text-gray-400">·</span>}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {song.year ? (
               <div className="text-gray-500 mb-2">Released {song.year}</div>

@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { Dialog } from "primereact/dialog";
+import { toast } from "../../shared/components/ToastContext.tsx";
 import {
   Controller,
   FormProvider,
@@ -126,20 +127,29 @@ export default function CreatePlaylistDialog({
         collaboratorIds: data.collaboratorIds ?? [],
       };
 
-      if (existingPlaylistData) {
-        await updatePlaylist({
-          playlistId: existingPlaylistData.playlistId,
-          ownerId: existingPlaylistData.ownerId,
-          formData: normalized,
-        });
-      } else {
-        await createPlaylist({
-          formData: normalized,
-        });
+      try {
+        if (existingPlaylistData) {
+          await updatePlaylist({
+            playlistId: existingPlaylistData.playlistId,
+            ownerId: existingPlaylistData.ownerId,
+            formData: normalized,
+          });
+          toast.success("Playlist updated.");
+        } else {
+          await createPlaylist({
+            formData: normalized,
+          });
+          toast.success("Playlist created.");
+        }
+        onCreated?.();
+        setVisible(false);
+      } catch {
+        toast.error(
+          existingPlaylistData
+            ? "Failed to update playlist."
+            : "Failed to create playlist.",
+        );
       }
-
-      onCreated?.();
-      setVisible(false);
     },
     [onCreated, setVisible, existingPlaylistData],
   );
@@ -160,11 +170,13 @@ export default function CreatePlaylistDialog({
       }}
       resizable={false}
       draggable={false}
-      className="w-30rem"
-      breakpoints={{ "960px": "40vw", "640px": "95vw" }}
+      className="md:w-[650px] w-[400px]"
     >
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="p-fluid flex flex-col gap-2"
+        >
           <div className="field">
             <label htmlFor="name">Name</label>
             <Controller

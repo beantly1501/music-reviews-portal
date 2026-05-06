@@ -1,7 +1,4 @@
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
-import { useCurrentUser } from "../hooks/useCurrentUser.ts";
-import { UserRoleEnum } from "@shared/utils";
-import { Button } from "primereact/button";
 
 export type SongOption = {
   id: number;
@@ -27,13 +24,10 @@ export default function SongMultiSelect({
   options,
   loading,
   onChange,
-  onCreateNew,
   appendTo,
   className,
   placeholder = "Select songs",
 }: Props) {
-  const { user } = useCurrentUser();
-
   return (
     <MultiSelect
       id={id}
@@ -52,27 +46,28 @@ export default function SongMultiSelect({
       itemTemplate={(opt: SongOption) => (
         <div className="flex items-center justify-between w-full gap-2">
           <span>{opt.name}</span>
-          {opt.year ? <small className="text-gray-500">{opt.year}</small> : null}
+          {opt.year ? (
+            <small className="text-gray-500">{opt.year}</small>
+          ) : null}
         </div>
       )}
-      /* keep PrimeReact header (with built-in filter) and add our button to the footer */
-      panelFooterTemplate={() => {
-        if (user?.role === UserRoleEnum.ADMIN) {
-          return (
-            <div className="flex justify-center p-2">
-              <Button
-                label="Create New Song"
-                icon="pi pi-plus"
-                className="p-button-text p-button-sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onCreateNew?.();
-                }}
-              />
-            </div>
-          );
-        }
-      }}
+      // panelFooterTemplate={() => {
+      //   if (user?.role === UserRoleEnum.ADMIN) {
+      //     return (
+      //       <div className="flex justify-center p-2">
+      //         <Button
+      //           label="Create New Song"
+      //           icon="pi pi-plus"
+      //           className="p-button-text p-button-sm"
+      //           onClick={(e) => {
+      //             e.preventDefault();
+      //             onCreateNew?.();
+      //           }}
+      //         />
+      //       </div>
+      //     );
+      //   }
+      // }}
     />
   );
 }

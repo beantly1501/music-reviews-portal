@@ -78,7 +78,12 @@
                   class="flex items-center gap-1"
                 >
                   <i class="pi pi-user" />
-                  {{ album.artists.map((a) => a.name).join(", ") }}
+                  <template v-for="(artist, index) in album.artists" :key="artist.id">
+                    <span
+                      class="cursor-pointer hover:underline"
+                      @click.stop="router.push(`/artist/${artist.id}`)"
+                    >{{ artist.name }}</span><span v-if="index < album.artists.length - 1"> • </span>
+                  </template>
                 </span>
                 <span>•</span>
                 <span class="flex items-center gap-1">
@@ -122,14 +127,6 @@
         >
           <Column field="name" header="Name" sortable />
           <Column field="year" header="Year" sortable />
-          <Column header="Artists">
-            <template #body="slotProps">
-              {{
-                slotProps.data.artists?.map((a: any) => a.name).join(", ") ||
-                "-"
-              }}
-            </template>
-          </Column>
         </DataTable>
       </template>
     </Card>
@@ -234,7 +231,7 @@ const { fileUrl: displayImageUrl, isLoading: isImageLoading } = useGetFile(
   computed(() => album.value?.imageUrl),
 );
 
-const goHome = () => router.push("/newest");
+const goHome = () => router.push("/");
 const goBack = () => router.go(-1);
 const openLink = (link: string) => window.open(link, "_blank");
 

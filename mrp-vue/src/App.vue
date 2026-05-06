@@ -1,5 +1,5 @@
 <template>
-  <div class="my-[1rem] mx-[2.5rem]">
+  <div class="py-[1rem] px-[2.5rem]">
     <Toast />
     <router-view />
   </div>

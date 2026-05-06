@@ -33,7 +33,7 @@ const changeTab = (e) => {
 </script>
 
 <template>
-  <div class="p-dark min-h-screen">
+  <div class="p-dark">
     <TabMenu
       :class="['mb-[2rem]', isMobile ? 'w-full' : 'flex justify-center']"
       :pt="

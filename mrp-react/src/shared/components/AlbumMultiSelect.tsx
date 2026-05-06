@@ -1,5 +1,4 @@
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
-import { Button } from "primereact/button";
 
 export type AlbumOption = {
   id: number;
@@ -25,7 +24,6 @@ export default function AlbumMultiSelect({
   options,
   loading,
   onChange,
-  onCreateNew,
   appendTo,
   className,
   placeholder = "Select albums",
@@ -51,19 +49,19 @@ export default function AlbumMultiSelect({
           <small className="text-gray-500">{opt.year}</small>
         </div>
       )}
-      panelFooterTemplate={() => (
-        <div className="flex justify-center p-2">
-          <Button
-            label="Create New Album"
-            icon="pi pi-plus"
-            className="p-button-text p-button-sm"
-            onClick={(e) => {
-              e.preventDefault();
-              onCreateNew?.();
-            }}
-          />
-        </div>
-      )}
+      // panelFooterTemplate={() => (
+      //   <div className="flex justify-center p-2">
+      //     <Button
+      //       label="Create New Album"
+      //       icon="pi pi-plus"
+      //       className="p-button-text p-button-sm"
+      //       onClick={(e) => {
+      //         e.preventDefault();
+      //         onCreateNew?.();
+      //       }}
+      //     />
+      //   </div>
+      // )}
     />
   );
 }

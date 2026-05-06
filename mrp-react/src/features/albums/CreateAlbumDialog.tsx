@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { Dialog } from "primereact/dialog";
+import { toast } from "../../shared/components/ToastContext.tsx";
 import {
   Controller,
   FormProvider,
@@ -134,18 +135,27 @@ export default function CreateAlbumDialog({
         artistIds: Array.isArray(data.artistIds) ? data.artistIds : [],
       };
 
-      if (existingAlbumData?.albumId) {
-        await updateAlbum({
-          albumId: existingAlbumData.albumId,
-          formData: normalized,
-        });
-      } else {
-        await createAlbum({ formData: normalized });
+      try {
+        if (existingAlbumData?.albumId) {
+          await updateAlbum({
+            albumId: existingAlbumData.albumId,
+            formData: normalized,
+          });
+          toast.success("Album updated.");
+        } else {
+          await createAlbum({ formData: normalized });
+          toast.success("Album created.");
+        }
+        reset(EMPTY_FORM);
+        onCreated();
+        setVisible(false);
+      } catch {
+        toast.error(
+          existingAlbumData?.albumId
+            ? "Failed to update album."
+            : "Failed to create album.",
+        );
       }
-
-      reset(EMPTY_FORM);
-      onCreated();
-      setVisible(false);
     },
     [existingAlbumData, onCreated, reset, setVisible],
   );
@@ -162,9 +172,13 @@ export default function CreateAlbumDialog({
       }}
       resizable={false}
       draggable={false}
+      className="md:w-[650px] w-[400px]"
     >
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="p-fluid flex flex-col gap-2"
+        >
           <div className="field">
             <label htmlFor="name">Album Name</label>
             <Controller
@@ -284,7 +298,7 @@ export default function CreateAlbumDialog({
             />
           </div>
 
-          <div className="field">
+          <div className="field mb-3">
             <label htmlFor="artistIdsSelect">Artists (optional)</label>
             <Controller
               name="artistIds"
