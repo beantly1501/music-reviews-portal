@@ -30,6 +30,7 @@ import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { deleteAlbumReview, deleteSongReview } from "./utils/helpers.tsx";
 import { useNavigate } from "react-router-dom";
+import { CommentSection } from "./CommentSection.tsx";
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 type Props = {
@@ -356,6 +357,8 @@ export default function ReviewDialog({
               )}
             </div>
           </div>
+          <Divider />
+          <CommentSection reviewId={reviewId} reviewType={review.type} />
         </Card>
       )}
 

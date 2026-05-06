@@ -193,6 +193,16 @@ export type PlaylistRequestData = {
   formData: PlaylistCreateForm;
 };
 
+export type CommentResponse = {
+  id: number;
+  reviewId: number;
+  userId: number;
+  username: string;
+  content: string;
+  creationDate: string;
+  updatedDate: string | null;
+};
+
 export type Options = {
   page?: number;
   size?: number;

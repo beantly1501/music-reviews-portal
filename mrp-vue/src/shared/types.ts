@@ -202,6 +202,16 @@ export interface GenreResponseDto {
   songs: SongPartialDto[];
 }
 
+export interface CommentResponse {
+  id: number;
+  reviewId: number;
+  userId: number;
+  username: string;
+  content: string;
+  creationDate: string;
+  updatedDate: string | null;
+}
+
 export const songReviewSchema = z.object({
   songId: z.number(),
   grade: z.number().min(1, { message: "Grade must be at least 1." }),
