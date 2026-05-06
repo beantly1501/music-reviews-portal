@@ -13,6 +13,7 @@ export const useCreateAlbum = () => {
   const createAlbum = async (
     form: AlbumCreateForm,
   ): Promise<AlbumResponseDto | null> => {
+    if (isLoading.value) return null;
     isLoading.value = true;
     error.value = null;
 
@@ -27,8 +28,6 @@ export const useCreateAlbum = () => {
         formData.append("songIds", JSON.stringify(form.songIds));
       if (form.artistIds)
         formData.append("artistIds", JSON.stringify(form.artistIds));
-      if (form.genreIds)
-        formData.append("genreIds", JSON.stringify(form.genreIds));
 
       const response = await fetch("/api/album/create", {
         method: "POST",

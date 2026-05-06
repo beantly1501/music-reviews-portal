@@ -1,6 +1,6 @@
 <template>
   <Card
-    class="w-[320px] h-[560px] rounded-lg! shadow-md! shadow-black"
+    class="w-[320px] h-[560px] rounded-lg! shadow-md! shadow-black cursor-pointer"
     @click="$emit('album-click', album)"
   >
     <template #header>
@@ -40,13 +40,14 @@
 
     <template #content>
       <div class="flex flex-col gap-4">
-        <div v-if="album.genres?.length" class="flex flex-wrap gap-1">
+        <div v-if="album.genres?.length" class="flex gap-1 items-center overflow-hidden">
           <Chip
-            v-for="genre in album.genres"
+            v-for="genre in visibleGenres"
             :key="genre.id"
             :label="genre.name"
-            class="w-fit h-2rem"
+            class="w-fit h-2rem shrink-0"
           />
+          <span v-if="hasMoreGenres" class="text-gray-400 text-sm shrink-0">...</span>
         </div>
 
         <div v-else>
@@ -54,10 +55,6 @@
         </div>
 
         <div class="flex flex-col gap-4 justify-center items-center">
-          <div class="text-sm text-gray-300">
-            {{ album.songs?.length || 0 }} songs
-          </div>
-
           <div>
             <Button
               v-if="album.link"
@@ -101,6 +98,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { Card, Image, Button, Chip, Rating, ProgressSpinner } from "primevue";
 import type { AlbumResponseDto } from "@/shared";
 import { useGetFile } from "@/shared";
@@ -113,6 +111,9 @@ defineEmits<{
   (e: "review", album: AlbumResponseDto): void;
   (e: "album-click", album: AlbumResponseDto): void;
 }>();
+
+const visibleGenres = computed(() => props.album.genres?.slice(0, 3) ?? []);
+const hasMoreGenres = computed(() => (props.album.genres?.length ?? 0) > 3);
 
 const { fileUrl: imageUrl, isLoading: isImageLoading } = useGetFile(
   props.album.imageUrl,

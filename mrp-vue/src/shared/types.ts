@@ -54,7 +54,6 @@ export const albumCreateSchema = z.object({
   year: z.number().int().max(thisYear).optional(),
 
   songIds: z.array(z.number()).default([]).optional(),
-  genreIds: z.array(z.number()).default([]).optional(),
   artistIds: z.array(z.number()).default([]).optional(),
 });
 
@@ -245,6 +244,5 @@ export const albumCreateDefaultValues: AlbumCreateForm = {
   link: undefined,
   year: new Date(Date.now()).getFullYear(),
   songIds: [],
-  genreIds: [],
   artistIds: [],
 };

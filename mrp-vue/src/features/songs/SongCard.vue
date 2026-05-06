@@ -1,6 +1,6 @@
 <template>
   <Card
-    class="w-[320px] h-[560px] rounded-lg! shadow-md! shadow-black"
+    class="w-[320px] h-[560px] rounded-lg! shadow-md! shadow-black cursor-pointer"
     @click="$emit('song-click', song)"
   >
     <template #header>
@@ -19,8 +19,8 @@
     </template>
 
     <template #title>
-      <div class="flex justify-between">
-        <p class="m-0 p-0">{{ song.name }}</p>
+      <div class="flex justify-between gap-2 min-w-0">
+        <p class="m-0 p-0 truncate min-w-0">{{ song.name }}</p>
         <Tag v-if="song.grade" value="Reviewed" />
       </div>
     </template>
@@ -29,13 +29,14 @@
 
     <template #content>
       <div class="flex flex-col gap-4">
-        <div v-if="song.genres" class="flex flex-wrap gap-1">
+        <div v-if="song.genres?.length" class="flex gap-1 items-center overflow-hidden">
           <Chip
-            v-for="genre in song.genres"
+            v-for="genre in visibleGenres"
             :key="genre.id"
             :label="genre.name"
-            class="w-fit h-2rem"
+            class="w-fit h-2rem shrink-0"
           />
+          <span v-if="hasMoreGenres" class="text-gray-400 text-sm shrink-0">...</span>
         </div>
 
         <div v-else>
@@ -96,6 +97,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import {
   Card,
   Image,
@@ -116,6 +118,9 @@ defineEmits<{
   (e: "review", song: SongResponse): void;
   (e: "song-click", song: SongResponse): void;
 }>();
+
+const visibleGenres = computed(() => props.song.genres?.slice(0, 3) ?? []);
+const hasMoreGenres = computed(() => (props.song.genres?.length ?? 0) > 3);
 
 const { fileUrl: imageUrl, isLoading: isImageLoading } = useGetFile(
   props.song.imageUrl,

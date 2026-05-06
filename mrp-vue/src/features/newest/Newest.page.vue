@@ -20,7 +20,7 @@
     </div>
 
     <div v-else class="text-center text-gray-500">
-      <p>No reviews found.</p>
+      <p>No reviews yet...</p>
     </div>
   </div>
 </template>

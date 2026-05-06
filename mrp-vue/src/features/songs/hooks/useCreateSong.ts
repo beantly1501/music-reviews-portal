@@ -9,6 +9,7 @@ export const useCreateSong = () => {
   const createSong = async (
     form: SongCreateForm,
   ): Promise<SongResponse | null> => {
+    if (isLoading.value) return null;
     isLoading.value = true;
     error.value = null;
 

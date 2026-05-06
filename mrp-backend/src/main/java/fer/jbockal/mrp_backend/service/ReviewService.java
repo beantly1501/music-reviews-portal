@@ -179,6 +179,9 @@ public class ReviewService {
         AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
         Song song = songRepository.findById(dto.getSongId())
                 .orElseThrow(() -> new IllegalArgumentException("Song not found: " + dto.getSongId()));
+        if (songReviewRepository.existsByUserAndSong(user, song)) {
+            throw new IllegalStateException("You have already reviewed this song.");
+        }
         SongReview rev = new SongReview(
                 null, song, user, dto.getGrade(), dto.getDescription(), java.time.LocalDateTime.now()
         );
@@ -270,6 +273,9 @@ public class ReviewService {
         AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
         Album album = albumRepository.findById(dto.getAlbumId())
                 .orElseThrow(() -> new IllegalArgumentException("Album not found: " + dto.getAlbumId()));
+        if (albumReviewRepository.existsByUserAndAlbum(user, album)) {
+            throw new IllegalStateException("You have already reviewed this album.");
+        }
         AlbumReview rev = new AlbumReview(
                 null, album, user, dto.getGrade(), dto.getDescription(), java.time.LocalDateTime.now()
         );

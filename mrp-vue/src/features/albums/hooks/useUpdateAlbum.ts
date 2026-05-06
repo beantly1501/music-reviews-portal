@@ -28,8 +28,6 @@ export const useUpdateAlbum = () => {
         formData.append("songIds", JSON.stringify(form.songIds));
       if (form.artistIds)
         formData.append("artistIds", JSON.stringify(form.artistIds));
-      if (form.genreIds)
-        formData.append("genreIds", JSON.stringify(form.genreIds));
 
       const response = await fetch(`/api/album/${id}/update`, {
         method: "PUT",
