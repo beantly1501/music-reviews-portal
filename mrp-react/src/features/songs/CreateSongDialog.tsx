@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { Dialog } from "primereact/dialog";
+import { toast } from "../../shared/components/ToastContext.tsx";
 import {
   Controller,
   FormProvider,
@@ -155,17 +156,23 @@ export default function CreateSongDialog({
 
   const onSubmit: SubmitHandler<SongCreateForm> = useCallback(
     async (data) => {
-      if (existingSongData?.songId) {
-        await updateSong({
-          songId: existingSongData.songId,
-          formData: data,
-        });
-      } else {
-        await createSong({ formData: data });
+      try {
+        if (existingSongData?.songId) {
+          await updateSong({
+            songId: existingSongData.songId,
+            formData: data,
+          });
+          toast.success("Song updated.");
+        } else {
+          await createSong({ formData: data });
+          toast.success("Song created.");
+        }
+        reset(EMPTY_FORM);
+        onCreated();
+        setVisible(false);
+      } catch {
+        toast.error(existingSongData?.songId ? "Failed to update song." : "Failed to create song.");
       }
-      reset(EMPTY_FORM);
-      onCreated();
-      setVisible(false);
     },
     [existingSongData, onCreated, reset, setVisible],
   );

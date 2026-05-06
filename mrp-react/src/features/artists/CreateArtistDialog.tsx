@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { Dialog } from "primereact/dialog";
+import { toast } from "../../shared/components/ToastContext.tsx";
 import {
   Controller,
   FormProvider,
@@ -136,17 +137,22 @@ export default function CreateArtistDialog({
         albumIds: data.albumIds ?? [],
       };
 
-      if (existingArtistData?.artistId) {
-        await updateArtist({
-          artistId: existingArtistData.artistId,
-          formData: normalized,
-        });
-      } else {
-        await createArtist({ formData: normalized });
+      try {
+        if (existingArtistData?.artistId) {
+          await updateArtist({
+            artistId: existingArtistData.artistId,
+            formData: normalized,
+          });
+          toast.success("Artist updated.");
+        } else {
+          await createArtist({ formData: normalized });
+          toast.success("Artist created.");
+        }
+        onCreated();
+        setVisible(false);
+      } catch {
+        toast.error(existingArtistData?.artistId ? "Failed to update artist." : "Failed to create artist.");
       }
-
-      onCreated();
-      setVisible(false);
     },
     [onCreated, setVisible, existingArtistData],
   );
