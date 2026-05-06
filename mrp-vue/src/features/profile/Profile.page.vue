@@ -27,7 +27,7 @@
         <Column field="type" header="Type" :sortable="true">
           <template #body="{ data }: { data: ReviewResponse }">
             <Tag
-              :value="data.type"
+              :value="data.type === ReviewType.SONG ? 'Song' : 'Album'"
               :severity="data.type === ReviewType.ALBUM ? 'info' : 'success'"
             />
           </template>
@@ -122,7 +122,11 @@ import { Tag, Rating } from "primevue";
 import ReviewDialog from "@/features/review/ReviewDialog.vue";
 
 const router = useRouter();
-const { isLoading: isLoadingReviews, data: myReviews, refetch: refetchMyReviews } = useGetMyReviews();
+const {
+  isLoading: isLoadingReviews,
+  data: myReviews,
+  refetch: refetchMyReviews,
+} = useGetMyReviews();
 const { isLoading: isLoadingPlaylists, data: myPlaylists } =
   useGetMyPlaylists();
 

@@ -10,7 +10,7 @@ import {
   type AlbumResponseDto,
   useGetAllGenres,
 } from "@/shared";
-import { useCreateAlbum, useUpdateAlbum, useGetAllSongs } from "@/features";
+import { useCreateAlbum, useUpdateAlbum, useGetAllSongs, useGetAllArtists } from "@/features";
 import { computed, watch } from "vue";
 
 const isDialogVisible = defineModel<boolean>();
@@ -28,6 +28,7 @@ const { createAlbum, isLoading: isCreating } = useCreateAlbum();
 const { updateAlbum, isLoading: isUpdating } = useUpdateAlbum();
 const { data: genres, isLoading: isGenresLoading } = useGetAllGenres();
 const { data: songsData, isLoading: isSongsLoading } = useGetAllSongs();
+const { data: artistsData, isLoading: isArtistsLoading } = useGetAllArtists();
 
 const isSubmitting = computed(() => isCreating.value || isUpdating.value);
 
@@ -36,6 +37,15 @@ const genreOptions = computed<MultiSelectOptionType[]>(() => {
     genres.value?.map((genre) => ({
       label: genre.name,
       value: genre.id,
+    })) || []
+  );
+});
+
+const artistOptions = computed<MultiSelectOptionType[]>(() => {
+  return (
+    artistsData.value?.map((artist) => ({
+      label: artist.name,
+      value: artist.id,
     })) || []
   );
 });
@@ -187,7 +197,8 @@ const onSubmit = handleSubmit(async (values) => {
       <div class="flex flex-col gap-2">
         <label>Artists (optional)</label>
         <ModifiedMultiSelect
-          :options="[]"
+          :options="artistOptions"
+          :loading="isArtistsLoading"
           v-model="artistIds"
           :invalid="!!errors.artistIds"
         />

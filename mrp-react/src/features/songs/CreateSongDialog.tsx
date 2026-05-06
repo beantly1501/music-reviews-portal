@@ -171,7 +171,11 @@ export default function CreateSongDialog({
         onCreated();
         setVisible(false);
       } catch {
-        toast.error(existingSongData?.songId ? "Failed to update song." : "Failed to create song.");
+        toast.error(
+          existingSongData?.songId
+            ? "Failed to update song."
+            : "Failed to create song.",
+        );
       }
     },
     [existingSongData, onCreated, reset, setVisible],
@@ -189,7 +193,7 @@ export default function CreateSongDialog({
       }}
       resizable={false}
       draggable={false}
-      className="md:w-[550px] w-[400px]"
+      className="md:w-[650px] w-[400px]"
     >
       <FormProvider {...methods}>
         <form

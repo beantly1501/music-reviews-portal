@@ -151,7 +151,11 @@ export default function CreateArtistDialog({
         onCreated();
         setVisible(false);
       } catch {
-        toast.error(existingArtistData?.artistId ? "Failed to update artist." : "Failed to create artist.");
+        toast.error(
+          existingArtistData?.artistId
+            ? "Failed to update artist."
+            : "Failed to create artist.",
+        );
       }
     },
     [onCreated, setVisible, existingArtistData],
@@ -169,7 +173,7 @@ export default function CreateArtistDialog({
       }}
       resizable={false}
       draggable={false}
-      className="md:w-[550px] w-[400px]"
+      className="md:w-[650px] w-[400px]"
     >
       <FormProvider {...methods}>
         <form

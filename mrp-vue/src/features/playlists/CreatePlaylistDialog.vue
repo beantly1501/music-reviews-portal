@@ -14,6 +14,8 @@ import { useCreatePlaylist } from "./hooks/useCreatePlaylist";
 import { useUpdatePlaylist } from "./hooks/useUpdatePlaylist";
 import { computed, watch } from "vue";
 import { useGetAllUsers } from "./hooks/useGetAllUsers";
+import { useAuthStore } from "@/shared";
+import { storeToRefs } from "pinia";
 
 const isDialogVisible = defineModel<boolean>();
 
@@ -27,6 +29,7 @@ const emit = defineEmits<{
 }>();
 
 const toast = useToast();
+const { user } = storeToRefs(useAuthStore());
 const { createPlaylist, isLoading: isCreating } = useCreatePlaylist();
 const { updatePlaylist, isLoading: isUpdating } = useUpdatePlaylist();
 const { data: songsData, isLoading: isSongsLoading } = useGetAllSongs();
@@ -45,10 +48,12 @@ const songOptions = computed<MultiSelectOptionType[]>(() => {
 
 const collaboratorOptions = computed<MultiSelectOptionType[]>(() => {
   return (
-    usersData.value?.map((user) => ({
-      label: user.username,
-      value: user.id,
-    })) || []
+    usersData.value
+      ?.filter((u) => u.username !== user.value?.username)
+      .map((u) => ({
+        label: u.username,
+        value: u.id,
+      })) || []
   );
 });
 
@@ -138,7 +143,7 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="flex flex-col gap-2">
         <label>Description (optional)</label>
-        <Textarea v-model="description" rows="3" :invalid="!!errors.description" :disabled="props.isCollaboratorOnly" />
+        <Textarea v-model="description" rows="3" :invalid="!!errors.description" :disabled="props.isCollaboratorOnly" class="resize-none" />
         <small v-if="errors.description" class="text-red-500">{{ errors.description }}</small>
       </div>
 

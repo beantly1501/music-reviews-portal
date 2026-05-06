@@ -30,9 +30,9 @@
     </template>
 
     <template #subtitle>
-      <div class="flex flex-col">
+      <div class="flex flex-col min-w-0">
         <span>Released {{ album.year }}.</span>
-        <span v-if="album.artists?.length" class="text-sm">
+        <span v-if="album.artists?.length" class="text-sm truncate">
           by {{ album.artists.map((a) => a.name).join(", ") }}
         </span>
       </div>

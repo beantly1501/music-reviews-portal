@@ -150,7 +150,11 @@ export default function CreateAlbumDialog({
         onCreated();
         setVisible(false);
       } catch {
-        toast.error(existingAlbumData?.albumId ? "Failed to update album." : "Failed to create album.");
+        toast.error(
+          existingAlbumData?.albumId
+            ? "Failed to update album."
+            : "Failed to create album.",
+        );
       }
     },
     [existingAlbumData, onCreated, reset, setVisible],
@@ -168,7 +172,7 @@ export default function CreateAlbumDialog({
       }}
       resizable={false}
       draggable={false}
-      className="md:w-[550px] w-[400px]"
+      className="md:w-[650px] w-[400px]"
     >
       <FormProvider {...methods}>
         <form

@@ -144,7 +144,11 @@ export default function CreatePlaylistDialog({
         onCreated?.();
         setVisible(false);
       } catch {
-        toast.error(existingPlaylistData ? "Failed to update playlist." : "Failed to create playlist.");
+        toast.error(
+          existingPlaylistData
+            ? "Failed to update playlist."
+            : "Failed to create playlist.",
+        );
       }
     },
     [onCreated, setVisible, existingPlaylistData],
@@ -166,7 +170,7 @@ export default function CreatePlaylistDialog({
       }}
       resizable={false}
       draggable={false}
-      className="md:w-[550px] w-[400px]"
+      className="md:w-[650px] w-[400px]"
     >
       <FormProvider {...methods}>
         <form

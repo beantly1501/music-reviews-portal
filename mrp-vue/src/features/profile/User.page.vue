@@ -6,7 +6,12 @@
 
     <template v-else-if="userData">
       <div class="flex justify-end w-full">
-        <Button icon="pi pi-arrow-left" label="Back" outlined @click="router.go(-1)" />
+        <Button
+          icon="pi pi-arrow-left"
+          label="Back"
+          outlined
+          @click="router.go(-1)"
+        />
       </div>
       <Card class="max-w-[400px] w-full mt-10">
         <template #content>
@@ -36,12 +41,17 @@
         >
           <Column field="name" header="Name" :sortable="true">
             <template #body="{ data }: { data: ReviewResponse }">
-              {{ data.type === ReviewType.SONG ? data.songName : data.albumName }}
+              {{
+                data.type === ReviewType.SONG ? data.songName : data.albumName
+              }}
             </template>
           </Column>
           <Column field="type" header="Type" :sortable="true">
             <template #body="{ data }: { data: ReviewResponse }">
-              <Tag :value="data.type" />
+              <Tag
+                :value="data.type === ReviewType.SONG ? 'Song' : 'Album'"
+                :severity="data.type === ReviewType.ALBUM ? 'info' : 'success'"
+              />
             </template>
           </Column>
           <Column field="grade" header="Rating" :sortable="true">
@@ -72,13 +82,21 @@
         </div>
 
         <DataTable
-          v-if="userPlaylists?.content.length && userPlaylists?.content.length > 0"
+          v-if="
+            userPlaylists?.content.length && userPlaylists?.content.length > 0
+          "
           :loading="isLoadingPlaylists"
           :value="userPlaylists?.content ?? []"
           removableSort
           selectionMode="single"
           class="cursor-pointer"
-          @row-click="(e) => router.push({ name: 'playlist-details', params: { id: e.data.id } })"
+          @row-click="
+            (e) =>
+              router.push({
+                name: 'playlist-details',
+                params: { id: e.data.id },
+              })
+          "
         >
           <Column field="name" header="Name" :sortable="true" />
           <Column field="isPrivate" header="Visibility" :sortable="true">
@@ -96,7 +114,7 @@
           </Column>
           <Column field="description" header="Description">
             <template #body="{ data }: { data: PlaylistResponseDto }">
-              {{ data.description ?? '-' }}
+              {{ data.description ?? "-" }}
             </template>
           </Column>
         </DataTable>
@@ -131,8 +149,13 @@ const router = useRouter();
 const userId = computed(() => route.params.id);
 
 const { data: userData, isLoading: isLoadingUser } = useGetUserById(userId);
-const { data: userReviews, isLoading: isLoadingReviews, refetch: refetchUserReviews } = useGetReviewsByUserId(userId);
-const { data: userPlaylists, isLoading: isLoadingPlaylists } = useGetPublicPlaylistsByUserId(userId);
+const {
+  data: userReviews,
+  isLoading: isLoadingReviews,
+  refetch: refetchUserReviews,
+} = useGetReviewsByUserId(userId);
+const { data: userPlaylists, isLoading: isLoadingPlaylists } =
+  useGetPublicPlaylistsByUserId(userId);
 
 const isReviewDialogVisible = ref(false);
 const selectedReview = ref<ReviewResponse | null>(null);

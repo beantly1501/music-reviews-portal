@@ -238,7 +238,7 @@ const { fileUrl: audioUrl, isLoading: isAudioLoading } = useGetFile(
   computed(() => song.value?.fileUrl),
 );
 
-const goHome = () => router.push("/newest");
+const goHome = () => router.push("/");
 const goBack = () => router.go(-1);
 const openLink = (link: string) => window.open(link, "_blank");
 
