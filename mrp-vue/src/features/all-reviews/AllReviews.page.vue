@@ -6,11 +6,13 @@
         <ProgressSpinner />
       </div>
 
+      <p v-else-if="!reviews?.length" class="text-center text-gray-500">No reviews yet...</p>
+
       <DataTable
         row-hover
         class="cursor-pointer"
         v-else
-        :value="reviews || []"
+        :value="reviews"
         removableSort
         @row-click="onRowClick"
       >

@@ -7,6 +7,7 @@ export const useCreateArtist = () => {
   const { token } = useAuthStore();
 
   const createArtist = async (form: ArtistCreateForm): Promise<ArtistResponseDto | null> => {
+    if (isLoading.value) return null;
     isLoading.value = true;
     error.value = null;
 

@@ -26,6 +26,8 @@ public interface AlbumReviewRepository extends JpaRepository<AlbumReview, Long> 
 
     Optional<AlbumReview> findByIdAndUser(Long id, AppUser user);
 
+    boolean existsByUserAndAlbum(AppUser user, Album album);
+
     @Query("""
             select ar.id as id,
                    a.id as albumId,

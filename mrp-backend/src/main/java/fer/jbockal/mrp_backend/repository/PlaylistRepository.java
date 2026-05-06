@@ -19,6 +19,8 @@ import java.util.List;
 @Repository
 public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
+    boolean existsByOwnerAndName(AppUser owner, String name);
+
     @Query(
             value = """
         select p.id as id,

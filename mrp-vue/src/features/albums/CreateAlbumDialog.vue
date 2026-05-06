@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button, Dialog, InputText, FileUpload, InputNumber, useToast } from "primevue";
 import { useForm } from "vee-validate";
-import { ModifiedMultiSelect, GenreMultiSelect } from "@/shared/components";
+import { ModifiedMultiSelect } from "@/shared/components";
 import { toTypedSchema } from "@vee-validate/zod";
 import {
   type MultiSelectOptionType,
@@ -56,7 +56,6 @@ const initialValues = computed(() => {
       name: props.album.name,
       year: props.album.year,
       link: props.album.link,
-      genreIds: props.album.genres?.map((g) => g.id) || [],
       songIds: props.album.songs?.map((s) => s.id) || [],
       artistIds: props.album.artists?.map((a) => a.id) || [],
       cover: undefined,
@@ -83,7 +82,6 @@ const [name] = defineField("name");
 const [link] = defineField("link");
 const [year] = defineField("year");
 const [cover] = defineField("cover");
-const [genreIds] = defineField("genreIds");
 const [songIds] = defineField("songIds");
 const [artistIds] = defineField("artistIds");
 
@@ -155,14 +153,6 @@ const onSubmit = handleSubmit(async (values) => {
           :invalid="!!errors.year"
         />
         <small v-if="errors.year" class="text-red-500">{{ errors.year }}</small>
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <label>Genres (optional)</label>
-        <GenreMultiSelect v-model="genreIds" :invalid="!!errors.genreIds" />
-        <small v-if="errors.genreIds" class="text-red-500">{{
-          errors.genreIds
-        }}</small>
       </div>
 
       <div class="flex flex-col gap-2">

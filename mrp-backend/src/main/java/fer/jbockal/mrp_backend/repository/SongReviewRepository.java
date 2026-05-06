@@ -25,6 +25,8 @@ public interface SongReviewRepository extends JpaRepository<SongReview, Long> {
 
     Optional<SongReview> findByIdAndUser(Long id, AppUser user);
 
+    boolean existsByUserAndSong(AppUser user, Song song);
+
     @Query("""
             select sr.id as id,
                    s.id as songId,

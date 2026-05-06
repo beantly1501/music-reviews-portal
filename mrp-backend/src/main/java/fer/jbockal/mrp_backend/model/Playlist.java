@@ -15,7 +15,9 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "playlist")
+@Table(name = "playlist", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"owner_id", "name"})
+})
 public class Playlist {
 
     @Id

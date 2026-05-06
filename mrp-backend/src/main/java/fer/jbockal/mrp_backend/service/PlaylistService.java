@@ -49,6 +49,9 @@ public class PlaylistService {
 
     public PlaylistResponseDto create(Object principal, PlaylistRequestDto dto) {
         AppUser owner = appUserService.resolveAppUserFromPrincipal(principal);
+        if (playlistRepository.existsByOwnerAndName(owner, dto.getName())) {
+            throw new IllegalStateException("You already have a playlist named \"" + dto.getName() + "\".");
+        }
 
         Playlist p = new Playlist();
         p.setName(dto.getName());

@@ -7,6 +7,7 @@ export const useCreatePlaylist = () => {
   const { token } = useAuthStore();
 
   const createPlaylist = async (form: PlaylistCreateForm): Promise<PlaylistResponseDto | null> => {
+    if (isLoading.value) return null;
     isLoading.value = true;
     error.value = null;
 
