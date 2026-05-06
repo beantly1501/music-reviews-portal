@@ -155,6 +155,11 @@
         </div>
       </template>
     </Card>
+    <CommentSection
+      v-if="review"
+      :review-id="reviewId!"
+      :review-type="reviewType!"
+    />
   </Dialog>
   <EditReviewDialog
     v-if="isEditDialogVisible && review"
@@ -192,6 +197,7 @@ import {
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import { computed, ref, toRef } from "vue";
+import CommentSection from "./CommentSection.vue";
 import EditReviewDialog from "./EditReviewDialog.vue";
 
 const props = defineProps<{
