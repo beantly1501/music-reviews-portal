@@ -1,5 +1,6 @@
 <template>
-  <div class="max-w-md mx-auto mt-20 p-6 border border-white/20 rounded shadow">
+  <div class="flex items-center justify-center h-screen -my-[1rem] -mx-[2.5rem]">
+  <div class="max-w-md w-full p-6 border border-white/20 rounded shadow">
     <p class="text-2xl font-bold mb-4">Login</p>
 
     <form @submit="onSubmit" class="flex flex-col gap-4">
@@ -23,6 +24,7 @@
         </div>
       </div>
     </form>
+  </div>
   </div>
 </template>
 

@@ -6,7 +6,7 @@
       <p class="flex justify-start text-4xl font-bold">My reviews</p>
 
       <DataTable
-        v-if="myReviews"
+        v-if="myReviews?.length"
         :loading="isLoadingReviews"
         :value="myReviews"
         removableSort
@@ -49,7 +49,7 @@
         </Column>
       </DataTable>
 
-      <p v-else>Error loading reviews</p>
+      <p v-else-if="!isLoadingReviews" class="text-gray-400">No reviews yet.</p>
     </div>
 
     <ReviewDialog
@@ -62,10 +62,11 @@
     <div class="flex flex-col w-full gap-4">
       <div class="flex justify-between items-center">
         <p class="flex justify-start text-4xl font-bold">My playlists</p>
-        <p>{{ myPlaylists?.totalElements }} total</p>
+        <p v-if="myPlaylists?.totalElements">{{ myPlaylists.totalElements }} total</p>
       </div>
 
       <DataTable
+        v-if="myPlaylists?.content?.length"
         :loading="isLoadingPlaylists"
         :value="myPlaylists?.content"
         removableSort
@@ -102,6 +103,8 @@
           </template>
         </Column>
       </DataTable>
+
+      <p v-else-if="!isLoadingPlaylists" class="text-gray-400">No playlists yet.</p>
     </div>
   </div>
 </template>
