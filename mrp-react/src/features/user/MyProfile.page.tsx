@@ -81,7 +81,13 @@ export default function MyProfilePage() {
     if (typeof e.rows === "number") setSize(e.rows);
   };
 
-  if (userLoading || reviewsLoading) return <div>Loading...</div>;
+  if (userLoading || reviewsLoading)
+    return (
+      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
+        <ProgressSpinner />
+        <div className="text-[#6b7280] text-[0.95rem]">Loading…</div>
+      </div>
+    );
 
   if (!user || userError) {
     return (
