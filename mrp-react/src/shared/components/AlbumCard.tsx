@@ -84,7 +84,7 @@ export default function AlbumCard({ album, refetch }: Props) {
       >
         <div className="mt-2 px-4 pt-3 pb-4 flex flex-col gap-4">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="m-0 text-lg font-bold">{album.name}</h3>
+            <h3 className="m-0 text-lg font-bold truncate flex-1 min-w-0">{album.name}</h3>
             <span className="inline-flex items-center gap-[6px]">
               <i className="pi pi-headphones" />
               <Badge value={songsCount} />

@@ -19,7 +19,7 @@
     </template>
 
     <template #title>
-      <div class="flex justify-between">
+      <div class="flex justify-between gap-2">
         <p class="m-0 p-0 text-xl font-bold truncate">{{ album.name }}</p>
 
         <div class="flex gap-2 items-center">
@@ -40,14 +40,19 @@
 
     <template #content>
       <div class="flex flex-col gap-4">
-        <div v-if="album.genres?.length" class="flex gap-1 items-center overflow-hidden">
+        <div
+          v-if="album.genres?.length"
+          class="flex gap-1 items-center overflow-hidden"
+        >
           <Chip
             v-for="genre in visibleGenres"
             :key="genre.id"
             :label="genre.name"
             class="w-fit h-2rem shrink-0"
           />
-          <span v-if="hasMoreGenres" class="text-gray-400 text-sm shrink-0">...</span>
+          <span v-if="hasMoreGenres" class="text-gray-400 text-sm shrink-0"
+            >...</span
+          >
         </div>
 
         <div v-else>

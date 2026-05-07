@@ -39,11 +39,11 @@ export default function ArtistCard({ artist }: Props) {
   return (
     <Card
       header={header}
-      title={artist.name}
       className="artist-card shadow-md cursor-pointer select-none"
       style={{ width: 300 }}
       onClick={() => navigate(`/artist/${artist.id}`)}
     >
+      <h3 className="m-0 text-xl font-bold truncate">{artist.name}</h3>
       {artist.description && (
         <p className="mt-5 text-sm text-[#374151]">{artist.description}</p>
       )}

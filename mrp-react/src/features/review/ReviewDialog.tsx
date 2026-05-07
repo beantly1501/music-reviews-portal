@@ -150,7 +150,14 @@ export default function ReviewDialog({
   const header = review && !loading && (
     <div className="flex items-center justify-between gap-3 w-full">
       <div className="ml-[5px]">
-        <span className="text-[1.2rem] font-bold">
+        <span
+          className="text-[1.2rem] font-bold block truncate max-w-[420px]"
+          title={
+            review?.type === "SONG"
+              ? (review?.songName ?? "Song")
+              : (review?.albumName ?? "Album")
+          }
+        >
           {review?.type === "SONG"
             ? (review?.songName ?? "Song")
             : (review?.albumName ?? "Album")}
@@ -220,7 +227,15 @@ export default function ReviewDialog({
 
       {reviewId && !loading && review && (
         <Card className="rdialog__card shadow-md">
-          <div className="rdialog__hero" style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 20, padding: "16px 16px 0 16px" }}>
+          <div
+            className="rdialog__hero"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "320px 1fr",
+              gap: 20,
+              padding: "16px 16px 0 16px",
+            }}
+          >
             <div className="w-full h-[220px] bg-[#f5f5f5] overflow-hidden rounded-[10px]">
               <Image
                 src={
@@ -261,20 +276,27 @@ export default function ReviewDialog({
                 <Rating value={review.grade} cancel={false} readOnly />
               </div>
 
-              <p className="m-0 text-[#374151] leading-[1.65] text-[0.98rem]">{review.description}</p>
+              <p className="m-0 text-[#374151] leading-[1.65] text-[0.98rem]">
+                {review.description}
+              </p>
             </div>
           </div>
 
           <Divider />
 
           <div className="px-4 pb-4">
-            <div className="rdialog__entity" style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 16, alignItems: "start" }}>
+            <div
+              className="rdialog__entity"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "220px 1fr",
+                gap: 16,
+                alignItems: "start",
+              }}
+            >
               <div className="flex flex-col gap-[10px]">
                 {review.type === "SONG" && entity && (
                   <>
-                    <div className="font-bold text-[1.1rem]">
-                      {(entity as SongType).name}
-                    </div>
                     {(entity as SongType).year ? (
                       <div className="text-[#6b7280] text-[0.95rem]">
                         Released {(entity as SongType).year}
@@ -307,9 +329,6 @@ export default function ReviewDialog({
 
                 {review.type === "ALBUM" && entity && (
                   <>
-                    <div className="font-bold text-[1.1rem]">
-                      {(entity as AlbumType).name}
-                    </div>
                     {(entity as AlbumType).year ? (
                       <div className="text-[#6b7280] text-[0.95rem]">
                         Released {(entity as AlbumType).year}
