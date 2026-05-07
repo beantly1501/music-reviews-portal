@@ -7,7 +7,11 @@
       class="w-fit"
       @click="isDialogVisible = true"
     />
+    <div v-if="isLoading" class="flex justify-center p-8">
+      <ProgressSpinner />
+    </div>
     <div
+      v-else
       :class="
         isMobile
           ? 'flex flex-wrap gap-2 justify-center'
@@ -41,7 +45,7 @@
 </template>
 <script setup lang="ts">
 import { useAuthStore } from "@/shared";
-import { Button } from "primevue";
+import { Button, ProgressSpinner } from "primevue";
 import { CreateSongDialog, EditReviewDialog, Role, SongCard } from "@/features";
 import { storeToRefs } from "pinia";
 import { ref } from "vue";
@@ -53,7 +57,7 @@ import { useMediaQuery } from "@vueuse/core";
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 
-const { data: songs, refetch: refetchSongs } = useGetAllSongs();
+const { data: songs, isLoading, refetch: refetchSongs } = useGetAllSongs();
 
 const router = useRouter();
 

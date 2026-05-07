@@ -45,7 +45,7 @@
 
         <div class="flex flex-col gap-4 justify-center items-center">
           <audio v-if="audioUrl" controls :src="audioUrl" @click.stop />
-          <ProgressSpinner v-else-if="isAudioLoading" />
+          <ProgressSpinner v-else-if="isAudioLoading" style="width: 40px; height: 40px" />
           <div v-else>
             <p class="text-gray-400 h-2rem">No audio file available.</p>
           </div>
