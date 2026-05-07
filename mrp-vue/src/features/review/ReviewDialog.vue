@@ -9,7 +9,7 @@
   >
     <template #header>
       <div class="flex justify-between items-center w-full pr-2">
-        <span class="text-xl font-bold">{{ headerTitle }}</span>
+        <span class="text-xl font-bold block truncate max-w-[420px]" :title="headerTitle">{{ headerTitle }}</span>
         <div class="flex items-center gap-2">
           <Button
             v-if="canEdit"
@@ -73,7 +73,6 @@
 
             <div class="flex flex-col gap-4">
               <div class="flex flex-col gap-1">
-                <h2 class="text-3xl font-bold m-0">{{ headerTitle }}</h2>
                 <div class="flex items-center gap-2 text-gray-400 text-sm">
                   <span
                     class="flex items-center gap-1 cursor-pointer hover:text-primary transition-colors"
@@ -106,7 +105,6 @@
             class="bg-[#1a1a1a] p-4 rounded-lg flex flex-col gap-4"
           >
             <div>
-              <h4 class="font-bold text-lg">{{ entity.name }}</h4>
               <p v-if="'year' in entity" class="text-sm text-gray-400">
                 Released {{ entity.year }}
               </p>

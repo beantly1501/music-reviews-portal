@@ -60,7 +60,6 @@ export const ReviewCard = ({ review, refetch }: ReviewCardProps) => {
   return (
     <>
       <Card
-        title={title}
         header={header}
         footer={footer}
         style={{
@@ -73,6 +72,7 @@ export const ReviewCard = ({ review, refetch }: ReviewCardProps) => {
         }}
         onClick={() => setVisible(true)}
       >
+        <h3 className="m-0 mb-2 text-xl font-bold truncate">{title}</h3>
         <div className="flex flex-wrap justify-between mb-2">
           <Rating value={review.grade} readOnly cancel={false} stars={5} />
           <Tag

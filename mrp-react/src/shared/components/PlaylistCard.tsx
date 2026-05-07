@@ -50,7 +50,7 @@ export default function PlaylistCard({ playlist }: { playlist: PlaylistType }) {
     >
       <div className="flex flex-col p-5 gap-2">
         <div className="flex items-center justify-between min-h-[40px] mb-1">
-          <h3 className="m-0 text-xl leading-tight line-clamp-2">{playlist.name}</h3>
+          <h3 className="m-0 text-xl leading-tight truncate flex-1 min-w-0">{playlist.name}</h3>
           <Tag
             value={isPublic ? "Public" : "Private"}
             severity={isPublic ? "success" : "secondary"}

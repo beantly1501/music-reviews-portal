@@ -89,7 +89,7 @@ export default function SongCard({ song, refetch }: Props) {
       >
         <div className="flex flex-col px-5 py-5 flex-1">
           <div className="flex items-center justify-between min-h-[40px] mb-1">
-            <h3 className="m-0 text-xl leading-tight line-clamp-2">
+            <h3 className="m-0 text-xl leading-tight truncate flex-1 min-w-0">
               {song.name}
             </h3>
             <Tag
