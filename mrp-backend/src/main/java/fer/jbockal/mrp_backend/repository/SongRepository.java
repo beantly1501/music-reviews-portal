@@ -5,30 +5,63 @@ import fer.jbockal.mrp_backend.repository.projection.AlbumForSongRow;
 import fer.jbockal.mrp_backend.repository.projection.ArtistRow;
 import fer.jbockal.mrp_backend.repository.projection.GenreRow;
 import fer.jbockal.mrp_backend.repository.projection.SongRow;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
 public interface SongRepository extends JpaRepository<Song, Long> {
 
-    @Query(value = """
+    @Query(
+            value = """
                 select s.id as id, s.name as name, s.link as link, s.year as year
                 from song s
                 order by s.id
-            """, nativeQuery = true)
-    List<SongRow> findAllBase();
+            """,
+            countQuery = "select count(*) from song s",
+            nativeQuery = true
+    )
+    Page<SongRow> findAllBase(Pageable pageable);
 
-    @Query(value = """
+    @Query(
+            value = """
                 select s.id as id, s.name as name, s.link as link, s.year as year
                 from song s
-                where lower(s.name) like lower(concat('%', :fragment, '%'))
+                where (:name is null or lower(s.name) like lower(concat('%', cast(:name as text), '%')))
+                  and (:#{#genreIds == null || #genreIds.isEmpty()} = true
+                       or exists (select 1 from song_genre sg where sg.song_id = s.id and sg.genre_id in (:#{#genreIds ?: 0})))
+                  and (:#{#artistIds == null || #artistIds.isEmpty()} = true
+                       or exists (select 1 from song_artist sa where sa.song_id = s.id and sa.artist_id in (:#{#artistIds ?: 0})))
+                  and (:#{#albumIds == null || #albumIds.isEmpty()} = true
+                       or exists (select 1 from song_album sal where sal.song_id = s.id and sal.album_id in (:#{#albumIds ?: 0})))
                 order by s.id
-            """, nativeQuery = true)
-    List<SongRow> findBaseByNameFragment(@Param("fragment") String fragment);
+            """,
+            countQuery = """
+                select count(*) from song s
+                where (:name is null or lower(s.name) like lower(concat('%', cast(:name as text), '%')))
+                  and (:#{#genreIds == null || #genreIds.isEmpty()} = true
+                       or exists (select 1 from song_genre sg where sg.song_id = s.id and sg.genre_id in (:#{#genreIds ?: 0})))
+                  and (:#{#artistIds == null || #artistIds.isEmpty()} = true
+                       or exists (select 1 from song_artist sa where sa.song_id = s.id and sa.artist_id in (:#{#artistIds ?: 0})))
+                  and (:#{#albumIds == null || #albumIds.isEmpty()} = true
+                       or exists (select 1 from song_album sal where sal.song_id = s.id and sal.album_id in (:#{#albumIds ?: 0})))
+            """,
+            nativeQuery = true
+    )
+    Page<SongRow> findByFilter(
+            @Param("name") String name,
+            @Param("genreIds") Collection<Long> genreIds,
+            @Param("artistIds") Collection<Long> artistIds,
+            @Param("albumIds") Collection<Long> albumIds,
+            Pageable pageable
+    );
+
 
     @Query(value = """
                 select s.id as id, s.name as name, s.link as link, s.year as year

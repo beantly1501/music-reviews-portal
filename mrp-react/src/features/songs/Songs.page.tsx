@@ -2,25 +2,51 @@ import { useGetSongs } from "./hooks/useGetSongs.tsx";
 import { Button } from "primereact/button";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Message } from "primereact/message";
+import { InputText } from "primereact/inputtext";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
 import CreateSongDialog from "./CreateSongDialog.tsx";
-import { useState } from "react";
+import SongFilterPanel from "./SongFilterPanel.tsx";
+import { useState, useEffect, useRef } from "react";
 import SongCard from "../../shared/components/SongCard.tsx";
 import { useCurrentUser } from "../../shared/hooks/useCurrentUser.ts";
 import { UserRoleEnum } from "@shared/utils";
 
 export default function SongsPage() {
-  const { songs, loading, error, refetch } = useGetSongs();
+  const {
+    songs,
+    loading,
+    loadingMore,
+    error,
+    refetch,
+    search,
+    filters,
+    hasActiveFilters,
+    onSearchChange,
+    onFiltersChange,
+    clearSearch,
+    clearFilters,
+    hasMore,
+    loadMore,
+  } = useGetSongs();
   const { user } = useCurrentUser();
   const [visibleDialog, setVisibleDialog] = useState<boolean>(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  if (loading) {
-    return (
-      <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
-        <ProgressSpinner />
-        <div className="text-[#6b7280] text-[0.95rem]">Loading…</div>
-      </div>
+  useEffect(() => {
+    if (!hasMore || loadingMore) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { threshold: 0.1 },
     );
-  }
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, loadMore]);
 
   if (error) {
     return (
@@ -34,23 +60,68 @@ export default function SongsPage() {
   return (
     <>
       <div className="flex flex-col justify-center items-center gap-4">
-        {user?.role === UserRoleEnum.ADMIN && (
-          <Button
-            label="Add New Song"
-            icon="pi pi-plus"
-            className="w-[15rem]"
-            onClick={() => setVisibleDialog(true)}
-          />
-        )}
-        <div className="flex flex-wrap gap-4 justify-center">
-          {songs.map((song) => (
-            <SongCard key={`song${song.id}`} song={song} refetch={refetch} />
-          ))}
-
-          {!loading && !error && songs.length === 0 && (
-            <div className="text-[#6b7280] text-[0.95rem]">No songs found.</div>
+        <div className="w-full flex items-center justify-center gap-3">
+          {user?.role === UserRoleEnum.ADMIN && (
+            <Button
+              label="Add New Song"
+              icon="pi pi-plus"
+              className="w-[15rem] shrink-0"
+              onClick={() => setVisibleDialog(true)}
+            />
           )}
+
+          <div className="flex gap-2 w-full max-w-md">
+            <IconField iconPosition="left" className="flex-1">
+              <InputIcon className="pi pi-search" />
+              <InputText
+                value={search}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Search songs…"
+                className="w-full"
+              />
+            </IconField>
+            {search.length > 0 && (
+              <Button
+                icon="pi pi-times"
+                severity="secondary"
+                outlined
+                onClick={clearSearch}
+                aria-label="Clear search"
+              />
+            )}
+            <SongFilterPanel
+              filters={filters}
+              hasActiveFilters={hasActiveFilters}
+              onChange={onFiltersChange}
+              onClear={clearFilters}
+            />
+          </div>
         </div>
+
+        {loading ? (
+          <div className="min-h-[40vh] flex items-center justify-center gap-3 flex-col">
+            <ProgressSpinner />
+            <div className="text-[#6b7280] text-[0.95rem]">Loading…</div>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-wrap gap-4 justify-center">
+              {songs.map((song) => (
+                <SongCard key={`song${song.id}`} song={song} refetch={refetch} />
+              ))}
+
+              {songs.length === 0 && (
+                <div className="text-[#6b7280] text-[0.95rem]">No songs found.</div>
+              )}
+            </div>
+
+            {hasMore && (
+              <div ref={sentinelRef} className="w-full flex justify-center py-6">
+                {loadingMore && <ProgressSpinner style={{ width: "2rem", height: "2rem" }} />}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {visibleDialog && (

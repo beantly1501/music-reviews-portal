@@ -9,6 +9,9 @@ import fer.jbockal.mrp_backend.model.*;
 import fer.jbockal.mrp_backend.repository.*;
 import fer.jbockal.mrp_backend.repository.projection.*;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,11 +34,21 @@ public class SongService {
 
 
     @Transactional(readOnly = true)
-    public List<SongResponseDto> getAllSongsWithReviewed(AppUser user) {
-        var base = songRepository.findAllBase();
-        return assembleDtos(base, user);
+    public Page<SongResponseDto> getAllSongsWithReviewed(AppUser user, Pageable pageable) {
+        Page<SongRow> base = songRepository.findAllBase(pageable);
+        return new PageImpl<>(assembleDtos(base.getContent(), user), pageable, base.getTotalElements());
     }
 
+    @Transactional(readOnly = true)
+    public Page<SongResponseDto> filterSongs(String name, List<Long> genreIds, List<Long> artistIds,
+                                             List<Long> albumIds, AppUser user, Pageable pageable) {
+        String nameParam = (name == null || name.isBlank()) ? null : name;
+        List<Long> genres = (genreIds == null || genreIds.isEmpty()) ? null : genreIds;
+        List<Long> artists = (artistIds == null || artistIds.isEmpty()) ? null : artistIds;
+        List<Long> albums = (albumIds == null || albumIds.isEmpty()) ? null : albumIds;
+        Page<SongRow> base = songRepository.findByFilter(nameParam, genres, artists, albums, pageable);
+        return new PageImpl<>(assembleDtos(base.getContent(), user), pageable, base.getTotalElements());
+    }
 
     @Transactional(readOnly = true)
     public SongResponseDto findById(Long id, AppUser user) {
