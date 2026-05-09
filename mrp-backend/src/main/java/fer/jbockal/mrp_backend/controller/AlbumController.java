@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -45,12 +46,16 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.getAllAlbumsWithReviewed(user, pageable));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Page<AlbumResponseDto>> search(
-            @RequestParam("q") String query,
+    @GetMapping("/filter")
+    public ResponseEntity<Page<AlbumResponseDto>> filter(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) List<Long> artistIds,
+            @RequestParam(required = false) List<Long> genreIds,
+            @AuthenticationPrincipal Object principal,
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        return ResponseEntity.ok(albumService.searchByNameFragment(query, pageable));
+        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
+        return ResponseEntity.ok(albumService.filterAlbums(q, artistIds, genreIds, user, pageable));
     }
 
     @GetMapping("/{id}")

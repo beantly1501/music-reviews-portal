@@ -27,7 +27,7 @@ import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
 
 import { useGetSongs } from "../songs/hooks/useGetSongs.tsx";
-import { useGetAlbums } from "../albums/hooks/useGetAlbums.ts";
+import { useGetAlbumsAll } from "../albums/hooks/useGetAlbumsAll.ts";
 
 import CreateLimitedSongDialog from "../../shared/components/CreateLimitedSongDialog.tsx";
 import CreateLimitedAlbumDialog from "../../shared/components/CreateLimitedAlbumDialog.tsx";
@@ -66,7 +66,7 @@ export default function CreateArtistDialog({
     albums,
     loading: albumsLoading,
     refetch: refetchAlbums,
-  } = useGetAlbums();
+  } = useGetAlbumsAll();
 
   const [songDialogVisible, setSongDialogVisible] = useState(false);
   const [albumDialogVisible, setAlbumDialogVisible] = useState(false);

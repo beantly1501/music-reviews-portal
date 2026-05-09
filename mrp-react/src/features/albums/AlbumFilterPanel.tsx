@@ -2,25 +2,21 @@ import { useRef } from "react";
 import { Button } from "primereact/button";
 import { OverlayPanel } from "primereact/overlaypanel";
 import GenresMultiSelect from "../../shared/components/GenresMultiSelect.tsx";
-import AlbumMultiSelect, { AlbumOption } from "../../shared/components/AlbumMultiSelect.tsx";
 import ArtistMultiSelect, { ArtistOption } from "../../shared/components/ArtistMultiSelect.tsx";
-import { useGetAlbumsAll } from "../albums/hooks/useGetAlbumsAll.ts";
 import { useGetArtists } from "../artists/hooks/useGetArtists.ts";
-import type { SongFilters } from "./hooks/useGetSongs.tsx";
+import type { AlbumFilters } from "./hooks/useGetAlbums.ts";
 
 type Props = {
-  filters: SongFilters;
+  filters: AlbumFilters;
   hasActiveFilters: boolean;
-  onChange: (f: SongFilters) => void;
+  onChange: (f: AlbumFilters) => void;
   onClear: () => void;
 };
 
-export default function SongFilterPanel({ filters, hasActiveFilters, onChange, onClear }: Props) {
+export default function AlbumFilterPanel({ filters, hasActiveFilters, onChange, onClear }: Props) {
   const op = useRef<OverlayPanel>(null);
-  const { albums, loading: albumsLoading } = useGetAlbumsAll();
   const { artists, loading: artistsLoading } = useGetArtists();
 
-  const albumOptions: AlbumOption[] = albums.map((a) => ({ id: a.id, name: a.name, year: a.year }));
   const artistOptions: ArtistOption[] = artists.map((a) => ({ id: a.id, name: a.name }));
 
   return (
@@ -30,13 +26,13 @@ export default function SongFilterPanel({ filters, hasActiveFilters, onChange, o
         severity={hasActiveFilters ? "info" : "secondary"}
         outlined={!hasActiveFilters}
         onClick={(e) => op.current?.toggle(e)}
-        aria-label="Filter songs"
+        aria-label="Filter albums"
       />
 
       <OverlayPanel ref={op} className="w-80">
         <div className="flex flex-col gap-4 p-1">
           <div className="flex items-center justify-between">
-            <span className="font-semibold text-sm">Filter songs</span>
+            <span className="font-semibold text-sm">Filter albums</span>
             {hasActiveFilters && (
               <Button
                 label="Clear all"
@@ -69,18 +65,6 @@ export default function SongFilterPanel({ filters, hasActiveFilters, onChange, o
               loading={artistsLoading}
               onChange={(ids) => onChange({ ...filters, artistIds: ids })}
               placeholder="Any artist"
-              className="w-full"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-400">Album</label>
-            <AlbumMultiSelect
-              value={filters.albumIds}
-              options={albumOptions}
-              loading={albumsLoading}
-              onChange={(ids) => onChange({ ...filters, albumIds: ids })}
-              placeholder="Any album"
               className="w-full"
             />
           </div>

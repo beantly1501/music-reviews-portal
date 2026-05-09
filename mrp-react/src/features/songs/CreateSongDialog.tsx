@@ -25,7 +25,7 @@ import { InputText } from "primereact/inputtext";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
 import { useGetArtists } from "../artists/hooks/useGetArtists.ts";
-import { useGetAlbums } from "../albums/hooks/useGetAlbums.ts";
+import { useGetAlbumsAll } from "../albums/hooks/useGetAlbumsAll.ts";
 import CreateLimitedAlbumDialog from "../../shared/components/CreateLimitedAlbumDialog.tsx";
 import CreateLimitedArtistDialog from "../../shared/components/CreateLimitedArtistDialog.tsx";
 import AlbumMultiSelect, {
@@ -70,7 +70,7 @@ export default function CreateSongDialog({
     albums,
     loading: albumsLoading,
     refetch: refetchAlbums,
-  } = useGetAlbums();
+  } = useGetAlbumsAll();
 
   const [artistDialogVisible, setArtistDialogVisible] = useState(false);
   const [albumDialogVisible, setAlbumDialogVisible] = useState(false);
