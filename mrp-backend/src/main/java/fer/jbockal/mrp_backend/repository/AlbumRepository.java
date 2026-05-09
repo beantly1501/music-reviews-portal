@@ -23,19 +23,6 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
             value = """
                 select a.id as id, a.name as name, a.link as link, a.year as year
                 from album a
-                order by a.id
-            """,
-            countQuery = """
-                select count(*) from album a
-            """,
-            nativeQuery = true
-    )
-    Page<AlbumRow> findAllBase(Pageable pageable);
-
-    @Query(
-            value = """
-                select a.id as id, a.name as name, a.link as link, a.year as year
-                from album a
                 where (:name is null or lower(a.name) like lower(concat('%', cast(:name as text), '%')))
                   and (:#{#artistIds == null || #artistIds.isEmpty()} = true
                        or exists (select 1 from album_artist aa where aa.album_id = a.id and aa.artist_id in (:#{#artistIds ?: 0})))

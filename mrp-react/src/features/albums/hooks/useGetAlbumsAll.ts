@@ -13,7 +13,7 @@ export function useGetAlbumsAll() {
     try {
       const token = getToken();
       const params = new URLSearchParams({ page: "0", size: "1000" });
-      const res = await fetch(`${VITE_BACKEND_URL}/album/all?${params}`, {
+      const res = await fetch(`${VITE_BACKEND_URL}/album/search?${params}`, {
         headers: {
           Accept: "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),

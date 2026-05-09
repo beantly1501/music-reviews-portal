@@ -41,7 +41,7 @@ export function useGetAlbums() {
       f.artistIds.forEach((id) => params.append("artistIds", String(id)));
       f.genreIds.forEach((id) => params.append("genreIds", String(id)));
 
-      const res = await fetch(`${VITE_BACKEND_URL}/album/filter?${params}`, {
+      const res = await fetch(`${VITE_BACKEND_URL}/album/search?${params}`, {
         headers: {
           Accept: "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),

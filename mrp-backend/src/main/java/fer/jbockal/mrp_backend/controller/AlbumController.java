@@ -37,16 +37,7 @@ public class AlbumController {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    @GetMapping("/all")
-    public ResponseEntity<Page<AlbumResponseDto>> all(
-            @AuthenticationPrincipal Object principal,
-            @PageableDefault(size = 20) Pageable pageable
-    ) {
-        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
-        return ResponseEntity.ok(albumService.getAllAlbumsWithReviewed(user, pageable));
-    }
-
-    @GetMapping("/filter")
+    @GetMapping("/search")
     public ResponseEntity<Page<AlbumResponseDto>> filter(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) List<Long> artistIds,

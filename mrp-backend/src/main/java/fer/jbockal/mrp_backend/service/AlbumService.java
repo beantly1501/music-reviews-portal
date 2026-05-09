@@ -42,13 +42,6 @@ public class AlbumService {
 
 
     @Transactional(readOnly = true)
-    public Page<AlbumResponseDto> getAllAlbumsWithReviewed(AppUser user, Pageable pageable) {
-        Page<AlbumRow> base = albumRepository.findAllBase(pageable);
-        List<AlbumResponseDto> dtos = assembleDtos(base.getContent(), user);
-        return new PageImpl<>(dtos, pageable, base.getTotalElements());
-    }
-
-    @Transactional(readOnly = true)
     public Page<AlbumResponseDto> filterAlbums(String name, List<Long> artistIds, List<Long> genreIds,
                                                AppUser user, Pageable pageable) {
         String nameParam = (name == null || name.isBlank()) ? null : name;
