@@ -30,6 +30,8 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
                        or exists (select 1 from song_album sa
                                   join song_genre sg on sg.song_id = sa.song_id
                                   where sa.album_id = a.id and sg.genre_id in (:#{#genreIds ?: 0})))
+                  and (:#{#songIds == null || #songIds.isEmpty()} = true
+                       or exists (select 1 from song_album sa where sa.album_id = a.id and sa.song_id in (:#{#songIds ?: 0})))
                 order by a.id
             """,
             countQuery = """
@@ -41,6 +43,8 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
                        or exists (select 1 from song_album sa
                                   join song_genre sg on sg.song_id = sa.song_id
                                   where sa.album_id = a.id and sg.genre_id in (:#{#genreIds ?: 0})))
+                  and (:#{#songIds == null || #songIds.isEmpty()} = true
+                       or exists (select 1 from song_album sa where sa.album_id = a.id and sa.song_id in (:#{#songIds ?: 0})))
             """,
             nativeQuery = true
     )
@@ -48,6 +52,7 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
             @Param("name") String name,
             @Param("artistIds") Collection<Long> artistIds,
             @Param("genreIds") Collection<Long> genreIds,
+            @Param("songIds") Collection<Long> songIds,
             Pageable pageable
     );
 

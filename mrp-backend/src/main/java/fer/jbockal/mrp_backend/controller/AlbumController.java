@@ -42,11 +42,12 @@ public class AlbumController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false) List<Long> artistIds,
             @RequestParam(required = false) List<Long> genreIds,
+            @RequestParam(required = false) List<Long> songIds,
             @AuthenticationPrincipal Object principal,
             @PageableDefault(size = 20) Pageable pageable
     ) {
         AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
-        return ResponseEntity.ok(albumService.filterAlbums(q, artistIds, genreIds, user, pageable));
+        return ResponseEntity.ok(albumService.filterAlbums(q, artistIds, genreIds, songIds, user, pageable));
     }
 
     @GetMapping("/{id}")

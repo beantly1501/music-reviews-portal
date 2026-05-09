@@ -1,4 +1,7 @@
-import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
+import { useEffect } from "react";
+import { MultiSelect, MultiSelectChangeEvent, MultiSelectFilterEvent } from "primereact/multiselect";
+import { ProgressSpinner } from "primereact/progressspinner";
+import { useGetSongsLazy } from "../../features/songs/hooks/useGetSongsLazy.ts";
 
 export type SongOption = {
   id: number;
@@ -9,8 +12,6 @@ export type SongOption = {
 type Props = {
   id?: string;
   value: number[];
-  options: SongOption[];
-  loading?: boolean;
   onChange: (value: number[]) => void;
   onCreateNew?: () => void;
   appendTo?: HTMLElement | null | undefined;
@@ -21,53 +22,51 @@ type Props = {
 export default function SongMultiSelect({
   id = "songIdsSelect",
   value,
-  options,
-  loading,
   onChange,
   appendTo,
   className,
   placeholder = "Select songs",
 }: Props) {
+  const { items, hasMore, loading, onFilter, loadMore, initialize } = useGetSongsLazy();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
   return (
     <MultiSelect
       id={id}
       value={value}
-      options={options}
+      options={items}
       optionLabel="name"
       optionValue="id"
       onChange={(e: MultiSelectChangeEvent) => onChange(e.value as number[])}
       filter
-      filterBy="name,year"
+      onFilter={(e: MultiSelectFilterEvent) => onFilter(e.filter)}
       display="chip"
       placeholder={placeholder}
       loading={loading}
       appendTo={appendTo}
       className={className}
+      panelStyle={{ width: "400px" }}
+      style={{ flexWrap: "wrap" }}
+      scrollHeight="200px"
       itemTemplate={(opt: SongOption) => (
         <div className="flex items-center justify-between w-full gap-2">
           <span>{opt.name}</span>
-          {opt.year ? (
-            <small className="text-gray-500">{opt.year}</small>
-          ) : null}
+          {opt.year ? <small className="text-gray-500">{opt.year}</small> : null}
         </div>
       )}
-      // panelFooterTemplate={() => {
-      //   if (user?.role === UserRoleEnum.ADMIN) {
-      //     return (
-      //       <div className="flex justify-center p-2">
-      //         <Button
-      //           label="Create New Song"
-      //           icon="pi pi-plus"
-      //           className="p-button-text p-button-sm"
-      //           onClick={(e) => {
-      //             e.preventDefault();
-      //             onCreateNew?.();
-      //           }}
-      //         />
-      //       </div>
-      //     );
-      //   }
-      // }}
+      panelFooterTemplate={() =>
+        hasMore ? (
+          <div
+            className="flex justify-center items-center py-2 cursor-pointer text-sm text-blue-400 hover:text-blue-300"
+            onClick={loadMore}
+          >
+            {loading ? <ProgressSpinner style={{ width: "1.25rem", height: "1.25rem" }} /> : "Load more…"}
+          </div>
+        ) : null
+      }
     />
   );
 }

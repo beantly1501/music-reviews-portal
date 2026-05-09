@@ -8,9 +8,10 @@ const DEBOUNCE_MS = 400;
 export type AlbumFilters = {
   artistIds: number[];
   genreIds: number[];
+  songIds: number[];
 };
 
-const EMPTY_FILTERS: AlbumFilters = { artistIds: [], genreIds: [] };
+const EMPTY_FILTERS: AlbumFilters = { artistIds: [], genreIds: [], songIds: [] };
 
 export function useGetAlbums() {
   const [albums, setAlbums] = useState<AlbumType[]>([]);
@@ -40,6 +41,7 @@ export function useGetAlbums() {
       if (query.trim()) params.set("q", query.trim());
       f.artistIds.forEach((id) => params.append("artistIds", String(id)));
       f.genreIds.forEach((id) => params.append("genreIds", String(id)));
+      f.songIds.forEach((id) => params.append("songIds", String(id)));
 
       const res = await fetch(`${VITE_BACKEND_URL}/album/search?${params}`, {
         headers: {
@@ -125,7 +127,7 @@ export function useGetAlbums() {
   );
 
   const hasMore = page + 1 < totalPages;
-  const hasActiveFilters = filters.artistIds.length > 0 || filters.genreIds.length > 0;
+  const hasActiveFilters = filters.artistIds.length > 0 || filters.genreIds.length > 0 || filters.songIds.length > 0;
 
   return {
     albums,

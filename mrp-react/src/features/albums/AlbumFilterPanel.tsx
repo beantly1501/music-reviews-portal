@@ -3,6 +3,7 @@ import { Button } from "primereact/button";
 import { OverlayPanel } from "primereact/overlaypanel";
 import GenresMultiSelect from "../../shared/components/GenresMultiSelect.tsx";
 import ArtistMultiSelect, { ArtistOption } from "../../shared/components/ArtistMultiSelect.tsx";
+import SongMultiSelect from "../../shared/components/SongMultiSelect.tsx";
 import { useGetArtists } from "../artists/hooks/useGetArtists.ts";
 import type { AlbumFilters } from "./hooks/useGetAlbums.ts";
 
@@ -65,6 +66,16 @@ export default function AlbumFilterPanel({ filters, hasActiveFilters, onChange, 
               loading={artistsLoading}
               onChange={(ids) => onChange({ ...filters, artistIds: ids })}
               placeholder="Any artist"
+              className="w-full"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-gray-400">Song</label>
+            <SongMultiSelect
+              value={filters.songIds}
+              onChange={(ids) => onChange({ ...filters, songIds: ids })}
+              placeholder="Any song"
               className="w-full"
             />
           </div>

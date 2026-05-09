@@ -42,6 +42,8 @@ export default function ArtistMultiSelect({
       loading={loading}
       appendTo={appendTo}
       className={className}
+      panelStyle={{ width: "400px" }}
+      style={{ flexWrap: "wrap" }}
       // panelFooterTemplate={() => (
       //   <div className="flex justify-center p-2">
       //     <Button

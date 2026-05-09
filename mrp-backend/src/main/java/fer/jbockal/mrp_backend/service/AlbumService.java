@@ -43,11 +43,12 @@ public class AlbumService {
 
     @Transactional(readOnly = true)
     public Page<AlbumResponseDto> filterAlbums(String name, List<Long> artistIds, List<Long> genreIds,
-                                               AppUser user, Pageable pageable) {
+                                               List<Long> songIds, AppUser user, Pageable pageable) {
         String nameParam = (name == null || name.isBlank()) ? null : name;
         List<Long> artists = (artistIds == null || artistIds.isEmpty()) ? null : artistIds;
         List<Long> genres = (genreIds == null || genreIds.isEmpty()) ? null : genreIds;
-        Page<AlbumRow> base = albumRepository.findByFilter(nameParam, artists, genres, pageable);
+        List<Long> songs = (songIds == null || songIds.isEmpty()) ? null : songIds;
+        Page<AlbumRow> base = albumRepository.findByFilter(nameParam, artists, genres, songs, pageable);
         return new PageImpl<>(assembleDtos(base.getContent(), user), pageable, base.getTotalElements());
     }
 

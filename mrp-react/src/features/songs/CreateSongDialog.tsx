@@ -25,12 +25,9 @@ import { InputText } from "primereact/inputtext";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
 import { useGetArtists } from "../artists/hooks/useGetArtists.ts";
-import { useGetAlbumsAll } from "../albums/hooks/useGetAlbumsAll.ts";
 import CreateLimitedAlbumDialog from "../../shared/components/CreateLimitedAlbumDialog.tsx";
 import CreateLimitedArtistDialog from "../../shared/components/CreateLimitedArtistDialog.tsx";
-import AlbumMultiSelect, {
-  AlbumOption,
-} from "../../shared/components/AlbumMultiSelect.tsx";
+import AlbumMultiSelect from "../../shared/components/AlbumMultiSelect.tsx";
 import ArtistMultiSelect, {
   ArtistOption,
 } from "../../shared/components/ArtistMultiSelect.tsx";
@@ -66,11 +63,6 @@ export default function CreateSongDialog({
     loading: artistsLoading,
     refetch: refetchArtists,
   } = useGetArtists();
-  const {
-    albums,
-    loading: albumsLoading,
-    refetch: refetchAlbums,
-  } = useGetAlbumsAll();
 
   const [artistDialogVisible, setArtistDialogVisible] = useState(false);
   const [albumDialogVisible, setAlbumDialogVisible] = useState(false);
@@ -86,17 +78,12 @@ export default function CreateSongDialog({
   }, [refetchArtists]);
 
   const handleAlbumCreated = useCallback(() => {
-    refetchAlbums?.();
     setAlbumDialogVisible(false);
-  }, [refetchAlbums]);
+  }, []);
 
   const artistOptions: ArtistOption[] = useMemo(
     () => (artists as ArtistOption[]) ?? [],
     [artists],
-  );
-  const albumOptions: AlbumOption[] = useMemo(
-    () => (albums as AlbumOption[]) ?? [],
-    [albums],
   );
 
   const methods = useForm<SongCreateForm>({
@@ -320,6 +307,7 @@ export default function CreateSongDialog({
                 <GenresMultiSelect
                   value={field.value ?? []}
                   onChange={(ids) => field.onChange(ids)}
+                  allowCreate
                   appendTo={
                     typeof document !== "undefined" ? document.body : undefined
                   }
@@ -337,8 +325,6 @@ export default function CreateSongDialog({
               render={({ field }) => (
                 <AlbumMultiSelect
                   value={field.value ?? []}
-                  options={albumOptions}
-                  loading={albumsLoading}
                   onChange={(ids) => field.onChange(ids)}
                   onCreateNew={() => setAlbumDialogVisible(true)}
                   appendTo={
