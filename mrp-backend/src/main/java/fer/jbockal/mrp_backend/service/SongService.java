@@ -34,12 +34,6 @@ public class SongService {
 
 
     @Transactional(readOnly = true)
-    public Page<SongResponseDto> getAllSongsWithReviewed(AppUser user, Pageable pageable) {
-        Page<SongRow> base = songRepository.findAllBase(pageable);
-        return new PageImpl<>(assembleDtos(base.getContent(), user), pageable, base.getTotalElements());
-    }
-
-    @Transactional(readOnly = true)
     public Page<SongResponseDto> filterSongs(String name, List<Long> genreIds, List<Long> artistIds,
                                              List<Long> albumIds, AppUser user, Pageable pageable) {
         String nameParam = (name == null || name.isBlank()) ? null : name;

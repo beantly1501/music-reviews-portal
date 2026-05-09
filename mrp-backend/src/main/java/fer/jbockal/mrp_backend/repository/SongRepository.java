@@ -22,17 +22,6 @@ public interface SongRepository extends JpaRepository<Song, Long> {
             value = """
                 select s.id as id, s.name as name, s.link as link, s.year as year
                 from song s
-                order by s.id
-            """,
-            countQuery = "select count(*) from song s",
-            nativeQuery = true
-    )
-    Page<SongRow> findAllBase(Pageable pageable);
-
-    @Query(
-            value = """
-                select s.id as id, s.name as name, s.link as link, s.year as year
-                from song s
                 where (:name is null or lower(s.name) like lower(concat('%', cast(:name as text), '%')))
                   and (:#{#genreIds == null || #genreIds.isEmpty()} = true
                        or exists (select 1 from song_genre sg where sg.song_id = s.id and sg.genre_id in (:#{#genreIds ?: 0})))

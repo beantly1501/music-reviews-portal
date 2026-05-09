@@ -53,7 +53,7 @@ export function useGetSongs() {
         f.artistIds.forEach((id) => params.append("artistIds", String(id)));
         f.albumIds.forEach((id) => params.append("albumIds", String(id)));
 
-        const res = await fetch(`${VITE_BACKEND_URL}/song/filter?${params}`, {
+        const res = await fetch(`${VITE_BACKEND_URL}/song/search?${params}`, {
           headers: {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },

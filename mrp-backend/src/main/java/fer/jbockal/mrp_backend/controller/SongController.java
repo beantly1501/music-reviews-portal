@@ -37,14 +37,7 @@ public class SongController {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    @GetMapping("/all")
-    public ResponseEntity<Page<SongResponseDto>> all(@AuthenticationPrincipal Object principal,
-                                                     @PageableDefault(size = 20) Pageable pageable) {
-        AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
-        return ResponseEntity.ok(songService.getAllSongsWithReviewed(user, pageable));
-    }
-
-    @GetMapping("/filter")
+    @GetMapping("/search")
     public ResponseEntity<Page<SongResponseDto>> filter(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) List<Long> genreIds,
