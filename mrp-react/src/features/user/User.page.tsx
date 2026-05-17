@@ -208,6 +208,7 @@ export default function UserPage() {
             {reviewsError && (
               <Message severity="error" text={`Error loading reviews: ${reviewsError}`} />
             )}
+            <div className="text-gray-500">{tableData.length} total</div>
             <Button
               icon={`pi pi-filter${showFilters ? "-slash" : ""}`}
               outlined

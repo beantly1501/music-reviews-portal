@@ -212,13 +212,16 @@ export default function MyProfilePage() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h1 className="m-0">My reviews</h1>
-          <Button
-            icon={`pi pi-filter${showFilters ? "-slash" : ""}`}
-            outlined
-            onClick={() => setShowFilters((prev) => !prev)}
-            tooltip={showFilters ? "Hide filters" : "Show filters"}
-            tooltipOptions={{ position: "left" }}
-          />
+          <div className="flex items-center gap-2">
+            <div className="text-gray-500">{tableData.length} total</div>
+            <Button
+              icon={`pi pi-filter${showFilters ? "-slash" : ""}`}
+              outlined
+              onClick={() => setShowFilters((prev) => !prev)}
+              tooltip={showFilters ? "Hide filters" : "Show filters"}
+              tooltipOptions={{ position: "left" }}
+            />
+          </div>
         </div>
 
         <DataTable
