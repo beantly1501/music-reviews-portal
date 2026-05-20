@@ -34,6 +34,7 @@
           <div class="flex items-center gap-2">
             <span class="text-gray-500">{{ tableData.length }} total</span>
             <Button
+              v-if="tableData.length"
               :icon="`pi pi-filter${showReviewFilters ? '-slash' : ''}`"
               outlined
               @click="showReviewFilters = !showReviewFilters"
@@ -158,6 +159,7 @@
           <div class="flex items-center gap-2">
             <span v-if="userPlaylists?.totalElements" class="text-gray-500">{{ userPlaylists.totalElements }} total</span>
             <Button
+              v-if="userPlaylists?.content?.length"
               :icon="`pi pi-filter${showPlaylistFilters ? '-slash' : ''}`"
               outlined
               @click="showPlaylistFilters = !showPlaylistFilters"
