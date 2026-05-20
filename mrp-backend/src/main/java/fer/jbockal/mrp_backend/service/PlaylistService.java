@@ -158,9 +158,10 @@ public class PlaylistService {
         return toDtosFromRows(rows);
     }
 
-    public Page<PlaylistResponseDto> listPublicAndMine(Object principal, Pageable pageable) {
+    public Page<PlaylistResponseDto> listPublicAndMine(Object principal, String q, Pageable pageable) {
         AppUser u = appUserService.resolveAppUserFromPrincipal(principal);
-        Page<PlaylistRow> rows = playlistRepository.findPublicAndUserRows(u, pageable);
+        String filter = (q != null && !q.isBlank()) ? q.trim() : null;
+        Page<PlaylistRow> rows = playlistRepository.findPublicAndUserRowsByName(u, filter, pageable);
         return toDtosFromRows(rows);
     }
 

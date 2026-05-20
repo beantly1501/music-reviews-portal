@@ -2,7 +2,6 @@ import {
   Dispatch,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -28,9 +27,7 @@ import { useGetArtists } from "../artists/hooks/useGetArtists.ts";
 import CreateLimitedAlbumDialog from "../../shared/components/CreateLimitedAlbumDialog.tsx";
 import CreateLimitedArtistDialog from "../../shared/components/CreateLimitedArtistDialog.tsx";
 import AlbumMultiSelect from "../../shared/components/AlbumMultiSelect.tsx";
-import ArtistMultiSelect, {
-  ArtistOption,
-} from "../../shared/components/ArtistMultiSelect.tsx";
+import ArtistMultiSelect from "../../shared/components/ArtistMultiSelect.tsx";
 import GenresMultiSelect from "../../shared/components/GenresMultiSelect.tsx";
 import { createSong, updateSong } from "./utils/helpers.tsx";
 
@@ -58,11 +55,7 @@ export default function CreateSongDialog({
   onCreated,
   existingSongData,
 }: Props) {
-  const {
-    artists,
-    loading: artistsLoading,
-    refetch: refetchArtists,
-  } = useGetArtists();
+  const { refetch: refetchArtists } = useGetArtists();
 
   const [artistDialogVisible, setArtistDialogVisible] = useState(false);
   const [albumDialogVisible, setAlbumDialogVisible] = useState(false);
@@ -81,12 +74,7 @@ export default function CreateSongDialog({
     setAlbumDialogVisible(false);
   }, []);
 
-  const artistOptions: ArtistOption[] = useMemo(
-    () => (artists as ArtistOption[]) ?? [],
-    [artists],
-  );
-
-  const methods = useForm<SongCreateForm>({
+const methods = useForm<SongCreateForm>({
     resolver: zodResolver(songCreateSchema),
     defaultValues: EMPTY_FORM,
   });
@@ -344,8 +332,6 @@ export default function CreateSongDialog({
               render={({ field }) => (
                 <ArtistMultiSelect
                   value={field.value ?? []}
-                  options={artistOptions}
-                  loading={artistsLoading}
                   onChange={(ids) => field.onChange(ids)}
                   onCreateNew={() => setArtistDialogVisible(true)}
                   appendTo={

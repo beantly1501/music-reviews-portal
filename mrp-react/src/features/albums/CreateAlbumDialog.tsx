@@ -2,7 +2,6 @@ import {
   Dispatch,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -28,9 +27,7 @@ import { Button } from "primereact/button";
 import { useGetArtists } from "../artists/hooks/useGetArtists.ts";
 import CreateLimitedArtistDialog from "../../shared/components/CreateLimitedArtistDialog.tsx";
 import CreateLimitedSongDialog from "../../shared/components/CreateLimitedSongDialog.tsx";
-import ArtistMultiSelect, {
-  ArtistOption,
-} from "../../shared/components/ArtistMultiSelect.tsx";
+import ArtistMultiSelect from "../../shared/components/ArtistMultiSelect.tsx";
 import SongMultiSelect from "../../shared/components/SongMultiSelect.tsx";
 import { createAlbum, updateAlbum } from "./utils/helpers.tsx";
 
@@ -56,11 +53,7 @@ export default function CreateAlbumDialog({
   onCreated,
   existingAlbumData,
 }: Props) {
-  const {
-    artists,
-    loading: artistsLoading,
-    refetch: refetchArtists,
-  } = useGetArtists();
+  const { refetch: refetchArtists } = useGetArtists();
 
   const [artistDialogVisible, setArtistDialogVisible] = useState(false);
   const [songDialogVisible, setSongDialogVisible] = useState(false);
@@ -77,12 +70,7 @@ export default function CreateAlbumDialog({
     setSongDialogVisible(false);
   }, []);
 
-  const artistOptions: ArtistOption[] = useMemo(
-    () => (artists as ArtistOption[]) ?? [],
-    [artists],
-  );
-
-  const methods = useForm<AlbumCreateForm>({
+const methods = useForm<AlbumCreateForm>({
     resolver: zodResolver(albumCreateSchema),
     defaultValues: EMPTY_FORM,
   });
@@ -289,8 +277,6 @@ export default function CreateAlbumDialog({
               render={({ field }) => (
                 <ArtistMultiSelect
                   value={field.value ?? []}
-                  options={artistOptions}
-                  loading={artistsLoading}
                   onChange={(ids) => field.onChange(ids)}
                   onCreateNew={() => setArtistDialogVisible(true)}
                   appendTo={
