@@ -6,6 +6,9 @@ defineProps<{
   options: MultiSelectOptionType[];
   invalid?: boolean;
   loading?: boolean;
+  scrollHeight?: string;
+  panelStyle?: Record<string, string>;
+  placeholder?: string;
 }>();
 
 const model = defineModel<number[]>();
@@ -21,5 +24,8 @@ const model = defineModel<number[]>();
     filter
     :loading="loading"
     :invalid="invalid"
+    :scroll-height="scrollHeight"
+    :panel-style="panelStyle"
+    :placeholder="placeholder"
   />
 </template>

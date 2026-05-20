@@ -176,7 +176,7 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="flex flex-col gap-2">
         <label>Genres (optional)</label>
-        <GenreMultiSelect v-model="genreIds" :invalid="!!errors.genreIds" />
+        <GenreMultiSelect v-model="genreIds" :invalid="!!errors.genreIds" allow-create />
         <small v-if="errors.genreIds" class="text-red-500">{{
           errors.genreIds
         }}</small>
