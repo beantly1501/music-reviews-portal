@@ -55,7 +55,7 @@ export default function MyProfilePage() {
     setPage,
     setSize,
     refetch: refetchPlaylists,
-  } = useGetMyPlaylists({ page: 0, size: 20 });
+  } = useGetMyPlaylists({ page: 0, size: 5 });
 
   const [dialogVisible, setDialogVisible] = useState(false);
   const [selectedReviewId, setSelectedReviewId] = useState<number | undefined>();
@@ -339,7 +339,7 @@ export default function MyProfilePage() {
           first={page * size}
           totalRecords={totalElements}
           onPage={onPlaylistsPage}
-          rowsPerPageOptions={[10, 20, 50]}
+          rowsPerPageOptions={[5, 10, 20, 50]}
           loading={playlistsLoading}
           filters={playlistFilters}
           onFilter={(e) => setPlaylistFilters(e.filters as DataTableFilterMeta)}

@@ -49,7 +49,7 @@ export default function UserPage() {
     setPage,
     setSize,
     refetch: refetchPlaylists,
-  } = useGetPublicPlaylists({ page: 0, size: 20, userId });
+  } = useGetPublicPlaylists({ page: 0, size: 5, userId });
 
   const [dialogVisible, setDialogVisible] = useState(false);
   const [selectedReviewId, setSelectedReviewId] = useState<number | undefined>();
@@ -334,7 +334,7 @@ export default function UserPage() {
           first={page * size}
           totalRecords={totalElements}
           onPage={onPlaylistsPage}
-          rowsPerPageOptions={[10, 20, 50]}
+          rowsPerPageOptions={[5, 10, 20, 50]}
           loading={playlistsLoading}
           filters={playlistFilters}
           onFilter={(e) => setPlaylistFilters(e.filters as DataTableFilterMeta)}

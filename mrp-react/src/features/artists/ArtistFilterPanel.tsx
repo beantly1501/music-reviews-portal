@@ -1,19 +1,18 @@
 import { useRef } from "react";
 import { Button } from "primereact/button";
 import { OverlayPanel } from "primereact/overlaypanel";
-import GenresMultiSelect from "../../shared/components/GenresMultiSelect.tsx";
 import AlbumMultiSelect from "../../shared/components/AlbumMultiSelect.tsx";
-import ArtistMultiSelect from "../../shared/components/ArtistMultiSelect.tsx";
-import type { SongFilters } from "./hooks/useGetSongs.tsx";
+import SongMultiSelect from "../../shared/components/SongMultiSelect.tsx";
+import type { ArtistFilters } from "./hooks/useGetArtists.ts";
 
 type Props = {
-  filters: SongFilters;
+  filters: ArtistFilters;
   hasActiveFilters: boolean;
-  onChange: (f: SongFilters) => void;
+  onChange: (f: ArtistFilters) => void;
   onClear: () => void;
 };
 
-export default function SongFilterPanel({ filters, hasActiveFilters, onChange, onClear }: Props) {
+export default function ArtistFilterPanel({ filters, hasActiveFilters, onChange, onClear }: Props) {
   const op = useRef<OverlayPanel>(null);
 
   return (
@@ -23,13 +22,13 @@ export default function SongFilterPanel({ filters, hasActiveFilters, onChange, o
         severity={hasActiveFilters ? "info" : "secondary"}
         outlined={!hasActiveFilters}
         onClick={(e) => op.current?.toggle(e)}
-        aria-label="Filter songs"
+        aria-label="Filter artists"
       />
 
       <OverlayPanel ref={op} className="w-80">
         <div className="flex flex-col gap-4 p-1">
           <div className="flex items-center justify-between">
-            <span className="font-semibold text-sm">Filter songs</span>
+            <span className="font-semibold text-sm">Filter artists</span>
             {hasActiveFilters && (
               <Button
                 label="Clear all"
@@ -45,31 +44,21 @@ export default function SongFilterPanel({ filters, hasActiveFilters, onChange, o
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-400">Genre</label>
-            <GenresMultiSelect
-              value={filters.genreIds}
-              onChange={(ids) => onChange({ ...filters, genreIds: ids })}
-              placeholder="Any genre"
-              className="w-full"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-400">Artist</label>
-            <ArtistMultiSelect
-              value={filters.artistIds}
-              onChange={(ids) => onChange({ ...filters, artistIds: ids })}
-              placeholder="Any artist"
-              className="w-full"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
             <label className="text-xs text-gray-400">Album</label>
             <AlbumMultiSelect
               value={filters.albumIds}
               onChange={(ids) => onChange({ ...filters, albumIds: ids })}
               placeholder="Any album"
+              className="w-full"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-gray-400">Song</label>
+            <SongMultiSelect
+              value={filters.songIds}
+              onChange={(ids) => onChange({ ...filters, songIds: ids })}
+              placeholder="Any song"
               className="w-full"
             />
           </div>

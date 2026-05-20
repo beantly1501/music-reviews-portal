@@ -13,6 +13,9 @@ import fer.jbockal.mrp_backend.repository.SongRepository;
 import fer.jbockal.mrp_backend.repository.projection.ArtistAlbumRow;
 import fer.jbockal.mrp_backend.repository.projection.ArtistBaseRow;
 import fer.jbockal.mrp_backend.repository.projection.ArtistSongRow;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +46,15 @@ public class ArtistService {
         this.albumRepository = albumRepository;
     }
 
+
+    @Transactional(readOnly = true)
+    public Page<ArtistResponseDto> filterArtists(String name, List<Long> albumIds, List<Long> songIds, Pageable pageable) {
+        String nameParam = (name == null || name.isBlank()) ? null : name;
+        List<Long> albums = (albumIds == null || albumIds.isEmpty()) ? null : albumIds;
+        List<Long> songs  = (songIds  == null || songIds.isEmpty())  ? null : songIds;
+        Page<ArtistBaseRow> base = artistRepository.findByFilter(nameParam, albums, songs, pageable);
+        return new PageImpl<>(assembleDtos(base.getContent()), pageable, base.getTotalElements());
+    }
 
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getAllArtists() {

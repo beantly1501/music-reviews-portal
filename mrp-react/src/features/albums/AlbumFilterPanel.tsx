@@ -2,9 +2,8 @@ import { useRef } from "react";
 import { Button } from "primereact/button";
 import { OverlayPanel } from "primereact/overlaypanel";
 import GenresMultiSelect from "../../shared/components/GenresMultiSelect.tsx";
-import ArtistMultiSelect, { ArtistOption } from "../../shared/components/ArtistMultiSelect.tsx";
+import ArtistMultiSelect from "../../shared/components/ArtistMultiSelect.tsx";
 import SongMultiSelect from "../../shared/components/SongMultiSelect.tsx";
-import { useGetArtists } from "../artists/hooks/useGetArtists.ts";
 import type { AlbumFilters } from "./hooks/useGetAlbums.ts";
 
 type Props = {
@@ -16,9 +15,6 @@ type Props = {
 
 export default function AlbumFilterPanel({ filters, hasActiveFilters, onChange, onClear }: Props) {
   const op = useRef<OverlayPanel>(null);
-  const { artists, loading: artistsLoading } = useGetArtists();
-
-  const artistOptions: ArtistOption[] = artists.map((a) => ({ id: a.id, name: a.name }));
 
   return (
     <>
@@ -62,8 +58,6 @@ export default function AlbumFilterPanel({ filters, hasActiveFilters, onChange, 
             <label className="text-xs text-gray-400">Artist</label>
             <ArtistMultiSelect
               value={filters.artistIds}
-              options={artistOptions}
-              loading={artistsLoading}
               onChange={(ids) => onChange({ ...filters, artistIds: ids })}
               placeholder="Any artist"
               className="w-full"
