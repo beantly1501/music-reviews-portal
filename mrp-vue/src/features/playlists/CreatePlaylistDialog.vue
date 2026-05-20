@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { Button, Dialog, InputText, FileUpload, Textarea, ToggleSwitch, useToast } from "primevue";
 import { useForm } from "vee-validate";
-import { ModifiedMultiSelect } from "@/shared/components";
+import { LazyMultiSelect } from "@/shared/components";
 import { toTypedSchema } from "@vee-validate/zod";
 import {
-  type MultiSelectOptionType,
   playlistCreateDefaultValues,
   playlistCreateSchema,
   type PlaylistResponseDto,
 } from "@/shared";
-import { useGetAllSongs } from "@/features/songs";
+import { useGetSongsLazy } from "@/features";
 import { useCreatePlaylist } from "./hooks/useCreatePlaylist";
 import { useUpdatePlaylist } from "./hooks/useUpdatePlaylist";
 import { computed, watch } from "vue";
@@ -32,21 +31,14 @@ const toast = useToast();
 const { user } = storeToRefs(useAuthStore());
 const { createPlaylist, isLoading: isCreating } = useCreatePlaylist();
 const { updatePlaylist, isLoading: isUpdating } = useUpdatePlaylist();
-const { data: songsData, isLoading: isSongsLoading } = useGetAllSongs();
+const songs = useGetSongsLazy();
 const { data: usersData, isLoading: isUsersLoading } = useGetAllUsers();
 
 const isSubmitting = computed(() => isCreating.value || isUpdating.value);
 
-const songOptions = computed<MultiSelectOptionType[]>(() => {
-  return (
-    songsData.value?.map((song) => ({
-      label: song.name,
-      value: song.id,
-    })) || []
-  );
-});
+const songOptions = computed(() => songs.items.value.map((s) => ({ label: s.name, value: s.id })));
 
-const collaboratorOptions = computed<MultiSelectOptionType[]>(() => {
+const collaboratorOptions = computed(() => {
   return (
     usersData.value
       ?.filter((u) => u.username !== user.value?.username)
@@ -87,6 +79,10 @@ watch(
   { immediate: true },
 );
 
+const onShow = () => {
+  songs.initialize();
+};
+
 const [name] = defineField("name");
 const [description] = defineField("description");
 const [image] = defineField("image");
@@ -117,6 +113,7 @@ const onSubmit = handleSubmit(async (values) => {
     v-model:visible="isDialogVisible"
     :header="props.playlist ? 'Edit playlist' : 'Add a playlist'"
     :draggable="false"
+    @show="onShow"
   >
     <form @submit="onSubmit" class="flex flex-col gap-3 w-full">
       <div class="flex flex-col gap-2">
@@ -154,23 +151,30 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="flex flex-col gap-2">
         <label>Songs (optional)</label>
-        <ModifiedMultiSelect
-          :options="songOptions"
-          :loading="isSongsLoading"
+        <LazyMultiSelect
           v-model="songIds"
+          :options="songOptions"
+          :has-more="songs.hasMore.value"
+          :loading="songs.isLoading.value"
           :invalid="!!errors.songIds"
+          :disabled="props.isCollaboratorOnly"
+          placeholder="Select songs"
+          @filter="songs.onFilter"
+          @load-more="songs.loadMore"
         />
         <small v-if="errors.songIds" class="text-red-500">{{ errors.songIds }}</small>
       </div>
 
       <div class="flex flex-col gap-2">
         <label>Collaborators (optional)</label>
-        <ModifiedMultiSelect
-          :options="collaboratorOptions"
-          :loading="isUsersLoading"
+        <LazyMultiSelect
           v-model="collaboratorIds"
+          :options="collaboratorOptions"
+          :has-more="false"
+          :loading="isUsersLoading"
           :invalid="!!errors.collaboratorIds"
           :disabled="props.isCollaboratorOnly"
+          placeholder="Select collaborators"
         />
         <small v-if="errors.collaboratorIds" class="text-red-500">{{ errors.collaboratorIds }}</small>
       </div>
