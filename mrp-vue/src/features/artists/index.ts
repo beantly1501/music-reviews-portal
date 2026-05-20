@@ -3,6 +3,7 @@ export { default as ArtistsPage } from "./Artists.page.vue";
 export { default as ArtistDetailsPage } from "./ArtistDetails.page.vue";
 export { default as CreateArtistDialog } from "./CreateArtistDialog.vue";
 export * from "./hooks/useGetAllArtists";
+export * from "./hooks/useGetArtistsLazy";
 export * from "./hooks/useGetArtist";
 export * from "./hooks/useCreateArtist";
 export * from "./hooks/useUpdateArtist";

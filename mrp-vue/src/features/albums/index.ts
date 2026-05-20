@@ -5,6 +5,7 @@ export { default as CreateAlbumDialog } from "./CreateAlbumDialog.vue";
 export { default as AlbumFilterPanel } from "./AlbumFilterPanel.vue";
 export * from "./hooks/useGetAllAlbums";
 export * from "./hooks/useGetAlbums";
+export * from "./hooks/useGetAlbumsLazy";
 export * from "./hooks/useCreateAlbum";
 export * from "./hooks/useUpdateAlbum";
 export * from "./hooks/useGetAlbum";

@@ -2,10 +2,9 @@
 import { computed, ref } from "vue";
 import { Button, OverlayPanel } from "primevue";
 import GenreMultiSelect from "@/shared/components/GenreMultiSelect.vue";
-import ModifiedMultiSelect from "@/shared/components/ModifiedMultiSelect.vue";
-import { useGetAllArtists } from "@/features";
-import { useFetch } from "@/shared";
-import type { MultiSelectOptionType, Page, SongResponse } from "@/shared";
+import LazyMultiSelect from "@/shared/components/LazyMultiSelect.vue";
+import { useGetArtistsLazy } from "@/features";
+import { useGetSongsLazy } from "@/features";
 import type { AlbumFilters } from "./hooks/useGetAlbums";
 
 const props = defineProps<{
@@ -20,16 +19,11 @@ const emit = defineEmits<{
 
 const op = ref<InstanceType<typeof OverlayPanel> | null>(null);
 
-const { data: artistsData, isLoading: isArtistsLoading } = useGetAllArtists();
-const { data: songsData, isLoading: isSongsLoading } = useFetch<Page<SongResponse>>("/api/song/search", { size: 200 });
+const artists = useGetArtistsLazy();
+const songs = useGetSongsLazy();
 
-const artistOptions = computed<MultiSelectOptionType[]>(
-  () => artistsData.value?.map((a) => ({ label: a.name, value: a.id })) ?? [],
-);
-
-const songOptions = computed<MultiSelectOptionType[]>(
-  () => songsData.value?.content?.map((s) => ({ label: s.name, value: s.id })) ?? [],
-);
+const artistOptions = computed(() => artists.items.value.map((a) => ({ label: a.name, value: a.id })));
+const songOptions = computed(() => songs.items.value.map((s) => ({ label: s.name, value: s.id })));
 
 const genreIds = computed({
   get: () => props.filters.genreIds,
@@ -46,6 +40,11 @@ const songIds = computed({
   set: (val) => emit("update:filters", { ...props.filters, songIds: val }),
 });
 
+const onShow = () => {
+  artists.initialize();
+  songs.initialize();
+};
+
 const onClear = () => {
   emit("clear");
   op.value?.hide();
@@ -61,7 +60,7 @@ const onClear = () => {
     @click="(e) => op?.toggle(e)"
   />
 
-  <OverlayPanel ref="op" class="w-80">
+  <OverlayPanel ref="op" class="w-80" @show="onShow">
     <div class="flex flex-col gap-4 p-1">
       <div class="flex items-center justify-between">
         <span class="font-semibold text-sm">Filter albums</span>
@@ -82,25 +81,31 @@ const onClear = () => {
 
       <div class="flex flex-col gap-1">
         <label class="text-xs text-gray-400">Artist</label>
-        <ModifiedMultiSelect
+        <LazyMultiSelect
           v-model="artistIds"
           :options="artistOptions"
-          :loading="isArtistsLoading"
+          :has-more="artists.hasMore.value"
+          :loading="artists.isLoading.value"
           scroll-height="150px"
           :panel-style="{ width: '400px' }"
           placeholder="Any artist"
+          @filter="artists.onFilter"
+          @load-more="artists.loadMore"
         />
       </div>
 
       <div class="flex flex-col gap-1">
         <label class="text-xs text-gray-400">Song</label>
-        <ModifiedMultiSelect
+        <LazyMultiSelect
           v-model="songIds"
           :options="songOptions"
-          :loading="isSongsLoading"
+          :has-more="songs.hasMore.value"
+          :loading="songs.isLoading.value"
           scroll-height="150px"
           :panel-style="{ width: '400px' }"
           placeholder="Any song"
+          @filter="songs.onFilter"
+          @load-more="songs.loadMore"
         />
       </div>
     </div>

@@ -6,6 +6,7 @@ export { default as SongFilterPanel } from "./SongFilterPanel.vue";
 export * from "./hooks/useCreateSong";
 export * from "./hooks/useGetAllSongs";
 export * from "./hooks/useGetSongs";
+export * from "./hooks/useGetSongsLazy";
 export * from "./hooks/useGetSong";
 export * from "./hooks/useDeleteSong";
 export * from "./hooks/useUpdateSong";
