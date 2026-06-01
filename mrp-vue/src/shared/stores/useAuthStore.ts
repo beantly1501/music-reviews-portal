@@ -23,6 +23,7 @@ export const useAuthStore = defineStore("auth", () => {
 
     if (!response.ok) {
       clearToken();
+      await router.push("/login");
       return;
     }
 

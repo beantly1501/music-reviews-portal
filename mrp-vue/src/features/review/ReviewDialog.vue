@@ -233,14 +233,10 @@ const {
 const songId = computed(() =>
   review.value?.type === "SONG" ? review.value.songId : undefined,
 );
-// const albumId = computed(() => (review.value?.type === 'ALBUM' ? review.value.albumId : undefined));
-
 const { data: song, isLoading: isSongLoading } = useGetSong(songId);
-// const { data: album } = useGetAlbum(albumId.value); // Add this when album feature is ready
 
 const entity = computed(() => {
   if (review.value?.type === "SONG") return song.value;
-  // if (review.value?.type === 'ALBUM') return album.value;
   return null;
 });
 
@@ -251,13 +247,6 @@ const imageUrl = computed(() => {
   }
   return review.value?.image;
 });
-
-// const audioUrl = computed(() => {
-//   if (review.value?.type === "SONG" && review.value.songId) {
-//     return `/api/song/audio-file/${review.value.songId}`;
-//   }
-//   return review.value?.image;
-// });
 
 const { fileUrl: displayImageUrl, isLoading: isImageLoading } =
   useGetFile(imageUrl);
