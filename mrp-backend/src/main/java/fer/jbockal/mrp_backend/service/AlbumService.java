@@ -59,14 +59,6 @@ public class AlbumService {
         return assembleDtos(List.of(row), user).get(0);
     }
 
-    @Transactional(readOnly = true)
-    public byte[] getAlbumImage(Long id) {
-        byte[] bytes = albumRepository.findCoverById(id);
-        if (bytes == null) throw new IllegalArgumentException("Image not found for album: " + id);
-        return bytes;
-    }
-
-
     @Transactional
     public AlbumResponseDto createAlbum(AlbumRequestDto req, AppUser user) {
         Album a = new Album();

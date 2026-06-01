@@ -8,18 +8,14 @@ import fer.jbockal.mrp_backend.service.ArtistService;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
@@ -51,18 +47,6 @@ public class ArtistController {
     @GetMapping("/{id}")
     public ResponseEntity<ArtistResponseDto> one(@PathVariable Long id) {
         return ResponseEntity.ok(artistService.findById(id));
-    }
-
-
-    @GetMapping(value = "/image/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<ByteArrayResource> image(@PathVariable Long id) {
-        byte[] bytes = artistService.getArtistImage(id);
-        var resource = new ByteArrayResource(bytes);
-        String filename = URLEncoder.encode("artist-" + id, StandardCharsets.UTF_8) + ".bin";
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-                .contentLength(bytes.length)
-                .body(resource);
     }
 
 

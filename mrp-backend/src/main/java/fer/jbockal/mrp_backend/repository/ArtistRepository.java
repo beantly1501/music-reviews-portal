@@ -88,8 +88,4 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
             """, nativeQuery = true)
     List<ArtistAlbumRow> findAlbumsForArtists(@Param("ids") List<Long> artistIds);
 
-    // ---- Blob field-select (avoid loading entity graph) ----
-
-    @Query("select ar.image from Artist ar where ar.id = :id")
-    byte[] findImageById(@Param("id") Long id);
 }

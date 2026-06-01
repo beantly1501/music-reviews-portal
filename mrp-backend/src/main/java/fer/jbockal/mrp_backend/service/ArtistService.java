@@ -63,26 +63,11 @@ public class ArtistService {
     }
 
     @Transactional(readOnly = true)
-    public List<ArtistResponseDto> searchByNameFragment(String fragment) {
-        if (fragment == null || fragment.isBlank()) return List.of();
-        var base = artistRepository.findBaseByNameFragment(fragment);
-        return assembleDtos(base);
-    }
-
-    @Transactional(readOnly = true)
     public ArtistResponseDto findById(Long id) {
         ArtistBaseRow row = artistRepository.findBaseById(id);
         if (row == null) throw new IllegalArgumentException("Artist not found: " + id);
         return assembleDtos(List.of(row)).get(0);
     }
-
-    @Transactional(readOnly = true)
-    public byte[] getArtistImage(Long id) {
-        byte[] bytes = artistRepository.findImageById(id);
-        if (bytes == null) throw new IllegalArgumentException("Image not found for artist: " + id);
-        return bytes;
-    }
-
 
     @Transactional
     public ArtistResponseDto createArtist(ArtistRequestDto req) {

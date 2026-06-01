@@ -88,9 +88,6 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     List<GenreRow> findGenresForSongs(@Param("ids") List<Long> ids);
 
 
-    @Query("select s.cover from Song s where s.id = :id")
-    byte[] findCoverById(@Param("id") Long id);
-
     @Query("select s.file from Song s where s.id = :id")
     byte[] findFileById(@Param("id") Long id);
 }

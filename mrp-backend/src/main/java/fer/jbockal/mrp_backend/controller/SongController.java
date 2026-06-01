@@ -73,23 +73,6 @@ public class SongController {
     }
 
 
-    @GetMapping(value = "/image/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<ByteArrayResource> image(@PathVariable Long id) {
-        byte[] bytes = songService.getSongImage(id);
-
-        if (bytes == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        var resource = new ByteArrayResource(bytes);
-        String filename = URLEncoder.encode("song-img-" + id, StandardCharsets.UTF_8) + ".bin";
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-                .contentLength(bytes.length)
-                .body(resource);
-    }
-
-
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @RolesAllowed({"ROLE_ADMIN"})
     public ResponseEntity<SongResponseDto> createJson(@AuthenticationPrincipal Object principal,

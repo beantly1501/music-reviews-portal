@@ -98,9 +98,6 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     List<AlbumArtistRow> findArtistsForAlbums(@Param("ids") List<Long> albumIds);
 
 
-    @Query("select a.cover from Album a where a.id = :id")
-    byte[] findCoverById(@Param("id") Long id);
-
     @Query(value = """
             select sa.album_id as albumId, g.id as id, g.name as name
             from song_album sa

@@ -55,11 +55,6 @@ public class SongService {
 
 
     @Transactional(readOnly = true)
-    public byte[] getSongImage(Long id) {
-        return songRepository.findCoverById(id);
-    }
-
-    @Transactional(readOnly = true)
     public byte[] getSongFile(Long id) {
         return songRepository.findFileById(id);
     }

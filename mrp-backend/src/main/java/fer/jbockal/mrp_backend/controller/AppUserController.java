@@ -34,10 +34,6 @@ public class AppUserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Optional<AppUser>> getById(@PathVariable Long id) {
-        if (id == null) {
-            return ResponseEntity.status(401).build();
-        }
-
         return ResponseEntity.ok(appUserService.getUserById(id));
     }
 
