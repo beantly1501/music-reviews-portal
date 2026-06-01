@@ -43,6 +43,7 @@
         </div>
 
         <DataTable
+          v-if="tableData.length"
           :loading="isLoadingReviews"
           :value="tableData"
           removableSort
@@ -55,7 +56,6 @@
           :filterDisplay="showReviewFilters ? 'row' : undefined"
           selectionMode="single"
           class="cursor-pointer"
-          emptyMessage="No reviews yet."
           @row-click="(e) => openReviewDialog(e.data)"
         >
           <Column field="name" header="Name" :sortable="true" filter :showFilterMenu="false">
@@ -144,6 +144,7 @@
             </template>
           </Column>
         </DataTable>
+        <p v-else-if="!isLoadingReviews" class="text-gray-500">There are currently no reviews from this user.</p>
       </div>
 
       <ReviewDialog
