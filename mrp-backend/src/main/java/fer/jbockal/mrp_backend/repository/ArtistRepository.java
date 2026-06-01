@@ -4,16 +4,47 @@ import fer.jbockal.mrp_backend.model.Artist;
 import fer.jbockal.mrp_backend.repository.projection.ArtistAlbumRow;
 import fer.jbockal.mrp_backend.repository.projection.ArtistBaseRow;
 import fer.jbockal.mrp_backend.repository.projection.ArtistSongRow;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
 public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
+
+    @Query(
+            value = """
+                select ar.id as id, ar.name as name, ar.description as description
+                from artist ar
+                where (:name is null or lower(ar.name) like lower(concat('%', cast(:name as text), '%')))
+                  and (:#{#albumIds == null || #albumIds.isEmpty()} = true
+                       or exists (select 1 from album_artist aa where aa.artist_id = ar.id and aa.album_id in (:#{#albumIds ?: 0})))
+                  and (:#{#songIds == null || #songIds.isEmpty()} = true
+                       or exists (select 1 from song_artist sa where sa.artist_id = ar.id and sa.song_id in (:#{#songIds ?: 0})))
+                order by ar.id
+            """,
+            countQuery = """
+                select count(*) from artist ar
+                where (:name is null or lower(ar.name) like lower(concat('%', cast(:name as text), '%')))
+                  and (:#{#albumIds == null || #albumIds.isEmpty()} = true
+                       or exists (select 1 from album_artist aa where aa.artist_id = ar.id and aa.album_id in (:#{#albumIds ?: 0})))
+                  and (:#{#songIds == null || #songIds.isEmpty()} = true
+                       or exists (select 1 from song_artist sa where sa.artist_id = ar.id and sa.song_id in (:#{#songIds ?: 0})))
+            """,
+            nativeQuery = true
+    )
+    Page<ArtistBaseRow> findByFilter(
+            @Param("name") String name,
+            @Param("albumIds") Collection<Long> albumIds,
+            @Param("songIds") Collection<Long> songIds,
+            Pageable pageable
+    );
 
     @Query(value = """
                 select ar.id as id, ar.name as name, ar.description as description

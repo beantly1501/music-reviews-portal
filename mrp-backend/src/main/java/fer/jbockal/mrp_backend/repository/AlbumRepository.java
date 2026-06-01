@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -22,14 +23,38 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
             value = """
                 select a.id as id, a.name as name, a.link as link, a.year as year
                 from album a
+                where (:name is null or lower(a.name) like lower(concat('%', cast(:name as text), '%')))
+                  and (:#{#artistIds == null || #artistIds.isEmpty()} = true
+                       or exists (select 1 from album_artist aa where aa.album_id = a.id and aa.artist_id in (:#{#artistIds ?: 0})))
+                  and (:#{#genreIds == null || #genreIds.isEmpty()} = true
+                       or exists (select 1 from song_album sa
+                                  join song_genre sg on sg.song_id = sa.song_id
+                                  where sa.album_id = a.id and sg.genre_id in (:#{#genreIds ?: 0})))
+                  and (:#{#songIds == null || #songIds.isEmpty()} = true
+                       or exists (select 1 from song_album sa where sa.album_id = a.id and sa.song_id in (:#{#songIds ?: 0})))
                 order by a.id
             """,
             countQuery = """
                 select count(*) from album a
+                where (:name is null or lower(a.name) like lower(concat('%', cast(:name as text), '%')))
+                  and (:#{#artistIds == null || #artistIds.isEmpty()} = true
+                       or exists (select 1 from album_artist aa where aa.album_id = a.id and aa.artist_id in (:#{#artistIds ?: 0})))
+                  and (:#{#genreIds == null || #genreIds.isEmpty()} = true
+                       or exists (select 1 from song_album sa
+                                  join song_genre sg on sg.song_id = sa.song_id
+                                  where sa.album_id = a.id and sg.genre_id in (:#{#genreIds ?: 0})))
+                  and (:#{#songIds == null || #songIds.isEmpty()} = true
+                       or exists (select 1 from song_album sa where sa.album_id = a.id and sa.song_id in (:#{#songIds ?: 0})))
             """,
             nativeQuery = true
     )
-    Page<AlbumRow> findAllBase(Pageable pageable);
+    Page<AlbumRow> findByFilter(
+            @Param("name") String name,
+            @Param("artistIds") Collection<Long> artistIds,
+            @Param("genreIds") Collection<Long> genreIds,
+            @Param("songIds") Collection<Long> songIds,
+            Pageable pageable
+    );
 
     @Query(
             value = """

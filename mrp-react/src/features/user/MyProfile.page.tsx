@@ -1,11 +1,14 @@
 import { useMemo, useState } from "react";
-import { DataTable, DataTablePageEvent } from "primereact/datatable";
-import { Column } from "primereact/column";
+import { DataTable, DataTableFilterMeta, DataTablePageEvent } from "primereact/datatable";
+import { Column, ColumnFilterElementTemplateOptions } from "primereact/column";
 import { Rating } from "primereact/rating";
 import { Tag } from "primereact/tag";
 import { Button } from "primereact/button";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Message } from "primereact/message";
+import { MultiSelect } from "primereact/multiselect";
+import { Calendar } from "primereact/calendar";
+import { FilterMatchMode } from "primereact/api";
 
 import { PlaylistType, ReviewResponse, useLogout } from "@shared/utils";
 import { UserInfo } from "./UserInfo.tsx";
@@ -16,6 +19,13 @@ import { useGetMyPlaylists } from "../playlists/hooks/useGetMyPlaylists.ts";
 import { useNavigate } from "react-router-dom";
 
 type Row = ReviewResponse & { name: string };
+
+const TYPE_OPTIONS = [
+  { label: "Song", value: "SONG" },
+  { label: "Album", value: "ALBUM" },
+];
+
+const GRADE_OPTIONS = [1, 2, 3, 4, 5].map((n) => ({ label: String(n), value: n }));
 
 export default function MyProfilePage() {
   const logout = useLogout();
@@ -45,21 +55,33 @@ export default function MyProfilePage() {
     setPage,
     setSize,
     refetch: refetchPlaylists,
-  } = useGetMyPlaylists({ page: 0, size: 20 });
+  } = useGetMyPlaylists({ page: 0, size: 5 });
 
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [selectedReviewId, setSelectedReviewId] = useState<
-    number | undefined
-  >();
-  const [selectedReviewType, setSelectedReviewType] = useState<
-    "SONG" | "ALBUM" | undefined
-  >();
+  const [selectedReviewId, setSelectedReviewId] = useState<number | undefined>();
+  const [selectedReviewType, setSelectedReviewType] = useState<"SONG" | "ALBUM" | undefined>();
+  const [showFilters, setShowFilters] = useState(false);
+  const [showPlaylistFilters, setShowPlaylistFilters] = useState(false);
+  const [playlistFilters, setPlaylistFilters] = useState<DataTableFilterMeta>({
+    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    isPrivate: { value: null, matchMode: FilterMatchMode.IN },
+    ownerUsername: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    description: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
+  const [filters, setFilters] = useState<DataTableFilterMeta>({
+    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    type: { value: null, matchMode: FilterMatchMode.IN },
+    grade: { value: null, matchMode: FilterMatchMode.IN },
+    description: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    creationDate: { value: null, matchMode: FilterMatchMode.BETWEEN },
+  });
 
-  const tableData: ReviewResponse[] = useMemo(
+  const tableData = useMemo(
     () =>
       (reviews ?? []).map((r) => ({
         ...r,
         name: r.type === "SONG" ? (r.songName ?? "") : (r.albumName ?? ""),
+        creationDate: r.creationDate ? new Date(r.creationDate) : null,
       })),
     [reviews],
   );
@@ -80,6 +102,82 @@ export default function MyProfilePage() {
     if (typeof e.page === "number") setPage(e.page);
     if (typeof e.rows === "number") setSize(e.rows);
   };
+
+  const typeItemTemplate = (option: { label: string; value: string }) => (
+    <Tag value={option.label} severity={option.value === "SONG" ? "success" : "info"} />
+  );
+
+  const typeSelectedItemTemplate = (value: string) => {
+    const option = TYPE_OPTIONS.find((o) => o.value === value);
+    if (!option) return null;
+    return <Tag value={option.label} severity={option.value === "SONG" ? "success" : "info"} />;
+  };
+
+  const typeFilterTemplate = (options: ColumnFilterElementTemplateOptions) => (
+    <MultiSelect
+      value={options.value}
+      options={TYPE_OPTIONS}
+      onChange={(e) => options.filterApplyCallback(e.value)}
+      itemTemplate={typeItemTemplate}
+      selectedItemTemplate={typeSelectedItemTemplate}
+      placeholder="Any"
+      className="w-full"
+      maxSelectedLabels={2}
+    />
+  );
+
+  const gradeFilterTemplate = (options: ColumnFilterElementTemplateOptions) => (
+    <MultiSelect
+      value={options.value}
+      options={GRADE_OPTIONS}
+      onChange={(e) => options.filterApplyCallback(e.value)}
+      placeholder="Any"
+      className="w-full"
+      maxSelectedLabels={3}
+    />
+  );
+
+  const dateFilterTemplate = (options: ColumnFilterElementTemplateOptions) => (
+    <Calendar
+      value={options.value}
+      onChange={(e) => options.filterApplyCallback(e.value)}
+      selectionMode="range"
+      readOnlyInput
+      placeholder="Filter date"
+      dateFormat="dd.mm.yy"
+      showButtonBar
+      className="w-full"
+      panelStyle={{ width: "400px" }}
+    />
+  );
+
+  const VISIBILITY_OPTIONS = [
+    { label: "Public", value: false },
+    { label: "Private", value: true },
+  ];
+
+  const visibilityItemTemplate = (option: { label: string; value: boolean }) => (
+    <Tag value={option.label} severity={option.value ? "danger" : "success"} />
+  );
+
+  const visibilitySelectedItemTemplate = (value: boolean) => {
+    const option = VISIBILITY_OPTIONS.find((o) => o.value === value);
+    if (!option) return null;
+    return <Tag value={option.label} severity={option.value ? "danger" : "success"} />;
+  };
+
+  const visibilityFilterTemplate = (options: ColumnFilterElementTemplateOptions) => (
+    <MultiSelect
+      value={options.value}
+      options={VISIBILITY_OPTIONS}
+      onChange={(e) => options.filterApplyCallback(e.value)}
+      itemTemplate={visibilityItemTemplate}
+      selectedItemTemplate={visibilitySelectedItemTemplate}
+      placeholder="Any"
+      className="w-full"
+      maxSelectedLabels={2}
+    />
+  );
 
   if (userLoading || reviewsLoading)
     return (
@@ -112,12 +210,31 @@ export default function MyProfilePage() {
       <UserInfo user={user} logout={logout} />
 
       <div>
-        <h1>My reviews</h1>
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="m-0">My reviews</h1>
+          <div className="flex items-center gap-2">
+            <div className="text-gray-500">{tableData.length} total</div>
+            <Button
+              icon={`pi pi-filter${showFilters ? "-slash" : ""}`}
+              outlined
+              onClick={() => setShowFilters((prev) => !prev)}
+              tooltip={showFilters ? "Hide filters" : "Show filters"}
+              tooltipOptions={{ position: "left" }}
+            />
+          </div>
+        </div>
+
         <DataTable
           value={tableData}
           rowHover
           stripedRows
           removableSort
+          paginator
+          rows={5}
+          rowsPerPageOptions={[5, 10, 20, 50]}
+          filters={filters}
+          onFilter={(e) => setFilters(e.filters as DataTableFilterMeta)}
+          filterDisplay={showFilters ? "row" : undefined}
           emptyMessage="You currently have no reviews."
           onRowClick={(e) => openDialogForRow(e.data as ReviewResponse)}
           rowClassName={() => ({ "cursor-pointer": true })}
@@ -127,6 +244,9 @@ export default function MyProfilePage() {
             header="Name"
             body={(row: Row) => row.name}
             sortable
+            filter
+            filterPlaceholder="Filter name"
+            showFilterMenu={false}
           />
           <Column
             field="type"
@@ -138,25 +258,41 @@ export default function MyProfilePage() {
               />
             )}
             sortable
+            filter
+            filterElement={typeFilterTemplate}
+            showFilterMenu={false}
           />
           <Column
             field="grade"
             header="Rating"
-            body={(row: Row) => (
-              <Rating value={row.grade} cancel={false} readOnly />
-            )}
+            body={(row: Row) => <Rating value={row.grade} cancel={false} readOnly />}
             sortable
+            filter
+            filterElement={gradeFilterTemplate}
+            showFilterMenu={false}
+            dataType="numeric"
           />
-          <Column field="description" header="Description" />
+          <Column
+            field="description"
+            header="Description"
+            filter
+            filterPlaceholder="Filter description"
+            showFilterMenu={false}
+          />
           <Column
             field="creationDate"
             header="Creation Date"
             body={(row: Row) =>
-              new Date(row.creationDate).toLocaleDateString("hr-HR")
+              row.creationDate ? new Date(row.creationDate).toLocaleDateString("hr-HR") : ""
             }
             sortable
+            filter
+            filterElement={dateFilterTemplate}
+            showFilterMenu={false}
+            dataType="date"
           />
         </DataTable>
+
         {dialogVisible && selectedReviewId !== undefined && (
           <ReviewDialog
             key={selectedReviewId}
@@ -170,9 +306,18 @@ export default function MyProfilePage() {
       </div>
 
       <div className="mt-5">
-        <div className="flex items-center justify-between">
-          <h1 className="m-0 mb-3">My playlists</h1>
-          <div className="text-gray-500">{totalElements} total</div>
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="m-0">My playlists</h1>
+          <div className="flex items-center gap-2">
+            <div className="text-gray-500">{totalElements} total</div>
+            <Button
+              icon={`pi pi-filter${showPlaylistFilters ? "-slash" : ""}`}
+              outlined
+              onClick={() => setShowPlaylistFilters((prev) => !prev)}
+              tooltip={showPlaylistFilters ? "Hide filters" : "Show filters"}
+              tooltipOptions={{ position: "left" }}
+            />
+          </div>
         </div>
 
         {playlistsError && (
@@ -194,8 +339,11 @@ export default function MyProfilePage() {
           first={page * size}
           totalRecords={totalElements}
           onPage={onPlaylistsPage}
-          rowsPerPageOptions={[10, 20, 50]}
+          rowsPerPageOptions={[5, 10, 20, 50]}
           loading={playlistsLoading}
+          filters={playlistFilters}
+          onFilter={(e) => setPlaylistFilters(e.filters as DataTableFilterMeta)}
+          filterDisplay={showPlaylistFilters ? "row" : undefined}
           emptyMessage="You currently have no playlists."
           rowHover
           stripedRows
@@ -203,6 +351,7 @@ export default function MyProfilePage() {
           onRowClick={(row) => navigate(`/playlist/${row.data.id}`)}
         >
           <Column
+            field="name"
             header="Name"
             body={(row: PlaylistType) => (
               <div className="flex items-center gap-3">
@@ -210,8 +359,12 @@ export default function MyProfilePage() {
               </div>
             )}
             sortable
+            filter
+            filterPlaceholder="Filter name"
+            showFilterMenu={false}
           />
           <Column
+            field="isPrivate"
             header="Visibility"
             body={(row: PlaylistType) => (
               <Tag
@@ -220,8 +373,18 @@ export default function MyProfilePage() {
               />
             )}
             sortable
+            filter
+            filterElement={visibilityFilterTemplate}
+            showFilterMenu={false}
           />
-          <Column field="ownerUsername" header="Owner" sortable />
+          <Column
+            field="ownerUsername"
+            header="Owner"
+            sortable
+            filter
+            filterPlaceholder="Filter owner"
+            showFilterMenu={false}
+          />
           <Column
             header="Songs"
             body={(row: PlaylistType) => row.songs?.length ?? 0}
@@ -232,7 +395,13 @@ export default function MyProfilePage() {
             body={(row: PlaylistType) => row.collaborators?.length ?? 0}
             sortable
           />
-          <Column field="description" header="Description" />
+          <Column
+            field="description"
+            header="Description"
+            filter
+            filterPlaceholder="Filter description"
+            showFilterMenu={false}
+          />
         </DataTable>
 
         {playlistsLoading && (playlists?.length ?? 0) > 0 && (

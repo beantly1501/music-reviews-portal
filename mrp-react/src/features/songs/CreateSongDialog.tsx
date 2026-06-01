@@ -2,7 +2,6 @@ import {
   Dispatch,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -25,15 +24,10 @@ import { InputText } from "primereact/inputtext";
 import { FileUpload, FileUploadSelectEvent } from "primereact/fileupload";
 import { Button } from "primereact/button";
 import { useGetArtists } from "../artists/hooks/useGetArtists.ts";
-import { useGetAlbums } from "../albums/hooks/useGetAlbums.ts";
 import CreateLimitedAlbumDialog from "../../shared/components/CreateLimitedAlbumDialog.tsx";
 import CreateLimitedArtistDialog from "../../shared/components/CreateLimitedArtistDialog.tsx";
-import AlbumMultiSelect, {
-  AlbumOption,
-} from "../../shared/components/AlbumMultiSelect.tsx";
-import ArtistMultiSelect, {
-  ArtistOption,
-} from "../../shared/components/ArtistMultiSelect.tsx";
+import AlbumMultiSelect from "../../shared/components/AlbumMultiSelect.tsx";
+import ArtistMultiSelect from "../../shared/components/ArtistMultiSelect.tsx";
 import GenresMultiSelect from "../../shared/components/GenresMultiSelect.tsx";
 import { createSong, updateSong } from "./utils/helpers.tsx";
 
@@ -61,16 +55,7 @@ export default function CreateSongDialog({
   onCreated,
   existingSongData,
 }: Props) {
-  const {
-    artists,
-    loading: artistsLoading,
-    refetch: refetchArtists,
-  } = useGetArtists();
-  const {
-    albums,
-    loading: albumsLoading,
-    refetch: refetchAlbums,
-  } = useGetAlbums();
+  const { refetch: refetchArtists } = useGetArtists();
 
   const [artistDialogVisible, setArtistDialogVisible] = useState(false);
   const [albumDialogVisible, setAlbumDialogVisible] = useState(false);
@@ -86,20 +71,10 @@ export default function CreateSongDialog({
   }, [refetchArtists]);
 
   const handleAlbumCreated = useCallback(() => {
-    refetchAlbums?.();
     setAlbumDialogVisible(false);
-  }, [refetchAlbums]);
+  }, []);
 
-  const artistOptions: ArtistOption[] = useMemo(
-    () => (artists as ArtistOption[]) ?? [],
-    [artists],
-  );
-  const albumOptions: AlbumOption[] = useMemo(
-    () => (albums as AlbumOption[]) ?? [],
-    [albums],
-  );
-
-  const methods = useForm<SongCreateForm>({
+const methods = useForm<SongCreateForm>({
     resolver: zodResolver(songCreateSchema),
     defaultValues: EMPTY_FORM,
   });
@@ -320,6 +295,7 @@ export default function CreateSongDialog({
                 <GenresMultiSelect
                   value={field.value ?? []}
                   onChange={(ids) => field.onChange(ids)}
+                  allowCreate
                   appendTo={
                     typeof document !== "undefined" ? document.body : undefined
                   }
@@ -337,8 +313,6 @@ export default function CreateSongDialog({
               render={({ field }) => (
                 <AlbumMultiSelect
                   value={field.value ?? []}
-                  options={albumOptions}
-                  loading={albumsLoading}
                   onChange={(ids) => field.onChange(ids)}
                   onCreateNew={() => setAlbumDialogVisible(true)}
                   appendTo={
@@ -358,8 +332,6 @@ export default function CreateSongDialog({
               render={({ field }) => (
                 <ArtistMultiSelect
                   value={field.value ?? []}
-                  options={artistOptions}
-                  loading={artistsLoading}
                   onChange={(ids) => field.onChange(ids)}
                   onCreateNew={() => setArtistDialogVisible(true)}
                   appendTo={

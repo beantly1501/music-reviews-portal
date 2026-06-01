@@ -42,20 +42,14 @@ public class AlbumService {
 
 
     @Transactional(readOnly = true)
-    public Page<AlbumResponseDto> getAllAlbumsWithReviewed(AppUser user, Pageable pageable) {
-        Page<AlbumRow> base = albumRepository.findAllBase(pageable);
-        List<AlbumResponseDto> dtos = assembleDtos(base.getContent(), user);
-        return new PageImpl<>(dtos, pageable, base.getTotalElements());
-    }
-
-    @Transactional(readOnly = true)
-    public Page<AlbumResponseDto> searchByNameFragment(String fragment, Pageable pageable) {
-        if (fragment == null || fragment.isBlank()) {
-            return new PageImpl<>(List.of(), pageable, 0);
-        }
-        Page<AlbumRow> base = albumRepository.findBaseByNameFragment(fragment, pageable);
-        List<AlbumResponseDto> dtos = assembleDtos(base.getContent(), null); // pass user if you want grades on search, too
-        return new PageImpl<>(dtos, pageable, base.getTotalElements());
+    public Page<AlbumResponseDto> filterAlbums(String name, List<Long> artistIds, List<Long> genreIds,
+                                               List<Long> songIds, AppUser user, Pageable pageable) {
+        String nameParam = (name == null || name.isBlank()) ? null : name;
+        List<Long> artists = (artistIds == null || artistIds.isEmpty()) ? null : artistIds;
+        List<Long> genres = (genreIds == null || genreIds.isEmpty()) ? null : genreIds;
+        List<Long> songs = (songIds == null || songIds.isEmpty()) ? null : songIds;
+        Page<AlbumRow> base = albumRepository.findByFilter(nameParam, artists, genres, songs, pageable);
+        return new PageImpl<>(assembleDtos(base.getContent(), user), pageable, base.getTotalElements());
     }
 
     @Transactional(readOnly = true)

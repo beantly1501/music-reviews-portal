@@ -9,6 +9,9 @@ import jakarta.annotation.security.RolesAllowed;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,8 +39,13 @@ public class ArtistController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<ArtistResponseDto>> search(@RequestParam("q") String query) {
-        return ResponseEntity.ok(artistService.searchByNameFragment(query));
+    public ResponseEntity<Page<ArtistResponseDto>> search(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) List<Long> albumIds,
+            @RequestParam(required = false) List<Long> songIds,
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return ResponseEntity.ok(artistService.filterArtists(q, albumIds, songIds, pageable));
     }
 
     @GetMapping("/{id}")

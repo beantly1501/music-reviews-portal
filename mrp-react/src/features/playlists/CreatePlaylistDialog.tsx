@@ -2,7 +2,6 @@ import {
   Dispatch,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -31,10 +30,7 @@ import {
 } from "@shared/utils";
 
 import CreateLimitedSongDialog from "../../shared/components/CreateLimitedSongDialog";
-import { useGetSongs } from "../songs/hooks/useGetSongs.tsx";
-import SongMultiSelect, {
-  SongOption,
-} from "../../shared/components/SongMultiSelect.tsx";
+import SongMultiSelect from "../../shared/components/SongMultiSelect.tsx";
 import { useGetUsernames } from "../../shared/hooks/useGetUsers.ts";
 import UserMultiSelect from "../../shared/components/UserMultiSelect.tsx";
 import { createPlaylist, updatePlaylist } from "./utils/helpers.tsx";
@@ -62,7 +58,6 @@ export default function CreatePlaylistDialog({
   onCreated,
   existingPlaylistData,
 }: Props) {
-  const { songs, loading: songsLoading, refetch: refetchSongs } = useGetSongs();
   const { users, loading: usersLoading } = useGetUsernames();
   const { user } = useCurrentUser();
 
@@ -70,16 +65,6 @@ export default function CreatePlaylistDialog({
 
   const coverUploadRef = useRef<FileUpload>(null);
   const [coverName, setCoverName] = useState<string>("Choose image");
-
-  const songOptions: SongOption[] = useMemo(
-    () =>
-      (songs as SongOption[])?.map((s) => ({
-        id: s.id,
-        name: s.name,
-        year: s.year,
-      })) ?? [],
-    [songs],
-  );
 
   const collaboratorOptions: UserOption[] =
     (users?.filter((u) =>
@@ -271,8 +256,6 @@ export default function CreatePlaylistDialog({
                 <SongMultiSelect
                   id="songIdsSelect"
                   value={field.value ?? []}
-                  options={songOptions}
-                  loading={songsLoading}
                   onChange={(ids) => field.onChange(ids)}
                   onCreateNew={() => setSongDialogVisible(true)}
                   appendTo={
@@ -317,10 +300,7 @@ export default function CreatePlaylistDialog({
       <CreateLimitedSongDialog
         visible={songDialogVisible}
         setVisible={setSongDialogVisible}
-        onCreated={() => {
-          setSongDialogVisible(false);
-          refetchSongs?.();
-        }}
+        onCreated={() => setSongDialogVisible(false)}
       />
     </Dialog>
   );

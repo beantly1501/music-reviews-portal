@@ -12,6 +12,7 @@ type Options = {
   size?: number;
   sort?: string | string[];
   scope?: "public-and-mine" | "mine" | "admin";
+  q?: string;
 };
 
 export function useGetPlaylists(options: Options = {}) {
@@ -20,6 +21,7 @@ export function useGetPlaylists(options: Options = {}) {
     size: initialSize = 100,
     sort,
     scope = "public-and-mine",
+    q,
   } = options;
 
   const [data, setData] = useState<PlaylistType[]>([]);
@@ -48,6 +50,7 @@ export function useGetPlaylists(options: Options = {}) {
         const sorts = Array.isArray(sort) ? sort : [sort];
         sorts.forEach((s) => params.append("sort", s));
       }
+      if (q && q.trim()) params.set("q", q.trim());
 
       const url = `${VITE_BACKEND_URL}/playlists/${scope}?${params.toString()}`;
       const headers: Record<string, string> = { Accept: "application/json" };
@@ -83,7 +86,7 @@ export function useGetPlaylists(options: Options = {}) {
     } finally {
       setLoading(false);
     }
-  }, [page, size, sort, scope]);
+  }, [page, size, sort, scope, q]);
 
   useEffect(() => {
     let mounted = true;

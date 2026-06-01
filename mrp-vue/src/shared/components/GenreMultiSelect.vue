@@ -6,6 +6,10 @@ import type { MultiSelectOptionType } from "@/shared";
 
 defineProps<{
   invalid?: boolean;
+  scrollHeight?: string;
+  panelStyle?: Record<string, string>;
+  placeholder?: string;
+  allowCreate?: boolean;
 }>();
 
 const model = defineModel<number[]>();
@@ -45,8 +49,11 @@ const onCreateGenre = async () => {
     filter
     :loading="isLoading"
     :invalid="invalid"
+    :scroll-height="scrollHeight"
+    :panel-style="panelStyle"
+    :placeholder="placeholder"
   >
-    <template #footer>
+    <template v-if="allowCreate" #footer>
       <div class="flex items-center gap-2 p-3 border-t border-white/10">
         <InputText
           v-model="newGenreName"

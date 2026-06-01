@@ -37,6 +37,8 @@ export default function UserMultiSelect({
       loading={loading}
       appendTo={appendTo}
       className={className}
+      panelStyle={{ width: "400px" }}
+      style={{ flexWrap: "wrap" }}
       itemTemplate={(opt: UserOption) => (
         <div className="flex items-center justify-between w-full gap-2">
           <span>{opt.username}</span>

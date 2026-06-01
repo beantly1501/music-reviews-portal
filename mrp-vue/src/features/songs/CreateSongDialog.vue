@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { Button, Dialog, InputText, FileUpload, InputNumber, useToast } from "primevue";
 import { useForm } from "vee-validate";
-import { ModifiedMultiSelect, GenreMultiSelect } from "@/shared/components";
+import { GenreMultiSelect, LazyMultiSelect } from "@/shared/components";
 import { toTypedSchema } from "@vee-validate/zod";
 import {
-  type MultiSelectOptionType,
   songCreateDefaultValues,
   songCreateSchema,
   type SongResponse,
 } from "@/shared";
-import { useCreateSong, useUpdateSong, useGetAllArtists, useGetAllAlbums } from "@/features";
+import { useCreateSong, useUpdateSong, useGetArtistsLazy, useGetAlbumsLazy } from "@/features";
 import { computed, watch } from "vue";
 
 const isDialogVisible = defineModel<boolean>();
@@ -25,28 +24,13 @@ const emit = defineEmits<{
 const toast = useToast();
 const { createSong, isLoading: isCreating } = useCreateSong();
 const { updateSong, isLoading: isUpdating } = useUpdateSong();
-const { data: artistsData, isLoading: isArtistsLoading } = useGetAllArtists();
-const { data: albumsData, isLoading: isAlbumsLoading } = useGetAllAlbums();
+const artists = useGetArtistsLazy();
+const albums = useGetAlbumsLazy();
 
 const isSubmitting = computed(() => isCreating.value || isUpdating.value);
 
-const artistOptions = computed<MultiSelectOptionType[]>(() => {
-  return (
-    artistsData.value?.map((artist) => ({
-      label: artist.name,
-      value: artist.id,
-    })) || []
-  );
-});
-
-const albumOptions = computed<MultiSelectOptionType[]>(() => {
-  return (
-    albumsData.value?.content.map((album) => ({
-      label: album.name,
-      value: album.id,
-    })) || []
-  );
-});
+const artistOptions = computed(() => artists.items.value.map((a) => ({ label: a.name, value: a.id })));
+const albumOptions = computed(() => albums.items.value.map((a) => ({ label: a.name, value: a.id })));
 
 const validationSchema = toTypedSchema(songCreateSchema);
 
@@ -89,6 +73,11 @@ const [genreIds] = defineField("genreIds");
 const [albumIds] = defineField("albumIds");
 const [artistIds] = defineField("artistIds");
 
+const onShow = () => {
+  artists.initialize();
+  albums.initialize();
+};
+
 const onSubmit = handleSubmit(async (values) => {
   let result;
   if (props.song) {
@@ -112,6 +101,7 @@ const onSubmit = handleSubmit(async (values) => {
     v-model:visible="isDialogVisible"
     :header="props.song ? 'Edit song' : 'Add a song'"
     :draggable="false"
+    @show="onShow"
   >
     <form @submit="onSubmit" class="flex flex-col gap-3 w-full">
       <div class="flex flex-col gap-2">
@@ -176,7 +166,7 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="flex flex-col gap-2">
         <label>Genres (optional)</label>
-        <GenreMultiSelect v-model="genreIds" :invalid="!!errors.genreIds" />
+        <GenreMultiSelect v-model="genreIds" :invalid="!!errors.genreIds" allow-create placeholder="Select genres" />
         <small v-if="errors.genreIds" class="text-red-500">{{
           errors.genreIds
         }}</small>
@@ -184,11 +174,15 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="flex flex-col gap-2">
         <label>Albums (optional)</label>
-        <ModifiedMultiSelect
-          :options="albumOptions"
-          :loading="isAlbumsLoading"
+        <LazyMultiSelect
           v-model="albumIds"
+          :options="albumOptions"
+          :has-more="albums.hasMore.value"
+          :loading="albums.isLoading.value"
           :invalid="!!errors.albumIds"
+          placeholder="Select albums"
+          @filter="albums.onFilter"
+          @load-more="albums.loadMore"
         />
         <small v-if="errors.albumIds" class="text-red-500">{{
           errors.albumIds
@@ -197,11 +191,15 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="flex flex-col gap-2">
         <label>Artists (optional)</label>
-        <ModifiedMultiSelect
-          :options="artistOptions"
-          :loading="isArtistsLoading"
+        <LazyMultiSelect
           v-model="artistIds"
+          :options="artistOptions"
+          :has-more="artists.hasMore.value"
+          :loading="artists.isLoading.value"
           :invalid="!!errors.artistIds"
+          placeholder="Select artists"
+          @filter="artists.onFilter"
+          @load-more="artists.loadMore"
         />
         <small v-if="errors.artistIds" class="text-red-500">{{
           errors.artistIds

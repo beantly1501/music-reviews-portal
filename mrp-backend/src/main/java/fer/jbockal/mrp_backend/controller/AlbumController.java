@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -36,21 +37,17 @@ public class AlbumController {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    @GetMapping("/all")
-    public ResponseEntity<Page<AlbumResponseDto>> all(
+    @GetMapping("/search")
+    public ResponseEntity<Page<AlbumResponseDto>> filter(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) List<Long> artistIds,
+            @RequestParam(required = false) List<Long> genreIds,
+            @RequestParam(required = false) List<Long> songIds,
             @AuthenticationPrincipal Object principal,
             @PageableDefault(size = 20) Pageable pageable
     ) {
         AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
-        return ResponseEntity.ok(albumService.getAllAlbumsWithReviewed(user, pageable));
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<Page<AlbumResponseDto>> search(
-            @RequestParam("q") String query,
-            @PageableDefault(size = 20) Pageable pageable
-    ) {
-        return ResponseEntity.ok(albumService.searchByNameFragment(query, pageable));
+        return ResponseEntity.ok(albumService.filterAlbums(q, artistIds, genreIds, songIds, user, pageable));
     }
 
     @GetMapping("/{id}")

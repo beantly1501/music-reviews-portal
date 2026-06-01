@@ -15,6 +15,7 @@ type Props = {
   id?: string;
   value: number[];
   onChange: (value: number[]) => void;
+  allowCreate?: boolean;
   appendTo?: HTMLElement | null | undefined;
   className?: string;
   placeholder?: string;
@@ -24,6 +25,7 @@ export default function GenresMultiSelect({
   id = "genreIdsSelect",
   value,
   onChange,
+  allowCreate = false,
   appendTo,
   className,
   placeholder = "Select genres",
@@ -69,7 +71,9 @@ export default function GenresMultiSelect({
       loading={loading}
       appendTo={appendTo}
       className={className}
-      panelFooterTemplate={() => (
+      panelStyle={{ width: "400px" }}
+      style={{ flexWrap: "wrap" }}
+      panelFooterTemplate={allowCreate ? () => (
         <div className="flex items-center gap-2 p-3 border-t border-white/10">
           <InputText
             value={newGenreName}
@@ -90,7 +94,7 @@ export default function GenresMultiSelect({
             }}
           />
         </div>
-      )}
+      ) : undefined}
     />
   );
 }

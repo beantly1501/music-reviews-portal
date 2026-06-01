@@ -151,9 +151,10 @@ public class PlaylistController {
     @GetMapping("/public-and-mine")
     public ResponseEntity<Page<PlaylistResponseDto>> listPublicAndMine(
             @AuthenticationPrincipal Object principal,
+            @RequestParam(required = false) String q,
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        return ResponseEntity.ok(playlistService.listPublicAndMine(principal, pageable));
+        return ResponseEntity.ok(playlistService.listPublicAndMine(principal, q, pageable));
     }
 
     @GetMapping("/admin")

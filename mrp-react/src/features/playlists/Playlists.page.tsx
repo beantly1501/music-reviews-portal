@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "primereact/button";
+import { InputText } from "primereact/inputtext";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
 import { useGetPlaylists } from "./hooks/useGetPlaylists.ts";
 import PlaylistCard from "../../shared/components/PlaylistCard.tsx";
 import CreatePlaylistDialog from "./CreatePlaylistDialog.tsx";
@@ -8,6 +11,10 @@ import { Message } from "primereact/message";
 import { Paginator, PaginatorPageChangeEvent } from "primereact/paginator";
 
 export default function PlaylistsPage() {
+  const [search, setSearch] = useState<string>("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+
   const {
     data: playlists,
     loading,
@@ -21,8 +28,19 @@ export default function PlaylistsPage() {
     setSize,
   } = useGetPlaylists({
     page: 0,
-    size: 20,
+    size: 10,
+    q: debouncedSearch,
   });
+
+  useEffect(() => {
+    setPage(0);
+  }, [debouncedSearch]);
+
+  const onSearchChange = (value: string) => {
+    setSearch(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedSearch(value), 300);
+  };
 
   const [visibleDialog, setVisibleDialog] = useState<boolean>(false);
 
@@ -52,13 +70,33 @@ export default function PlaylistsPage() {
   return (
     <>
       <div className="flex flex-col justify-center items-center gap-4 w-full">
-        <div className="flex gap-3 items-center">
+        <div className="w-full flex items-center justify-center gap-3">
           <Button
             label="Add New Playlist"
-            className="w-[15rem]"
+            className="w-[15rem] shrink-0"
             icon="pi pi-plus"
             onClick={() => setVisibleDialog(true)}
           />
+          <div className="flex gap-2 w-full max-w-md">
+            <IconField iconPosition="left" className="flex-1">
+              <InputIcon className="pi pi-search" />
+              <InputText
+                value={search}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Search playlists…"
+                className="w-full"
+              />
+            </IconField>
+            {search.length > 0 && (
+              <Button
+                icon="pi pi-times"
+                severity="secondary"
+                outlined
+                onClick={() => onSearchChange("")}
+                aria-label="Clear search"
+              />
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-4 justify-center w-full">

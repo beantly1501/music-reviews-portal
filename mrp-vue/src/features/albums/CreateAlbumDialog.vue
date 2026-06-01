@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { Button, Dialog, InputText, FileUpload, InputNumber, useToast } from "primevue";
 import { useForm } from "vee-validate";
-import { ModifiedMultiSelect } from "@/shared/components";
+import { LazyMultiSelect } from "@/shared/components";
 import { toTypedSchema } from "@vee-validate/zod";
 import {
-  type MultiSelectOptionType,
   albumCreateDefaultValues,
   albumCreateSchema,
   type AlbumResponseDto,
 } from "@/shared";
-import { useCreateAlbum, useUpdateAlbum, useGetAllSongs, useGetAllArtists } from "@/features";
+import { useCreateAlbum, useUpdateAlbum, useGetSongsLazy, useGetArtistsLazy } from "@/features";
 import { computed, watch } from "vue";
 
 const isDialogVisible = defineModel<boolean>();
@@ -25,28 +24,13 @@ const emit = defineEmits<{
 const toast = useToast();
 const { createAlbum, isLoading: isCreating } = useCreateAlbum();
 const { updateAlbum, isLoading: isUpdating } = useUpdateAlbum();
-const { data: songsData, isLoading: isSongsLoading } = useGetAllSongs();
-const { data: artistsData, isLoading: isArtistsLoading } = useGetAllArtists();
+const songs = useGetSongsLazy();
+const artists = useGetArtistsLazy();
 
 const isSubmitting = computed(() => isCreating.value || isUpdating.value);
 
-const artistOptions = computed<MultiSelectOptionType[]>(() => {
-  return (
-    artistsData.value?.map((artist) => ({
-      label: artist.name,
-      value: artist.id,
-    })) || []
-  );
-});
-
-const songOptions = computed<MultiSelectOptionType[]>(() => {
-  return (
-    songsData.value?.map((song) => ({
-      label: song.name,
-      value: song.id,
-    })) || []
-  );
-});
+const songOptions = computed(() => songs.items.value.map((s) => ({ label: s.name, value: s.id })));
+const artistOptions = computed(() => artists.items.value.map((a) => ({ label: a.name, value: a.id })));
 
 const validationSchema = toTypedSchema(albumCreateSchema);
 
@@ -85,6 +69,11 @@ const [cover] = defineField("cover");
 const [songIds] = defineField("songIds");
 const [artistIds] = defineField("artistIds");
 
+const onShow = () => {
+  songs.initialize();
+  artists.initialize();
+};
+
 const onSubmit = handleSubmit(async (values) => {
   let result;
   if (props.album) {
@@ -108,6 +97,7 @@ const onSubmit = handleSubmit(async (values) => {
     v-model:visible="isDialogVisible"
     :header="props.album ? 'Edit album' : 'Add an album'"
     :draggable="false"
+    @show="onShow"
   >
     <form @submit="onSubmit" class="flex flex-col gap-3 w-full">
       <div class="flex flex-col gap-2">
@@ -157,11 +147,15 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="flex flex-col gap-2">
         <label>Songs (optional)</label>
-        <ModifiedMultiSelect
-          :options="songOptions"
-          :loading="isSongsLoading"
+        <LazyMultiSelect
           v-model="songIds"
+          :options="songOptions"
+          :has-more="songs.hasMore.value"
+          :loading="songs.isLoading.value"
           :invalid="!!errors.songIds"
+          placeholder="Select songs"
+          @filter="songs.onFilter"
+          @load-more="songs.loadMore"
         />
         <small v-if="errors.songIds" class="text-red-500">{{
           errors.songIds
@@ -170,11 +164,15 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="flex flex-col gap-2">
         <label>Artists (optional)</label>
-        <ModifiedMultiSelect
-          :options="artistOptions"
-          :loading="isArtistsLoading"
+        <LazyMultiSelect
           v-model="artistIds"
+          :options="artistOptions"
+          :has-more="artists.hasMore.value"
+          :loading="artists.isLoading.value"
           :invalid="!!errors.artistIds"
+          placeholder="Select artists"
+          @filter="artists.onFilter"
+          @load-more="artists.loadMore"
         />
         <small v-if="errors.artistIds" class="text-red-500">{{
           errors.artistIds

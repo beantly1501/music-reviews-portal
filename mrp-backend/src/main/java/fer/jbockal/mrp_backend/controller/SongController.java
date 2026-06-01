@@ -11,6 +11,9 @@ import jakarta.annotation.security.RolesAllowed;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,10 +37,16 @@ public class SongController {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    @GetMapping("/all")
-    public ResponseEntity<List<SongResponseDto>> all(@AuthenticationPrincipal Object principal) {
+    @GetMapping("/search")
+    public ResponseEntity<Page<SongResponseDto>> filter(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) List<Long> genreIds,
+            @RequestParam(required = false) List<Long> artistIds,
+            @RequestParam(required = false) List<Long> albumIds,
+            @AuthenticationPrincipal Object principal,
+            @PageableDefault(size = 20) Pageable pageable) {
         AppUser user = appUserService.resolveAppUserFromPrincipal(principal);
-        return ResponseEntity.ok(songService.getAllSongsWithReviewed(user));
+        return ResponseEntity.ok(songService.filterSongs(q, genreIds, artistIds, albumIds, user, pageable));
     }
 
     @GetMapping("/{id}")
