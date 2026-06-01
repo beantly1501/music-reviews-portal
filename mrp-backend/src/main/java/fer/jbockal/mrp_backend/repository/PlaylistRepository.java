@@ -128,14 +128,14 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
             from Playlist p
             join p.owner o
             where (p.isPrivate = false or (p.isPrivate = true and (o = :user or :user member of p.collaborators)))
-              and (:q is null or lower(p.name) like lower(concat('%', :q, '%')))
+              and (cast(:q as string) is null or lower(p.name) like lower(concat('%', cast(:q as string), '%')))
             order by p.id desc
             """,
             countQuery = """
             select count(p)
             from Playlist p
             where (p.isPrivate = false or (p.isPrivate = true and (p.owner = :user or :user member of p.collaborators)))
-              and (:q is null or lower(p.name) like lower(concat('%', :q, '%')))
+              and (cast(:q as string) is null or lower(p.name) like lower(concat('%', cast(:q as string), '%')))
             """
     )
     Page<PlaylistRow> findPublicAndUserRowsByName(@Param("user") AppUser user, @Param("q") String q, Pageable pageable);
