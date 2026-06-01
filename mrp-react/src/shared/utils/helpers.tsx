@@ -1,6 +1,5 @@
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
-const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function isTokenExpired(token: string): boolean {
   try {
@@ -12,28 +11,6 @@ export function isTokenExpired(token: string): boolean {
   }
 }
 
-export async function checkServerTokenValidity(
-  token: string,
-): Promise<boolean> {
-  const res = await fetch(`${VITE_BACKEND_URL}/auth/validate`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res.ok;
-}
-
-export async function ensureValidTokenOrRefresh() {
-  const token = getToken();
-  if (!token || isTokenExpired(token)) {
-    return false;
-  }
-  const stillValid = await checkServerTokenValidity(token);
-  if (!stillValid) {
-    return false;
-  }
-  return true;
-}
 
 export function useLogout() {
   const navigate = useNavigate();
@@ -67,6 +44,3 @@ export function parseIdList(input: string | undefined): number[] {
 export const truncate = (name: string, max = 15) =>
   name.length > max ? name.slice(0, max) + "..." : name;
 
-export function toCommaSeparated<T>(arr: T[]): string {
-  return arr.map(String).join(", ");
-}

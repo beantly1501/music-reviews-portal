@@ -1,14 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { extractErrorMessage, getToken, ReviewResponse } from "@shared/utils";
+import { extractErrorMessage, getToken, PageResponse, ReviewResponse } from "@shared/utils";
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
-type PageResp<T> = {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-};
 
 type SortMeta = { field: string; order: 1 | -1 };
 
@@ -75,7 +67,7 @@ export function useGetSongReviews(songId?: number) {
           const t = await res.text().catch(() => "");
           throw new Error(t || `Failed: ${res.status}`);
         }
-        const json = (await res.json()) as PageResp<ReviewResponse>;
+        const json = (await res.json()) as PageResponse<ReviewResponse>;
 
         setData(json.content ?? []);
         setTotal(json.totalElements ?? json.content?.length ?? 0);
